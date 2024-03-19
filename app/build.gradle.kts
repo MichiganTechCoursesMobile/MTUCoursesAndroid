@@ -9,8 +9,8 @@ android {
 
     defaultConfig {
         applicationId = "com.mtucoursesmobile.michigantechcourses"
-        minSdk = 29
-        targetSdk = 34
+      minSdk = 31
+      targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
