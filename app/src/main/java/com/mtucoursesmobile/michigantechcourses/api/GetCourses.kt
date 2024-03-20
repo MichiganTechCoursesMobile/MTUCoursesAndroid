@@ -4,9 +4,9 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.room.Room
-import com.mtucoursesmobile.michigantechcourses.localStore.AppDatabase
-import com.mtucoursesmobile.michigantechcourses.localStore.MTUCoursesConverter
-import com.mtucoursesmobile.michigantechcourses.localStore.MTUCoursesEntry
+import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
+import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesConverter
+import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -17,7 +17,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-
+// Define MTU Courses Type
 data class MTUCourses(
   val id: String, val year: Int, val semester: String, val subject: String, val crse: String,
   val title: String,
@@ -25,7 +25,9 @@ data class MTUCourses(
   val offered: Array<String>, val minCredits: Double, val maxCredits: Double
 )
 
+// Define RetroFit API interface
 interface RetroFitAPI {
+  //Specific call for courses (year and semester)
   @GET("courses")
   fun getCourseData(
     @Query("semester") semester: String, @Query("year") year: String
@@ -33,42 +35,48 @@ interface RetroFitAPI {
 }
 
 fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String) {
+
+  // Initialized the local storage DB
   val db = Room.databaseBuilder(
     ctx,
     AppDatabase::class.java, "mtucourses-db"
   ).addTypeConverter(MTUCoursesConverter()).allowMainThreadQueries().build()
 
-  val cacheSize = 10 * 1024 * 1024 // 10 MB
+  // 10 MB of Cache for API GET requests
+  val cacheSize = 10 * 1024 * 1024
   val cache = Cache(ctx.cacheDir, cacheSize.toLong())
   val okHttpClient = OkHttpClient.Builder()
     .cache(cache)
     .build()
 
+  // Initialize the DB courseDAO
   val courseDao = db.courseDao()
 
-  val findDB: List<MTUCoursesEntry> = courseDao.getSpecificCourseEntry(semester, year)
+  // Look for the current semester + year in local storage
+  val findCourse: List<MTUCoursesEntry> = courseDao.getSpecificCourseEntry(semester, year)
 
-  if (findDB.isEmpty()) {
-    Log.d("SQL", "Nada")
-  } else {
+  // If course already in DB, return from local storage, otherwise, continue.
+  if (findCourse.isNotEmpty()) {
     Log.d("SQL", "me exist")
     courseList.clear()
-    courseList.addAll(findDB[0].entry!!)
+    courseList.addAll(findCourse[0].entry!!)
     return
   }
 
-
+  // Initiate API Call via retrofit
   val retrofit = Retrofit.Builder()
     .baseUrl("https://api.michigantechcourses.com/").client(okHttpClient)
     .addConverterFactory(GsonConverterFactory.create()).build()
   val retrofitAPI = retrofit.create(RetroFitAPI::class.java)
 
-  val call: Call<ArrayList<MTUCourses>> = retrofitAPI.getCourseData(
+  // Define the course call
+  val courseCall: Call<ArrayList<MTUCourses>> = retrofitAPI.getCourseData(
     semester,
     year
   )
 
-  call!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
+  // Get Data from API
+  courseCall!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
     override fun onResponse(
       call: Call<ArrayList<MTUCourses>?>,
       response: Response<ArrayList<MTUCourses>?>
@@ -85,11 +93,15 @@ fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semest
         for (i in 0 until lst.size) {
           courseList.add(lst[i])
         }
+        if (courseList.isEmpty()) {
+          throw NoSuchElementException()
+        }
         courseDao.insertCourseEntry(MTUCoursesEntry(semester, year, courseList))
         return
       }
     }
 
+    // If error occurs
     override fun onFailure(call: Call<ArrayList<MTUCourses>?>, t: Throwable) {
       Toast.makeText(
         ctx,

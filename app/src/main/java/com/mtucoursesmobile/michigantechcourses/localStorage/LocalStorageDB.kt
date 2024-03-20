@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.localStore
+package com.mtucoursesmobile.michigantechcourses.localStorage
 
 import androidx.room.Dao
 import androidx.room.Database
