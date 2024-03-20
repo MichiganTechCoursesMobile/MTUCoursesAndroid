@@ -3,9 +3,7 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.room.Room
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
-import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesConverter
 import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -34,14 +32,7 @@ interface RetroFitAPI {
   ): Call<ArrayList<MTUCourses>>
 }
 
-fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String) {
-
-  // Initialized the local storage DB
-  val db = Room.databaseBuilder(
-    ctx,
-    AppDatabase::class.java, "mtucourses-db"
-  ).addTypeConverter(MTUCoursesConverter()).allowMainThreadQueries().build()
-
+fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String, db: AppDatabase) {
   // 10 MB of Cache for API GET requests
   val cacheSize = 10 * 1024 * 1024
   val cache = Cache(ctx.cacheDir, cacheSize.toLong())

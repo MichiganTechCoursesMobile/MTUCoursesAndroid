@@ -36,16 +36,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.Room
 import com.mtucoursesmobile.michigantechcourses.api.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.api.getSemesterCourses
+import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
+import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesConverter
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
 
 class MainActivity : ComponentActivity() {
+
   @OptIn(ExperimentalMaterial3Api::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
       MichiganTechCoursesTheme {
+        // Initialized the local storage DB
+        val db = Room.databaseBuilder(
+          LocalContext.current,
+          AppDatabase::class.java, "mtucourses-db"
+        ).addTypeConverter(MTUCoursesConverter()).allowMainThreadQueries().build()
+
         data class CurrentSemester(
           val readable: String,
           val year: String,
@@ -112,7 +122,8 @@ class MainActivity : ComponentActivity() {
             courseList,
             context,
             currentSemester.semester,
-            currentSemester.year
+            currentSemester.year,
+            db
           )
           // on below line we are display list view
           // method to display our list view.
