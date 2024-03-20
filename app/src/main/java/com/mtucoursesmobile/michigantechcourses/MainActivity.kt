@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -26,8 +27,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -63,6 +66,7 @@ class MainActivity : ComponentActivity() {
         )
 
         var expanded by remember { mutableStateOf(false) }
+        var searchBarValue by rememberSaveable { mutableStateOf("") }
         val semesterList = arrayListOf(
           CurrentSemester(
             "Fall 2024",
@@ -112,6 +116,15 @@ class MainActivity : ComponentActivity() {
                   }
                 }
               })
+          },
+          floatingActionButton = {
+            TextField(
+              value = searchBarValue,
+              onValueChange = { searchBarValue = it },
+              label = { Text("Label") },
+              singleLine = true,
+              modifier = Modifier.fillMaxWidth().padding(start = 30.dp)
+            )
           }) { innerPadding ->
           val context = LocalContext.current
 
@@ -129,7 +142,8 @@ class MainActivity : ComponentActivity() {
           // method to display our list view.
           DisplayCourseList(
             innerPadding,
-            courseList
+            courseList,
+            searchBarValue
           )
         }
       }
@@ -139,14 +153,27 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DisplayCourseList(innerPadding: PaddingValues, courseList: SnapshotStateList<MTUCourses>) {
+fun DisplayCourseList(
+  innerPadding: PaddingValues,
+  courseList: SnapshotStateList<MTUCourses>,
+  searchBarValue: String
+) {
+  var filteredUsers = remember {
+    mutableStateOf(mutableListOf<MTUCourses>())
+  }
   LazyColumn(
     modifier = Modifier
       .padding(innerPadding)
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    items(courseList.size) { item ->
+    var filteredList = courseList.filter { course -> course.title.contains(searchBarValue) }
+    if (filteredList.isNotEmpty()) {
+      filteredUsers.value = filteredList.toMutableStateList()
+    } else {
+      filteredUsers.value = mutableListOf<MTUCourses>()
+    }
+    items(filteredList.size) { item ->
       ElevatedCard(
         elevation = CardDefaults.cardElevation(
           defaultElevation = 4.dp
@@ -157,7 +184,7 @@ fun DisplayCourseList(innerPadding: PaddingValues, courseList: SnapshotStateList
           .padding(10.dp),
       ) {
         Text(
-          text = "${courseList[item].title} (${courseList[item].semester} ${courseList[item].year})",
+          text = "${filteredList[item].subject}${filteredList[item].crse} - ${filteredList[item].title}",
           modifier = Modifier
             .padding(
               horizontal = 10.dp
@@ -171,7 +198,7 @@ fun DisplayCourseList(innerPadding: PaddingValues, courseList: SnapshotStateList
           textAlign = TextAlign.Center,
         )
         Text(
-          text = if (courseList[item].description != null) courseList[item].description else "¯\\_(ツ)_/¯",
+          text = if (filteredList[item].description != null) filteredList[item].description else "¯\\_(ツ)_/¯",
           modifier = Modifier.padding(horizontal = 10.dp),
           maxLines = 4,
           overflow = TextOverflow.Ellipsis
