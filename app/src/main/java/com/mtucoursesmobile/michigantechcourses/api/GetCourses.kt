@@ -13,6 +13,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 
 data class MTUCourses(
@@ -23,17 +24,22 @@ data class MTUCourses(
 )
 
 interface RetroFitAPI {
-  @GET("courses?semester=FALL&year=2024")
-  fun getCourseData(): Call<ArrayList<MTUCourses>>
+  @GET("courses")
+  fun getCourseData(
+    @Query("semester") semester: String, @Query("year") year: String
+  ): Call<ArrayList<MTUCourses>>
 }
 
-fun getCourses(courseList: MutableList<MTUCourses>, ctx: Context) {
+fun getCourses(courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String) {
   val retrofit = Retrofit.Builder()
     .baseUrl("https://api.michigantechcourses.com/")
     .addConverterFactory(GsonConverterFactory.create()).build()
   val retrofitAPI = retrofit.create(RetroFitAPI::class.java)
 
-  val call: Call<ArrayList<MTUCourses>> = retrofitAPI.getCourseData()
+  val call: Call<ArrayList<MTUCourses>> = retrofitAPI.getCourseData(
+    semester,
+    year
+  )
 
   call!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
     override fun onResponse(
@@ -41,11 +47,23 @@ fun getCourses(courseList: MutableList<MTUCourses>, ctx: Context) {
       response: Response<ArrayList<MTUCourses>?>
     ) {
       if (response.isSuccessful) {
+        Log.d(
+          "DEBUG",
+          response.body().toString()
+        )
         var lst: ArrayList<MTUCourses> = ArrayList()
 
         lst = response.body()!!
 
+        if (courseList.size != 0) {
+          courseList.clear()
+        }
+
         for (i in 0 until lst.size) {
+          Log.d(
+            "DEBUG",
+            lst[i].toString()
+          )
           courseList.add(lst[i])
         }
       }

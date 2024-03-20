@@ -19,16 +19,21 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -62,74 +67,126 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     setContent {
       MichiganTechCoursesTheme {
-        Surface(
-          // on below line we are specifying modifier and color for our app
-          modifier = Modifier.fillMaxSize(),
-        ) {
-          // on the below line we are specifying the theme as scaffold.
-          Scaffold(
+        data class CurrentSemester(
+          val readable: String,
+          val year: String,
+          val semester: String
+        )
 
-            // in scaffold we are specifying top bar.
-            topBar = {
-
-              // inside top bar we are specifying background color.
-              TopAppBar(
-
-                // along with that we are specifying title for our top bar.
-                title = {
-
-                  // in the top bar we are specifying tile as a text
-                  Text(
-
-                    // on below line we are specifying
-                    // text to display in top app bar.
-                    text = "JSON Parsing in Android",
-
-                    // on below line we are specifying
-                    // modifier to fill max width.
-                    modifier = Modifier.fillMaxWidth(),
-
-                    // on below line we are
-                    // specifying text alignment.
-                    textAlign = TextAlign.Center,
-
-                    // on below line we are
-                    // specifying color for our text.
-                    color = Color.White
-                  )
-                })
-            }) { innerPadding ->
-            val context = LocalContext.current
-
-            val courseList = remember {
-              mutableStateListOf<MTUCourses>()
-            }
-            getCourses(
-              courseList,
-              context
+        var expanded by remember { mutableStateOf(false) }
+        val semesterList = arrayListOf(
+          CurrentSemester(
+            "Fall 2024",
+            "2024",
+            "FALL"
+          ),
+          CurrentSemester(
+            "Spring 2024",
+            "2024",
+            "SPRING"
+          ),
+          CurrentSemester(
+            "Summer 2024",
+            "2024",
+            "SUMMER"
+          )
+        )
+        var currentSemester by remember {
+          mutableStateOf(
+            CurrentSemester(
+              "Fall 2024",
+              "2024",
+              "FALL"
             )
-            // on below line we are display list view
-            // method to display our list view.
-            DisplayListView(
-              innerPadding,
-              courseList
-            )
+          )
+        }
+        Scaffold(
+          topBar = {
+            TopAppBar(colors = topAppBarColors(
+              containerColor = MaterialTheme.colorScheme.primaryContainer,
+              titleContentColor = MaterialTheme.colorScheme.primary
+            ),
+              title = {
+                OutlinedButton(onClick = { expanded = true }) {
+                  Text(currentSemester.readable)
+                }
+                DropdownMenu(
+                  expanded = expanded,
+                  onDismissRequest = { expanded = false }) {
+                  for (i in semesterList) {
+                    DropdownMenuItem(
+                      text = { Text(i.readable) },
+                      onClick = {
+                        currentSemester = i
+                        expanded = false
+                      })
+                  }
+                }
+              })
+          }) { innerPadding ->
+          val context = LocalContext.current
+
+          val courseList = remember {
+            mutableStateListOf<MTUCourses>()
           }
+          getCourses(
+            courseList,
+            context,
+            currentSemester.semester,
+            currentSemester.year
+          )
+          // on below line we are display list view
+          // method to display our list view.
+          DisplayCourseList(
+            innerPadding,
+            courseList
+          )
         }
       }
     }
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DisplayListView(innerPadding: PaddingValues, courseList: SnapshotStateList<MTUCourses>) {
-  LazyColumn(modifier = Modifier.padding(innerPadding)) {
+fun DisplayCourseList(innerPadding: PaddingValues, courseList: SnapshotStateList<MTUCourses>) {
+  LazyColumn(
+    modifier = Modifier
+      .padding(innerPadding)
+      .fillMaxSize(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
     items(courseList.size) { item ->
-      Text(
-        courseList[item].toString(),
-        modifier = Modifier.padding(15.dp)
-      )
-      Divider()
+      ElevatedCard(
+        elevation = CardDefaults.cardElevation(
+          defaultElevation = 4.dp
+        ),
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(200.dp)
+          .padding(10.dp),
+      ) {
+        Text(
+          text = "${courseList[item].title} (${courseList[item].semester} ${courseList[item].year})",
+          modifier = Modifier
+            .padding(
+              horizontal = 10.dp
+            )
+            .paddingFromBaseline(
+              top = 30.dp,
+              bottom = 10.dp
+            ),
+          fontWeight = FontWeight.Bold,
+          fontSize = 20.sp,
+          textAlign = TextAlign.Center,
+        )
+        Text(
+          text = if (courseList[item].description != null) courseList[item].description else "¯\\_(ツ)_/¯",
+          modifier = Modifier.padding(horizontal = 10.dp),
+          maxLines = 4,
+          overflow = TextOverflow.Ellipsis
+        )
+      }
     }
   }
 }
