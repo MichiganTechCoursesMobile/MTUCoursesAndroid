@@ -52,8 +52,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.mtucoursesmobile.michigantechcourses.api.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.api.getCourses
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
