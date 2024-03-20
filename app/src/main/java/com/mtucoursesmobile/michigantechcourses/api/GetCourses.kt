@@ -3,17 +3,22 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import okhttp3.ResponseBody
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Headers
-import retrofit2.http.Path
 import retrofit2.http.Query
+
+@Entity
+data class MTUCoursesEntry(
+  @PrimaryKey val semester: String,
+  @PrimaryKey val year: String,
+  val entry: MTUCourses
+)
 
 
 data class MTUCourses(
@@ -30,7 +35,7 @@ interface RetroFitAPI {
   ): Call<ArrayList<MTUCourses>>
 }
 
-fun getCourses(courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String) {
+fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String) {
   val retrofit = Retrofit.Builder()
     .baseUrl("https://api.michigantechcourses.com/")
     .addConverterFactory(GsonConverterFactory.create()).build()
