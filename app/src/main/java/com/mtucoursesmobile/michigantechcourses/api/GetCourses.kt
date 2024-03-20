@@ -3,8 +3,12 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.Room
+import com.mtucoursesmobile.michigantechcourses.localStore.AppDatabase
+import com.mtucoursesmobile.michigantechcourses.localStore.MTUCoursesConverter
+import com.mtucoursesmobile.michigantechcourses.localStore.MTUCoursesEntry
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -12,13 +16,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-
-@Entity
-data class MTUCoursesEntry(
-  @PrimaryKey val semester: String,
-  @PrimaryKey val year: String,
-  val entry: MTUCourses
-)
 
 
 data class MTUCourses(
@@ -36,8 +33,33 @@ interface RetroFitAPI {
 }
 
 fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String) {
+  val db = Room.databaseBuilder(
+    ctx,
+    AppDatabase::class.java, "mtucourses-db"
+  ).addTypeConverter(MTUCoursesConverter()).allowMainThreadQueries().build()
+
+  val cacheSize = 10 * 1024 * 1024 // 10 MB
+  val cache = Cache(ctx.cacheDir, cacheSize.toLong())
+  val okHttpClient = OkHttpClient.Builder()
+    .cache(cache)
+    .build()
+
+  val courseDao = db.courseDao()
+
+  val findDB: List<MTUCoursesEntry> = courseDao.getSpecificCourseEntry(semester, year)
+
+  if (findDB.isEmpty()) {
+    Log.d("SQL", "Nada")
+  } else {
+    Log.d("SQL", "me exist")
+    courseList.clear()
+    courseList.addAll(findDB[0].entry!!)
+    return
+  }
+
+
   val retrofit = Retrofit.Builder()
-    .baseUrl("https://api.michigantechcourses.com/")
+    .baseUrl("https://api.michigantechcourses.com/").client(okHttpClient)
     .addConverterFactory(GsonConverterFactory.create()).build()
   val retrofitAPI = retrofit.create(RetroFitAPI::class.java)
 
@@ -52,10 +74,6 @@ fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semest
       response: Response<ArrayList<MTUCourses>?>
     ) {
       if (response.isSuccessful) {
-        Log.d(
-          "DEBUG",
-          response.body().toString()
-        )
         var lst: ArrayList<MTUCourses> = ArrayList()
 
         lst = response.body()!!
@@ -65,12 +83,10 @@ fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semest
         }
 
         for (i in 0 until lst.size) {
-          Log.d(
-            "DEBUG",
-            lst[i].toString()
-          )
           courseList.add(lst[i])
         }
+        courseDao.insertCourseEntry(MTUCoursesEntry(semester, year, courseList))
+        return
       }
     }
 
