@@ -113,7 +113,10 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
         },
         navigationIcon = {
           if (searching) {
-            IconButton(onClick = { searching = false }) {
+            IconButton(onClick = {
+              searching = false
+              searchBarValue = ""
+            }) {
               Icon(
                 imageVector = Icons.Filled.ArrowBack,
                 contentDescription = "Back"

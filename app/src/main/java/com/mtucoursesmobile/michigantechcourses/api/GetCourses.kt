@@ -3,9 +3,14 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.LaunchedEffect
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -25,6 +30,7 @@ interface RetroFitAPI {
   ): Call<ArrayList<MTUCourses>>
 }
 
+@OptIn(DelicateCoroutinesApi::class)
 fun getSemesterCourses(
   courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String, db: AppDatabase
 ) {
@@ -91,13 +97,16 @@ fun getSemesterCourses(
         if (courseList.isEmpty()) {
           throw NoSuchElementException()
         }
-        courseDao.insertCourseEntry(
-          MTUCoursesEntry(
-            semester,
-            year,
-            courseList
+        GlobalScope.launch(Dispatchers.Default) {
+          courseDao.insertCourseEntry(
+            MTUCoursesEntry(
+              semester,
+              year,
+              courseList
+            )
           )
-        )
+        }
+
         return
       }
     }
