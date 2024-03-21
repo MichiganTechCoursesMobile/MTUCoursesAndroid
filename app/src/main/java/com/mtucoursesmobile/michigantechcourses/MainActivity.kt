@@ -26,6 +26,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,9 @@ import com.mtucoursesmobile.michigantechcourses.api.getSemesterCourses
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesConverter
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -61,7 +65,7 @@ class MainActivity : ComponentActivity() {
           LocalContext.current,
           AppDatabase::class.java,
           "mtucourses-db"
-        ).addTypeConverter(MTUCoursesConverter()).allowMainThreadQueries().build()
+        ).addTypeConverter(MTUCoursesConverter()).build()
 
         data class CurrentSemester(
           val readable: String,
@@ -97,6 +101,11 @@ class MainActivity : ComponentActivity() {
             )
           )
         }
+        val context = LocalContext.current
+
+        val courseList = remember {
+          mutableStateListOf<MTUCourses>()
+        }
         Scaffold(
           topBar = {
             TopAppBar(colors = topAppBarColors(
@@ -115,6 +124,15 @@ class MainActivity : ComponentActivity() {
                       text = { Text(i.readable) },
                       onClick = {
                         currentSemester = i
+                        CoroutineScope(Dispatchers.Default).launch {
+                          getSemesterCourses(
+                            courseList,
+                            context,
+                            currentSemester.semester,
+                            currentSemester.year,
+                            db
+                          )
+                        }
                         expanded = false
                       })
                   }
@@ -140,18 +158,19 @@ class MainActivity : ComponentActivity() {
             )
 
           }) { innerPadding ->
-          val context = LocalContext.current
 
-          val courseList = remember {
-            mutableStateListOf<MTUCourses>()
+          LaunchedEffect(key1 = "idk") {
+            CoroutineScope(Dispatchers.Default).launch {
+              getSemesterCourses(
+                courseList,
+                context,
+                currentSemester.semester,
+                currentSemester.year,
+                db
+              )
+            }
           }
-          getSemesterCourses(
-            courseList,
-            context,
-            currentSemester.semester,
-            currentSemester.year,
-            db
-          )
+
           // on below line we are display list view
           // method to display our list view.
           DisplayCourseList(
