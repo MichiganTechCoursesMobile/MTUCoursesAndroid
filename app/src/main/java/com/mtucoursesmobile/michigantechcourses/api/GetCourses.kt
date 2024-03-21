@@ -3,6 +3,7 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
 import okhttp3.Cache
@@ -15,14 +16,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-// Define MTU Courses Type
-data class MTUCourses(
-  val id: String, val year: Int, val semester: String, val subject: String, val crse: String,
-  val title: String,
-  val description: String, val updatedAt: String, val deletedAt: String, val prereqs: String,
-  val offered: Array<String>, val minCredits: Double, val maxCredits: Double
-)
-
 // Define RetroFit API interface
 interface RetroFitAPI {
   //Specific call for courses (year and semester)
@@ -32,10 +25,15 @@ interface RetroFitAPI {
   ): Call<ArrayList<MTUCourses>>
 }
 
-fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String, db: AppDatabase) {
+fun getSemesterCourses(
+  courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String, db: AppDatabase
+) {
   // 10 MB of Cache for API GET requests
   val cacheSize = 10 * 1024 * 1024
-  val cache = Cache(ctx.cacheDir, cacheSize.toLong())
+  val cache = Cache(
+    ctx.cacheDir,
+    cacheSize.toLong()
+  )
   val okHttpClient = OkHttpClient.Builder()
     .cache(cache)
     .build()
@@ -44,11 +42,17 @@ fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semest
   val courseDao = db.courseDao()
 
   // Look for the current semester + year in local storage
-  val findCourse: List<MTUCoursesEntry> = courseDao.getSpecificCourseEntry(semester, year)
+  val findCourse: List<MTUCoursesEntry> = courseDao.getSpecificCourseEntry(
+    semester,
+    year
+  )
 
   // If course already in DB, return from local storage, otherwise, continue.
   if (findCourse.isNotEmpty()) {
-    Log.d("SQL", "me exist")
+    Log.d(
+      "SQL",
+      "me exist"
+    )
     courseList.clear()
     courseList.addAll(findCourse[0].entry!!)
     return
@@ -87,7 +91,13 @@ fun getSemesterCourses(courseList: MutableList<MTUCourses>, ctx: Context, semest
         if (courseList.isEmpty()) {
           throw NoSuchElementException()
         }
-        courseDao.insertCourseEntry(MTUCoursesEntry(semester, year, courseList))
+        courseDao.insertCourseEntry(
+          MTUCoursesEntry(
+            semester,
+            year,
+            courseList
+          )
+        )
         return
       }
     }
