@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -20,6 +22,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -30,9 +33,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,7 +59,8 @@ class MainActivity : ComponentActivity() {
         // Initialized the local storage DB
         val db = Room.databaseBuilder(
           LocalContext.current,
-          AppDatabase::class.java, "mtucourses-db"
+          AppDatabase::class.java,
+          "mtucourses-db"
         ).addTypeConverter(MTUCoursesConverter()).allowMainThreadQueries().build()
 
         data class CurrentSemester(
@@ -121,10 +125,20 @@ class MainActivity : ComponentActivity() {
             TextField(
               value = searchBarValue,
               onValueChange = { searchBarValue = it },
-              label = { Text("Label") },
+              label = { Text("Course Search") },
               singleLine = true,
-              modifier = Modifier.fillMaxWidth().padding(start = 30.dp)
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 32.dp),
+              shape = CircleShape,
+              colors = TextFieldDefaults.colors(
+                disabledTextColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+              )
             )
+
           }) { innerPadding ->
           val context = LocalContext.current
 
@@ -158,22 +172,13 @@ fun DisplayCourseList(
   courseList: SnapshotStateList<MTUCourses>,
   searchBarValue: String
 ) {
-  var filteredUsers = remember {
-    mutableStateOf(mutableListOf<MTUCourses>())
-  }
   LazyColumn(
     modifier = Modifier
       .padding(innerPadding)
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    var filteredList = courseList.filter { course -> course.title.contains(searchBarValue) }
-    if (filteredList.isNotEmpty()) {
-      filteredUsers.value = filteredList.toMutableStateList()
-    } else {
-      filteredUsers.value = mutableListOf<MTUCourses>()
-    }
-    items(filteredList.size) { item ->
+    itemsIndexed(courseList.filter { course -> course.title.contains(searchBarValue) }) { _, item ->
       ElevatedCard(
         elevation = CardDefaults.cardElevation(
           defaultElevation = 4.dp
@@ -184,7 +189,7 @@ fun DisplayCourseList(
           .padding(10.dp),
       ) {
         Text(
-          text = "${filteredList[item].subject}${filteredList[item].crse} - ${filteredList[item].title}",
+          text = "${item.subject}${item.crse} - ${item.title}",
           modifier = Modifier
             .padding(
               horizontal = 10.dp
@@ -198,7 +203,7 @@ fun DisplayCourseList(
           textAlign = TextAlign.Center,
         )
         Text(
-          text = if (filteredList[item].description != null) filteredList[item].description else "¯\\_(ツ)_/¯",
+          text = if (item.description != null) item.description else "¯\\_(ツ)_/¯",
           modifier = Modifier.padding(horizontal = 10.dp),
           maxLines = 4,
           overflow = TextOverflow.Ellipsis
