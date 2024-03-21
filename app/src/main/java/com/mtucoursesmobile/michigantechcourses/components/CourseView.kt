@@ -1,15 +1,12 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
@@ -49,7 +45,7 @@ import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
   ExperimentalComposeUiApi::class
 )
 @Composable
-fun MainView(db: AppDatabase) {
+fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
   var searchBarValue by rememberSaveable { mutableStateOf("") }
   var currentSemester by remember {
     mutableStateOf(
@@ -68,7 +64,7 @@ fun MainView(db: AppDatabase) {
   }
   val focusRequester = remember { FocusRequester() }
   val keyboardController = LocalSoftwareKeyboardController.current
-  Scaffold(
+  Scaffold(modifier = Modifier.padding(innerPadding),
     topBar = {
       TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
         containerColor = if (expandedFab) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer,
@@ -126,11 +122,6 @@ fun MainView(db: AppDatabase) {
           }
         }
       )
-    },
-    bottomBar = {
-      BottomAppBar() {
-
-      }
     },
     floatingActionButton = {
       ExtendedFloatingActionButton(
