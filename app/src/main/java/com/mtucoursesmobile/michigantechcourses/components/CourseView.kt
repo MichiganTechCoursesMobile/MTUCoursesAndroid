@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,11 +35,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
-import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.classes.semesterList
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
+import com.mtucoursesmobile.michigantechcourses.viewModels.currentSemesterViewModel
 
 @OptIn(
   ExperimentalMaterial3Api::class,
@@ -46,16 +49,10 @@ import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 )
 @Composable
 fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
+  val context = LocalContext.current
+  val semesterViewModel: currentSemesterViewModel = viewModel()
+
   var searchBarValue by rememberSaveable { mutableStateOf("") }
-  var currentSemester by remember {
-    mutableStateOf(
-      CurrentSemester(
-        "Fall 2024",
-        "2024",
-        "FALL"
-      )
-    )
-  }
   var expanded by remember { mutableStateOf(false) }
   var searching by remember { mutableStateOf(false) }
   val listState = rememberLazyListState()
@@ -73,7 +70,7 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
         title = {
           if (!searching) {
             OutlinedButton(onClick = { expanded = true }) {
-              Text(currentSemester.readable)
+              Text(semesterViewModel.currentSemester.readable)
             }
             DropdownMenu(
               expanded = expanded,
@@ -82,7 +79,11 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
                 DropdownMenuItem(
                   text = { Text(i.readable) },
                   onClick = {
-                    currentSemester = i
+                    semesterViewModel.setSemester(
+                      i,
+                      db,
+                      context
+                    )
                     expanded = false
                   })
               }
@@ -144,10 +145,9 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
     }) { innerPadding ->
     LazyCourseList(
       innerPadding = innerPadding,
-      currentSemester = currentSemester,
       db = db,
       searchBarVal = searchBarValue,
-      listState = listState
+      listState = listState,
     )
   }
 }

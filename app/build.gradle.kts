@@ -62,6 +62,7 @@ dependencies {
 
   // optional - Kotlin Extensions and Coroutines support for Room
   implementation("androidx.room:room-ktx:$room_version")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)
@@ -72,6 +73,7 @@ dependencies {
   implementation(libs.androidx.material3)
   implementation("com.squareup.retrofit2:retrofit:2.9.0")
   implementation("com.squareup.retrofit2:converter-gson:2.5.0")
+  implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)

@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,9 +14,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,35 +23,30 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
-import com.mtucoursesmobile.michigantechcourses.api.getSemesterCourses
-import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
+import com.mtucoursesmobile.michigantechcourses.viewModels.currentSemesterViewModel
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun LazyCourseList(
-  innerPadding: PaddingValues, currentSemester: CurrentSemester, db: AppDatabase,
+  innerPadding: PaddingValues, db: AppDatabase,
   searchBarVal: String, listState: LazyListState
 ) {
   val context = LocalContext.current
-  val courseList = remember {
-    mutableStateListOf<MTUCourses>()
-  }
-  LaunchedEffect(currentSemester) {
-    GlobalScope.launch(Dispatchers.Default) {
-      getSemesterCourses(
-        courseList,
-        context,
-        currentSemester.semester,
-        currentSemester.year,
-        db
-      )
-    }
+  val semesterViewModel: currentSemesterViewModel = viewModel()
+  // Load only on first load?
+  if (!semesterViewModel.alreadyRan.value) {
+    Log.d(
+      "DEBUG",
+      "Init Run"
+    )
+    semesterViewModel.alreadyRan.value = true
+    semesterViewModel.initialCourselist(
+      db,
+      context
+    )
   }
   LazyColumn(
     state = listState,
@@ -61,7 +55,10 @@ fun LazyCourseList(
       .fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    itemsIndexed(courseList.filter { course -> course.title.contains(searchBarVal) }) { _, item ->
+    itemsIndexed(
+      items = semesterViewModel.courseList.filter { course -> course.title.contains(searchBarVal) },
+      key = { _, item -> item.id }
+    ) { _, item ->
       ElevatedCard(
         elevation = CardDefaults.cardElevation(
           defaultElevation = 4.dp

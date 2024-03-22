@@ -14,17 +14,20 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
 import com.mtucoursesmobile.michigantechcourses.components.CourseView
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesConverter
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
+import com.mtucoursesmobile.michigantechcourses.viewModels.currentSemesterViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -86,10 +89,5 @@ class MainActivity : ComponentActivity() {
     }
   }
 }
-
-
-
-
-
 
 
