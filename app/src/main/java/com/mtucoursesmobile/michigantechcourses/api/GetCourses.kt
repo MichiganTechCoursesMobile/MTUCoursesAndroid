@@ -3,7 +3,6 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.runtime.LaunchedEffect
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
@@ -56,13 +55,18 @@ fun getSemesterCourses(
   // If course already in DB, return from local storage, otherwise, continue.
   if (findCourse.isNotEmpty()) {
     Log.d(
-      "SQL",
-      "me exist"
+      "SQL DEBUG",
+      "Course already in local DB, using that instead of API call."
     )
     courseList.clear()
     courseList.addAll(findCourse[0].entry!!)
     return
   }
+
+  Log.d(
+    "SQL DEBUG",
+    "Course not found in local DB. Calling API for data."
+  )
 
   // Initiate API Call via retrofit
   val retrofit = Retrofit.Builder()

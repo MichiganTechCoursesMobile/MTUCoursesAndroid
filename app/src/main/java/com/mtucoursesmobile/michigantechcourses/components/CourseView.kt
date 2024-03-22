@@ -1,6 +1,5 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,10 +15,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -41,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.classes.semesterList
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
-import com.mtucoursesmobile.michigantechcourses.viewModels.currentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 
 @OptIn(
   ExperimentalMaterial3Api::class,
@@ -50,7 +48,7 @@ import com.mtucoursesmobile.michigantechcourses.viewModels.currentSemesterViewMo
 @Composable
 fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
   val context = LocalContext.current
-  val semesterViewModel: currentSemesterViewModel = viewModel()
+  val semesterViewModel: CurrentSemesterViewModel = viewModel()
 
   var searchBarValue by rememberSaveable { mutableStateOf("") }
   var expanded by remember { mutableStateOf(false) }
@@ -92,7 +90,7 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
             LaunchedEffect(Unit) {
               focusRequester.requestFocus()
             }
-            TextField(
+            OutlinedTextField(
               value = searchBarValue,
               onValueChange = { searchBarValue = it },
               label = { Text("Course Search") },
@@ -106,9 +104,6 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
                     keyboardController?.show()
                   }
                 },
-              colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = MaterialTheme.colorScheme.background
-              )
             )
           }
         },

@@ -1,6 +1,5 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
-import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,40 +13,23 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
-import com.mtucoursesmobile.michigantechcourses.viewModels.currentSemesterViewModel
-import kotlinx.coroutines.DelicateCoroutinesApi
+import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 
 @Composable
 fun LazyCourseList(
   innerPadding: PaddingValues, db: AppDatabase,
   searchBarVal: String, listState: LazyListState
 ) {
-  val context = LocalContext.current
-  val semesterViewModel: currentSemesterViewModel = viewModel()
-  // Load only on first load?
-  if (!semesterViewModel.alreadyRan.value) {
-    Log.d(
-      "DEBUG",
-      "Init Run"
-    )
-    semesterViewModel.alreadyRan.value = true
-    semesterViewModel.initialCourselist(
-      db,
-      context
-    )
-  }
+  val semesterViewModel: CurrentSemesterViewModel = viewModel()
   LazyColumn(
     state = listState,
     modifier = Modifier
