@@ -1,6 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.toMutableStateList
@@ -44,10 +46,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun FilterModal(ctx: Context) {
   val courseFilterViewModel: CourseFilterViewModel = viewModel()
-  val currentSemesterViewModel: CurrentSemesterViewModel = viewModel()
   BottomSheetDefaults.windowInsets
   if (courseFilterViewModel.showFilter.value) {
-    val scope = rememberCoroutineScope()
+
     ModalBottomSheet(
       sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
       onDismissRequest = {
@@ -67,8 +68,8 @@ fun FilterModal(ctx: Context) {
               Column {
                 courseFilterViewModel.courseTypes.forEach() { it ->
                   CoolCheckBox(
-                    text = it.first,
-                    action = it.second
+                    pair = it,
+                    action = 0
                   )
                 }
               }
@@ -85,8 +86,8 @@ fun FilterModal(ctx: Context) {
               Column {
                 courseFilterViewModel.courseLevels.forEach() { it ->
                   CoolCheckBox(
-                    text = it.first,
-                    action = it.second
+                    pair = it,
+                    action = 1
                   )
                 }
               }
@@ -98,8 +99,8 @@ fun FilterModal(ctx: Context) {
               Column {
                 courseFilterViewModel.courseCredits.forEach() { it ->
                   CoolCheckBox(
-                    text = it.first,
-                    action = it.second
+                    pair = it,
+                    action = 2
                   )
                 }
               }
@@ -111,8 +112,8 @@ fun FilterModal(ctx: Context) {
               Column {
                 courseFilterViewModel.otherCourseFilters.forEach() { it ->
                   CoolCheckBox(
-                    text = it.first,
-                    action = it.second
+                    pair = it,
+                    action = 3
                   )
                 }
               }
@@ -126,15 +127,40 @@ fun FilterModal(ctx: Context) {
 }
 
 @Composable
-fun CoolCheckBox(text: String, action: MutableState<Boolean>) {
+fun CoolCheckBox(pair: Pair<String, MutableState<Boolean>>, action: Number) {
+  val scope = rememberCoroutineScope()
+  val courseFilterViewModel: CourseFilterViewModel = viewModel()
+  val (checked, onCheckChange) = remember {
+    mutableStateOf(pair.second.value)
+  }
   Row(
     Modifier
       .fillMaxWidth()
       .height(56.dp)
       .toggleable(
-        value = action.value,
+        value = checked,
         onValueChange = {
-          action.value = (!action.value)
+          pair.second.value = !checked
+          onCheckChange(!checked)
+          scope.launch {
+            when (action) {
+              0 -> {
+                courseFilterViewModel.toggleType(pair.first)
+              }
+
+              1 -> {
+                courseFilterViewModel.toggleLevel(pair.first)
+              }
+
+              2 -> {
+                courseFilterViewModel.toggleCredit(pair.first)
+              }
+
+              3 -> {
+                courseFilterViewModel.toggleOther(pair.first)
+              }
+            }
+          }
         },
         role = Role.Checkbox
       )
@@ -142,12 +168,12 @@ fun CoolCheckBox(text: String, action: MutableState<Boolean>) {
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Checkbox(
-      checked = action.value,
+      checked = checked,
       onCheckedChange = null,
       modifier = Modifier.padding(start = 32.dp)
     )
     Text(
-      text = text,
+      text = pair.first,
       style = MaterialTheme.typography.bodyLarge,
       modifier = Modifier.padding(start = 16.dp)
     )

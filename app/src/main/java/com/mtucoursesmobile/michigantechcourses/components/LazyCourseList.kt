@@ -15,6 +15,8 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -23,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
 import kotlin.random.Random
@@ -42,32 +45,38 @@ fun LazyCourseList(
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     itemsIndexed(
-      items = semesterViewModel.courseList.filter { course ->
-        (course.subject.uppercase() in (courseFilterViewModel.courseTypes.filter { it -> it.second.value }
-          .map { it.first }.ifEmpty { courseFilterViewModel.courseTypes.map { it.first } }).filter {
-            (course.crse.first()
-              .toString() in (courseFilterViewModel.courseLevels.filter { it -> it.second.value }
-              .map { it.first.first().toString() }
-              .ifEmpty {
-                courseFilterViewModel.courseLevels.map {
-                  it.first.first().toString()
-                }
-              }).filter {
-                (course.maxCredits.toString().first()
-                  .toString() in (courseFilterViewModel.courseCredits.filter { it -> it.second.value }
-                  .map { it.first.first().toString() }
-                  .ifEmpty {
-                    (1..100).map { it.toString() }
-                  }))
-              })
-          }.filter { course.title.contains(courseFilterViewModel.searchBarValue.value) })
+      items =
+      if (courseFilterViewModel.typeFilter.isEmpty() && courseFilterViewModel.levelFilter.isEmpty() && courseFilterViewModel.creditFilter.isEmpty() && courseFilterViewModel.otherFilter.isEmpty()) {
+        semesterViewModel.courseList.filter { course ->
+          course.title.contains(courseFilterViewModel.searchBarValue.value)
+        }
+      } else {
+        val courses = semesterViewModel.courseList.toMutableList()
+        if (courseFilterViewModel.typeFilter.isNotEmpty()) {
+          for (i in semesterViewModel.courseList.filter { course -> course.subject !in courseFilterViewModel.typeFilter }) {
+            courses.remove(i)
+          }
+        }
+        if (courseFilterViewModel.levelFilter.isNotEmpty()) {
+          for (i in semesterViewModel.courseList.filter { course ->
+            course.crse.first().toString() !in courseFilterViewModel.levelFilter
+          }) {
+            courses.remove(i)
+          }
+        }
+        if (courseFilterViewModel.creditFilter.isNotEmpty()) {
+          for (i in semesterViewModel.courseList.filter { course ->
+            course.maxCredits.toString() !in courseFilterViewModel.creditFilter
+          }) {
+            courses.remove(i)
+          }
+        }
+        courses.filter { course ->
+          course.title.contains(courseFilterViewModel.searchBarValue.value)
+        }
       },
       key = { _, item -> item.id }
     ) { _, item ->
-      Log.d(
-        "DEBUG1",
-        item.minCredits.toString()
-      )
       ElevatedCard(
         elevation = CardDefaults.cardElevation(
           defaultElevation = 4.dp
@@ -101,3 +110,7 @@ fun LazyCourseList(
     }
   }
 }
+
+fun List<Any>?.filterQueryText(queryText: String?) = this?.filter {
+  queryText.equals(it.toString())
+}?.run { ifEmpty { this@filterQueryText } }.orEmpty()
