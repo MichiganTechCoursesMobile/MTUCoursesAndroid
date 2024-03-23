@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -21,16 +23,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.SearchBarViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
+import kotlin.random.Random
 
 @Composable
 fun LazyCourseList(
   innerPadding: PaddingValues, listState: LazyListState
 ) {
   val semesterViewModel: CurrentSemesterViewModel = viewModel()
-  val searchBarViewModel: SearchBarViewModel = viewModel()
+  val courseFilterViewModel: CourseFilterViewModel = viewModel()
+
   LazyColumn(
     state = listState,
     modifier = Modifier
@@ -39,9 +42,32 @@ fun LazyCourseList(
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     itemsIndexed(
-      items = semesterViewModel.courseList.filter { course -> course.title.contains(searchBarViewModel.searchBarValue.value) },
+      items = semesterViewModel.courseList.filter { course ->
+        (course.subject.uppercase() in (courseFilterViewModel.courseTypes.filter { it -> it.second.value }
+          .map { it.first }.ifEmpty { courseFilterViewModel.courseTypes.map { it.first } }).filter {
+            (course.crse.first()
+              .toString() in (courseFilterViewModel.courseLevels.filter { it -> it.second.value }
+              .map { it.first.first().toString() }
+              .ifEmpty {
+                courseFilterViewModel.courseLevels.map {
+                  it.first.first().toString()
+                }
+              }).filter {
+                (course.maxCredits.toString().first()
+                  .toString() in (courseFilterViewModel.courseCredits.filter { it -> it.second.value }
+                  .map { it.first.first().toString() }
+                  .ifEmpty {
+                    (1..100).map { it.toString() }
+                  }))
+              })
+          }.filter { course.title.contains(courseFilterViewModel.searchBarValue.value) })
+      },
       key = { _, item -> item.id }
     ) { _, item ->
+      Log.d(
+        "DEBUG1",
+        item.minCredits.toString()
+      )
       ElevatedCard(
         elevation = CardDefaults.cardElevation(
           defaultElevation = 4.dp
@@ -63,7 +89,7 @@ fun LazyCourseList(
             ),
           fontWeight = FontWeight.Bold,
           fontSize = 20.sp,
-          textAlign = TextAlign.Center,
+          textAlign = TextAlign.Left,
         )
         Text(
           text = if (item.description != null) item.description else "¯\\_(ツ)_/¯",

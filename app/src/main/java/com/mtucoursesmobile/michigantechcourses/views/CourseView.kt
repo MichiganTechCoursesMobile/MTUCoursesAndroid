@@ -2,14 +2,10 @@ package com.mtucoursesmobile.michigantechcourses.views
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenu
@@ -19,35 +15,28 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.classes.semesterList
 import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
+import com.mtucoursesmobile.michigantechcourses.components.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.SearchBarViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -57,7 +46,7 @@ import kotlinx.coroutines.launch
 fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
   val context = LocalContext.current
   val semesterViewModel: CurrentSemesterViewModel = viewModel()
-  val searchBarViewModel: SearchBarViewModel = viewModel()
+  val courseFilterViewModel: CourseFilterViewModel = viewModel()
   val scope = rememberCoroutineScope()
   var expanded by remember { mutableStateOf(false) }
   val listState = rememberLazyListState()
@@ -113,11 +102,11 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
             Text(text = "Courses for ${semesterText.value}")
           }
           ExpandableSearchView(
-            searchDisplay = searchBarViewModel.searchBarValue.value,
-            onSearchDisplayChanged = { searchBarViewModel.searchBarValue.value = it },
+            searchDisplay = courseFilterViewModel.searchBarValue.value,
+            onSearchDisplayChanged = { courseFilterViewModel.searchBarValue.value = it },
             onSearchDisplayClosed = {
               onSearchExpandedChanged(false)
-              searchBarViewModel.searchBarValue.value = ""
+              courseFilterViewModel.searchBarValue.value = ""
               scope.launch { listState.animateScrollToItem(0) }
             },
             expanded = searching,
@@ -129,7 +118,7 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
     floatingActionButton = {
       ExtendedFloatingActionButton(
         onClick = {
-          /* TODO */
+          courseFilterViewModel.showFilter.value = true
         },
         expanded = expandedFab,
         icon = {
@@ -145,6 +134,9 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
     LazyCourseList(
       innerPadding = innerPadding,
       listState = listState,
+    )
+    FilterModal(
+      ctx = context
     )
   }
 }
