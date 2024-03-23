@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.components
+package com.mtucoursesmobile.michigantechcourses.views
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,6 +43,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.classes.semesterList
+import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
+import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.SearchBarViewModel
@@ -72,10 +76,18 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
         titleContentColor = MaterialTheme.colorScheme.primary
       ),
         actions = {
+          IconButton(onClick = { onSearchExpandedChanged(true) }) {
+            Icon(
+              imageVector = Icons.Outlined.Search,
+              contentDescription = "Search Courses",
+              tint = MaterialTheme.colorScheme.primary,
+            )
+          }
           IconButton(onClick = { expanded = true }) {
             Icon(
               imageVector = Icons.Outlined.DateRange,
-              contentDescription = "Localized description"
+              contentDescription = "Change Semester",
+              tint = MaterialTheme.colorScheme.primary,
             )
           }
           DropdownMenu(
@@ -117,16 +129,16 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
     floatingActionButton = {
       ExtendedFloatingActionButton(
         onClick = {
-          onSearchExpandedChanged(true)
+          /* TODO */
         },
         expanded = expandedFab,
         icon = {
           Icon(
-            Icons.Filled.Search,
-            "Search Button"
+            Icons.Filled.FilterList,
+            "Filter Button"
           )
         },
-        text = { Text(text = "Search") },
+        text = { Text(text = "Filter") },
       )
 
     }) { innerPadding ->

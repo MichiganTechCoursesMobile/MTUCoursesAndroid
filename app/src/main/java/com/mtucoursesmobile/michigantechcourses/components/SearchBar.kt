@@ -60,15 +60,6 @@ fun ExpandableSearchView(
 }
 
 @Composable
-fun SearchIcon(iconTint: Color) {
-  Icon(
-    imageVector = Icons.Outlined.Search,
-    contentDescription = "search icon",
-    tint = iconTint
-  )
-}
-
-@Composable
 fun ExpandedSearchView(
   searchDisplay: String,
   onSearchDisplayChanged: (String) -> Unit,
@@ -115,9 +106,6 @@ fun ExpandedSearchView(
       onValueChange = {
         textFieldValue = it
         onSearchDisplayChanged(it.text)
-      },
-      trailingIcon = {
-        SearchIcon(iconTint = tint)
       },
       modifier = Modifier
         .fillMaxWidth()

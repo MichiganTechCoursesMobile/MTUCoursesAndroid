@@ -33,11 +33,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
-import com.mtucoursesmobile.michigantechcourses.components.CourseView
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesConverter
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.views.CourseView
+import com.mtucoursesmobile.michigantechcourses.views.MainView
 
 class MainActivity : ComponentActivity() {
 
@@ -56,17 +57,16 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     setContent {
       MichiganTechCoursesTheme {
-        // Initialized the local storage DB
-        val db = Room.databaseBuilder(
-          LocalContext.current,
-          AppDatabase::class.java,
-          "mtucourses-db"
-        ).addTypeConverter(MTUCoursesConverter()).build()
-        var selectedItem by remember {
-          mutableIntStateOf(0)
-        }
         val context = LocalContext.current
         val semesterViewModel: CurrentSemesterViewModel = viewModel()
+        // Initialized the local storage DB
+        val db = remember {
+          Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "mtucourses-db"
+          ).addTypeConverter(MTUCoursesConverter()).build()
+        }
         LaunchedEffect(Unit) {
           Log.d(
             "DEBUG",
@@ -77,48 +77,7 @@ class MainActivity : ComponentActivity() {
             context
           )
         }
-        val items = listOf(
-          Pair(
-            "Courses",
-            Icons.Outlined.School,
-          ),
-          Pair(
-            "Basket",
-            Icons.Outlined.ShoppingBasket,
-          ),
-          Pair(
-            "Settings",
-            Icons.Outlined.Settings,
-          )
-        )
-        Scaffold(
-          contentWindowInsets = WindowInsets(0.dp),
-          bottomBar = {
-            NavigationBar {
-              items.forEachIndexed { index, item ->
-                NavigationBarItem(
-                  label = { Text(text = item.first) },
-                  selected = selectedItem == index,
-                  onClick = { selectedItem = index },
-                  icon = {
-                    Icon(
-                      imageVector = item.second,
-                      contentDescription = item.first
-                    )
-                  },
-                  alwaysShowLabel = false
-                )
-              }
-            }
-          }) { innerPadding ->
-          when (selectedItem) {
-            0 -> CourseView(
-              db,
-              innerPadding
-            )
-          }
-
-        }
+        MainView(db)
       }
     }
   }
