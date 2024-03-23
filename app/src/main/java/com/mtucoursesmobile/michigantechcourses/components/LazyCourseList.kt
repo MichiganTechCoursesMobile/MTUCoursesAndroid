@@ -23,13 +23,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.SearchBarViewModel
 
 @Composable
 fun LazyCourseList(
-  innerPadding: PaddingValues, db: AppDatabase,
-  searchBarVal: String, listState: LazyListState
+  innerPadding: PaddingValues, listState: LazyListState
 ) {
   val semesterViewModel: CurrentSemesterViewModel = viewModel()
+  val searchBarViewModel: SearchBarViewModel = viewModel()
   LazyColumn(
     state = listState,
     modifier = Modifier
@@ -38,7 +39,7 @@ fun LazyCourseList(
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     itemsIndexed(
-      items = semesterViewModel.courseList.filter { course -> course.title.contains(searchBarVal) },
+      items = semesterViewModel.courseList.filter { course -> course.title.contains(searchBarViewModel.searchBarValue.value) },
       key = { _, item -> item.id }
     ) { _, item ->
       ElevatedCard(

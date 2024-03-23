@@ -79,7 +79,6 @@ fun getSemesterCourses(
     semester,
     year
   )
-
   // Get Data from API
   courseCall!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
     override fun onResponse(
@@ -101,6 +100,7 @@ fun getSemesterCourses(
         if (courseList.isEmpty()) {
           throw NoSuchElementException()
         }
+
         GlobalScope.launch(Dispatchers.Default) {
           courseDao.insertCourseEntry(
             MTUCoursesEntry(
@@ -110,18 +110,22 @@ fun getSemesterCourses(
             )
           )
         }
-
         return
       }
     }
 
     // If error occurs
     override fun onFailure(call: Call<ArrayList<MTUCourses>?>, t: Throwable) {
+      Log.d(
+        "DEBUG",
+        t.cause.toString()
+      );
       Toast.makeText(
         ctx,
         "Failed to get data..",
         Toast.LENGTH_SHORT
       ).show()
+
     }
   })
 }

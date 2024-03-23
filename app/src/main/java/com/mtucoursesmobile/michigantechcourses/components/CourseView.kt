@@ -1,12 +1,15 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,7 +29,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -40,92 +43,81 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.classes.semesterList
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.SearchBarViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(
   ExperimentalMaterial3Api::class,
-  ExperimentalComposeUiApi::class
 )
 @Composable
 fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
   val context = LocalContext.current
   val semesterViewModel: CurrentSemesterViewModel = viewModel()
-
-  var searchBarValue by rememberSaveable { mutableStateOf("") }
+  val searchBarViewModel: SearchBarViewModel = viewModel()
+  val scope = rememberCoroutineScope()
   var expanded by remember { mutableStateOf(false) }
-  var searching by remember { mutableStateOf(false) }
   val listState = rememberLazyListState()
   val expandedFab by remember {
     derivedStateOf { listState.firstVisibleItemIndex == 0 }
   }
-  val focusRequester = remember { FocusRequester() }
-  val keyboardController = LocalSoftwareKeyboardController.current
+  val (searching, onSearchExpandedChanged) = remember {
+    mutableStateOf(false)
+  }
+  val semesterText = remember { mutableStateOf(semesterViewModel.currentSemester.readable) }
   Scaffold(modifier = Modifier.padding(innerPadding),
+    contentWindowInsets = WindowInsets(0.dp),
     topBar = {
       TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
         containerColor = if (expandedFab) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer,
         titleContentColor = MaterialTheme.colorScheme.primary
       ),
-        title = {
-          if (!searching) {
-            OutlinedButton(onClick = { expanded = true }) {
-              Text(semesterViewModel.currentSemester.readable)
-            }
-            DropdownMenu(
-              expanded = expanded,
-              onDismissRequest = { expanded = false }) {
-              for (i in semesterList) {
-                DropdownMenuItem(
-                  text = { Text(i.readable) },
-                  onClick = {
-                    semesterViewModel.setSemester(
-                      i,
-                      db,
-                      context
-                    )
-                    expanded = false
-                  })
-              }
-            }
-          } else {
-            LaunchedEffect(Unit) {
-              focusRequester.requestFocus()
-            }
-            OutlinedTextField(
-              value = searchBarValue,
-              onValueChange = { searchBarValue = it },
-              label = { Text("Course Search") },
-              singleLine = true,
-              modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 16.dp)
-                .focusRequester(focusRequester)
-                .onFocusChanged {
-                  if (it.isFocused) {
-                    keyboardController?.show()
-                  }
-                },
+        actions = {
+          IconButton(onClick = { expanded = true }) {
+            Icon(
+              imageVector = Icons.Outlined.DateRange,
+              contentDescription = "Localized description"
             )
           }
-        },
-        navigationIcon = {
-          if (searching) {
-            IconButton(onClick = {
-              searching = false
-              searchBarValue = ""
-            }) {
-              Icon(
-                imageVector = Icons.Filled.ArrowBack,
-                contentDescription = "Back"
-              )
+          DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }) {
+            for (i in semesterList) {
+              DropdownMenuItem(
+                text = { Text(i.readable) },
+                onClick = {
+                  semesterViewModel.setSemester(
+                    i,
+                    db,
+                    context
+                  )
+                  semesterText.value = i.readable
+                  expanded = false
+                })
             }
           }
+        },
+        title = {
+          if (!searching) {
+            Text(text = "Courses for ${semesterText.value}")
+          }
+          ExpandableSearchView(
+            searchDisplay = searchBarViewModel.searchBarValue.value,
+            onSearchDisplayChanged = { searchBarViewModel.searchBarValue.value = it },
+            onSearchDisplayClosed = {
+              onSearchExpandedChanged(false)
+              searchBarViewModel.searchBarValue.value = ""
+              scope.launch { listState.animateScrollToItem(0) }
+            },
+            expanded = searching,
+            onExpandedChanged = onSearchExpandedChanged
+          )
         }
       )
     },
     floatingActionButton = {
       ExtendedFloatingActionButton(
         onClick = {
-          searching = true
+          onSearchExpandedChanged(true)
         },
         expanded = expandedFab,
         icon = {
@@ -140,8 +132,6 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
     }) { innerPadding ->
     LazyCourseList(
       innerPadding = innerPadding,
-      db = db,
-      searchBarVal = searchBarValue,
       listState = listState,
     )
   }
