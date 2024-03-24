@@ -5,3 +5,8 @@ data class MTUCourses(
   val title: String, val description: String, val updatedAt: String, val deletedAt: String,
   val prereqs: String, val offered: Array<String>, val minCredits: Double, val maxCredits: Double
 )
+
+data class MTUCourseSectionBundle(
+  val course: MTUCourses,
+  val sections: List<MTUSections>
+)

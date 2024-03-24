@@ -12,21 +12,22 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 
 
 @ProvidedTypeConverter
 class MTUCoursesConverter {
   @TypeConverter
-  fun StringToMTUCourses(string: String?): MutableList<MTUCourses>? {
+  fun StringToMTUCourses(string: String?): MTUCourseSectionBundle {
     return Gson().fromJson(
       string,
-      object : TypeToken<MutableList<MTUCourses?>?>() {}.type
+      object : TypeToken<MTUCourseSectionBundle?>() {}.type
     )
   }
 
   @TypeConverter
-  fun MTUCoursesToString(data: MutableList<MTUCourses>?): String? {
+  fun MTUCoursesToString(data: MTUCourseSectionBundle): String? {
     return Gson().toJson(data)
   }
 }
@@ -43,12 +44,13 @@ abstract class AppDatabase : RoomDatabase() {
 
 @Entity(
   tableName = "mtucourses",
-  primaryKeys = ["semester", "year"]
+  primaryKeys = ["semester", "year", "courseId"]
 )
 data class MTUCoursesEntry(
   val semester: String,
   val year: String,
-  val entry: MutableList<MTUCourses>?
+  val courseId: String,
+  val entry: MTUCourseSectionBundle
 )
 
 @Dao

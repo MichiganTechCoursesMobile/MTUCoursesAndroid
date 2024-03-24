@@ -1,5 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses
 
+import android.annotation.SuppressLint
+import android.database.CursorWindow
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -17,6 +19,8 @@ import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesConverter
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 import com.mtucoursesmobile.michigantechcourses.views.MainView
+import java.lang.reflect.Field
+
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +35,17 @@ class MainActivity : ComponentActivity() {
       )
     )
     super.onCreate(savedInstanceState)
+//    try {
+//      @SuppressLint("PrivateApi") val field: Field =
+//        CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
+//      field.setAccessible(true)
+//      field.set(
+//        null,
+//        100 * 1024 * 1024
+//      ) //the 100MB is the new size
+//    } catch (e: Exception) {
+//      e.printStackTrace()
+//    }
     setContent {
       MichiganTechCoursesTheme {
         val context = LocalContext.current

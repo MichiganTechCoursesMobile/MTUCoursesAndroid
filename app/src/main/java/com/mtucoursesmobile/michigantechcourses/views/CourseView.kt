@@ -1,13 +1,18 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -86,16 +92,19 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
               DropdownMenuItem(
                 text = { Text(i.readable) },
                 onClick = {
-                  semesterViewModel.setSemester(
-                    i,
-                    db,
-                    context
-                  )
-                  semesterText.value = i.readable
-                  expanded = false
-                  scope.launch {
-                    listState.animateScrollToItem(0)
+                  if (i.readable != semesterViewModel.currentSemester.readable) {
+                    semesterViewModel.courseList.clear()
+                    semesterViewModel.setSemester(
+                      i,
+                      db,
+                      context
+                    )
+                    semesterText.value = i.readable
+                    scope.launch {
+                      listState.animateScrollToItem(0)
+                    }
                   }
+                  expanded = false
                 })
             }
           }
@@ -134,10 +143,28 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
       )
 
     }) { innerPadding ->
-    LazyCourseList(
-      innerPadding = innerPadding,
-      listState = listState,
-    )
+    if (semesterViewModel.courseList.toMutableList().isEmpty()) {
+      Column(
+        modifier = Modifier
+          .padding(innerPadding)
+          .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        CircularProgressIndicator(
+          modifier = Modifier
+            .width(64.dp),
+          color = MaterialTheme.colorScheme.secondary,
+          trackColor = MaterialTheme.colorScheme.surfaceVariant,
+        )
+      }
+    } else {
+      LazyCourseList(
+        innerPadding = innerPadding,
+        listState = listState,
+      )
+    }
+
     FilterModal(
       listState = listState
     )

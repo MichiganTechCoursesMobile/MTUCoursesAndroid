@@ -1,17 +1,21 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
 import android.util.Log
+import android.widget.Spinner
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFromBaseline
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,7 +54,7 @@ fun LazyCourseList(
       items =
       if (courseFilterViewModel.typeFilter.isEmpty() && courseFilterViewModel.creditFilter.value == 1f..4f && courseFilterViewModel.creditFilter.value == 0f..4f && courseFilterViewModel.otherFilter.isEmpty()) {
         courses.value.filter { course ->
-          course.title.contains(courseFilterViewModel.searchBarValue.value)
+          course.entry.course.title.contains(courseFilterViewModel.searchBarValue.value)
         }
       } else {
         courses.value.clear()
@@ -58,7 +62,7 @@ fun LazyCourseList(
 
         //Type
         if (courseFilterViewModel.typeFilter.isNotEmpty()) {
-          for (i in semesterViewModel.courseList.filter { course -> course.subject !in courseFilterViewModel.typeFilter }) {
+          for (i in semesterViewModel.courseList.filter { course -> course.entry.course.subject !in courseFilterViewModel.typeFilter }) {
             courses.value.remove(i)
           }
         }
@@ -68,7 +72,7 @@ fun LazyCourseList(
           when (courseFilterViewModel.levelFilter.value) {
             1f..1f -> {
               for (i in semesterViewModel.courseList.filter { course ->
-                (!(course.crse.first().toString().toFloat() <= 1.0))
+                (!(course.entry.course.crse.first().toString().toFloat() <= 1.0))
               }) {
                 courses.value.remove(i)
               }
@@ -76,7 +80,7 @@ fun LazyCourseList(
 
             4f..4f -> {
               for (i in semesterViewModel.courseList.filter { course ->
-                (!(course.crse.first().toString().toFloat() >= 4.0))
+                (!(course.entry.course.crse.first().toString().toFloat() >= 4.0))
               }) {
                 courses.value.remove(i)
               }
@@ -85,7 +89,7 @@ fun LazyCourseList(
             else -> {
               for (i in semesterViewModel.courseList.filter { course ->
                 !courseFilterViewModel.levelFilter.value.contains(
-                  course.crse.first().toString().toFloat()
+                  course.entry.course.crse.first().toString().toFloat()
                 )
               }) {
                 courses.value.remove(i)
@@ -97,20 +101,20 @@ fun LazyCourseList(
         if (courseFilterViewModel.creditFilter.value != 0f..4f) {
           when (courseFilterViewModel.creditFilter.value) {
             0f..0f -> {
-              for (i in semesterViewModel.courseList.filter { course -> (!(course.maxCredits <= 1.0)) }) {
+              for (i in semesterViewModel.courseList.filter { course -> (!(course.entry.course.maxCredits <= 1.0)) }) {
                 courses.value.remove(i)
               }
             }
 
             4f..4f -> {
-              for (i in semesterViewModel.courseList.filter { course -> (!(course.maxCredits >= 4.0)) }) {
+              for (i in semesterViewModel.courseList.filter { course -> (!(course.entry.course.maxCredits >= 4.0)) }) {
                 courses.value.remove(i)
               }
             }
 
             else -> {
               for (i in semesterViewModel.courseList.filter { course ->
-                (!courseFilterViewModel.creditFilter.value.contains(course.maxCredits) || !courseFilterViewModel.creditFilter.value.contains(course.minCredits))
+                (!courseFilterViewModel.creditFilter.value.contains(course.entry.course.maxCredits) || !courseFilterViewModel.creditFilter.value.contains(course.entry.course.minCredits))
               }) {
                 courses.value.remove(i)
               }
@@ -118,10 +122,10 @@ fun LazyCourseList(
           }
         }
         courses.value.filter { course ->
-          course.title.contains(courseFilterViewModel.searchBarValue.value)
+          course.entry.course.title.contains(courseFilterViewModel.searchBarValue.value)
         }
       },
-      key = { _, item -> item.id }
+      key = { _, item -> item.entry.course.id }
     ) { _, item ->
       ElevatedCard(
         elevation = CardDefaults.cardElevation(
@@ -133,7 +137,7 @@ fun LazyCourseList(
           .padding(10.dp),
       ) {
         Text(
-          text = "${item.subject}${item.crse} - ${item.title} (${item.minCredits} - ${item.maxCredits})",
+          text = "${item.entry.course.subject}${item.entry.course.crse} - ${item.entry.course.title} - (${item.entry.sections.size} section${if (item.entry.sections.size != 1) "s" else ""})",
           modifier = Modifier
             .padding(
               horizontal = 10.dp
@@ -147,7 +151,7 @@ fun LazyCourseList(
           textAlign = TextAlign.Left,
         )
         Text(
-          text = if (item.description != null) item.description else "¯\\_(ツ)_/¯",
+          text = if (item.entry.course.description != null) item.entry.course.description else "¯\\_(ツ)_/¯",
           modifier = Modifier.padding(horizontal = 10.dp),
           maxLines = 4,
           overflow = TextOverflow.Ellipsis

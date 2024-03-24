@@ -6,8 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mtucoursesmobile.michigantechcourses.api.getSemesterCourses
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
+import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -18,7 +20,7 @@ class CurrentSemesterViewModel : ViewModel() {
       "2024",
       "FALL"
     )
-  val courseList = mutableStateListOf<MTUCourses>()
+  val courseList = mutableStateListOf<MTUCoursesEntry>()
 
   fun setSemester(newSemester: CurrentSemester, db: AppDatabase, context: Context) {
     currentSemester = newSemester

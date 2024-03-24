@@ -3,7 +3,9 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
+import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -27,14 +29,20 @@ interface RetroFitAPI {
   fun getCourseData(
     @Query("semester") semester: String, @Query("year") year: String
   ): Call<ArrayList<MTUCourses>>
+
+  @GET("sections")
+  fun getSectionData(
+    @Query("semester") semester: String, @Query("year") year: String
+  ): Call<ArrayList<MTUSections>>
 }
 
 @OptIn(DelicateCoroutinesApi::class)
 fun getSemesterCourses(
-  courseList: MutableList<MTUCourses>, ctx: Context, semester: String, year: String, db: AppDatabase
+  courseList: MutableList<MTUCoursesEntry>, ctx: Context, semester: String, year: String,
+  db: AppDatabase
 ) {
-  // 10 MB of Cache for API GET requests
-  val cacheSize = 10 * 1024 * 1024
+  // 100 MB of Cache for API GET requests
+  val cacheSize = 100 * 1024 * 1024
   val cache = Cache(
     ctx.cacheDir,
     cacheSize.toLong()
@@ -59,7 +67,7 @@ fun getSemesterCourses(
       "Course already in local DB, using that instead of API call."
     )
     courseList.clear()
-    courseList.addAll(findCourse[0].entry!!)
+    courseList.addAll(findCourse)
     return
   }
 
@@ -79,6 +87,11 @@ fun getSemesterCourses(
     semester,
     year
   )
+
+  val sectionCall: Call<ArrayList<MTUSections>> = retrofitAPI.getSectionData(
+    semester,
+    year
+  )
   // Get Data from API
   courseCall!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
     override fun onResponse(
@@ -86,30 +99,59 @@ fun getSemesterCourses(
       response: Response<ArrayList<MTUCourses>?>
     ) {
       if (response.isSuccessful) {
-        var lst: ArrayList<MTUCourses> = ArrayList()
 
-        lst = response.body()!!
+        var courseData: ArrayList<MTUCourses> = response.body()!!
 
-        if (courseList.size != 0) {
-          courseList.clear()
-        }
+        sectionCall!!.enqueue(object : Callback<ArrayList<MTUSections>?> {
+          override fun onResponse(
+            call: Call<ArrayList<MTUSections>?>, response: Response<ArrayList<MTUSections>?>
+          ) {
+            if (response.isSuccessful) {
+              var sectionData: ArrayList<MTUSections> = response.body()!!
 
-        for (i in 0 until lst.size) {
-          courseList.add(lst[i])
-        }
-        if (courseList.isEmpty()) {
-          throw NoSuchElementException()
-        }
+              if (courseList.size != 0) {
+                courseList.clear()
+              }
 
-        GlobalScope.launch(Dispatchers.Default) {
-          courseDao.insertCourseEntry(
-            MTUCoursesEntry(
-              semester,
-              year,
-              courseList
-            )
-          )
-        }
+              for (entry in courseData) {
+                var courseBundle = MTUCourseSectionBundle(
+                  entry,
+                  sectionData.filter { section -> section.courseId == entry.id })
+                courseList.add(
+                  MTUCoursesEntry(
+                    semester,
+                    year,
+                    courseBundle.course.id,
+                    courseBundle
+                  )
+                )
+              }
+              if (courseList.isEmpty()) {
+                throw NoSuchElementException()
+              }
+
+              GlobalScope.launch(Dispatchers.Default) {
+                for (i in courseList) {
+                  courseDao.insertCourseEntry(
+                    i
+                  )
+                }
+              }
+            }
+          }
+
+          override fun onFailure(call: Call<ArrayList<MTUSections>?>, t: Throwable) {
+            Log.d(
+              "DEBUG",
+              t.cause.toString()
+            );
+            Toast.makeText(
+              ctx,
+              "Failed to get data..",
+              Toast.LENGTH_SHORT
+            ).show()
+          }
+        })
         return
       }
     }
