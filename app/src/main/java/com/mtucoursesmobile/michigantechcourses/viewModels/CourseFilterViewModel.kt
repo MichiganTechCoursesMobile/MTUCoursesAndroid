@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
+import android.util.Range
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -10,8 +11,9 @@ class CourseFilterViewModel : ViewModel() {
   var searchBarValue = mutableStateOf("")
   var showFilter = mutableStateOf(false)
   val typeFilter = mutableStateListOf<String>()
-  val levelFilter = mutableStateListOf<String>()
-  val creditFilter = mutableStateListOf<String>()
+  val levelFilter = mutableStateOf(1f..4f)
+  val creditFilter = mutableStateOf(0f..4f)
+
   val otherFilter = mutableStateListOf<String>()
 
   fun toggleType(value: String) {
@@ -26,28 +28,12 @@ class CourseFilterViewModel : ViewModel() {
     typeFilter.add(value)
   }
 
-  fun toggleLevel(value: String) {
-    if (levelFilter.isEmpty()) {
-      levelFilter.add(value.first().toString())
-      return
-    }
-    if (levelFilter.contains(value.first().toString())) {
-      levelFilter.remove(value.first().toString())
-      return
-    }
-    levelFilter.add(value.first().toString())
+  fun toggleLevel(value: ClosedFloatingPointRange<Float>) {
+    levelFilter.value = value
   }
 
-  fun toggleCredit(value: String) {
-    if (creditFilter.isEmpty()) {
-      creditFilter.add(value)
-      return
-    }
-    if (creditFilter.contains(value)) {
-      creditFilter.remove(value)
-      return
-    }
-    creditFilter.add(value)
+  fun toggleCredit(value: ClosedFloatingPointRange<Float>) {
+    creditFilter.value = value
   }
 
   fun toggleOther(value: String) {

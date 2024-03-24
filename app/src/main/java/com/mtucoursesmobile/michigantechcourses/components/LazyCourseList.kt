@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +37,7 @@ fun LazyCourseList(
 ) {
   val semesterViewModel: CurrentSemesterViewModel = viewModel()
   val courseFilterViewModel: CourseFilterViewModel = viewModel()
+  val courses = remember { mutableStateOf(semesterViewModel.courseList.toMutableList()) }
 
   LazyColumn(
     state = listState,
@@ -46,32 +48,76 @@ fun LazyCourseList(
   ) {
     itemsIndexed(
       items =
-      if (courseFilterViewModel.typeFilter.isEmpty() && courseFilterViewModel.levelFilter.isEmpty() && courseFilterViewModel.creditFilter.isEmpty() && courseFilterViewModel.otherFilter.isEmpty()) {
-        semesterViewModel.courseList.filter { course ->
+      if (courseFilterViewModel.typeFilter.isEmpty() && courseFilterViewModel.creditFilter.value == 1f..4f && courseFilterViewModel.creditFilter.value == 0f..4f && courseFilterViewModel.otherFilter.isEmpty()) {
+        courses.value.filter { course ->
           course.title.contains(courseFilterViewModel.searchBarValue.value)
         }
       } else {
-        val courses = semesterViewModel.courseList.toMutableList()
+        courses.value.clear()
+        courses.value = semesterViewModel.courseList.toMutableList()
+
+        //Type
         if (courseFilterViewModel.typeFilter.isNotEmpty()) {
           for (i in semesterViewModel.courseList.filter { course -> course.subject !in courseFilterViewModel.typeFilter }) {
-            courses.remove(i)
+            courses.value.remove(i)
           }
         }
-        if (courseFilterViewModel.levelFilter.isNotEmpty()) {
-          for (i in semesterViewModel.courseList.filter { course ->
-            course.crse.first().toString() !in courseFilterViewModel.levelFilter
-          }) {
-            courses.remove(i)
+
+        //Level
+        if (courseFilterViewModel.levelFilter.value != 1f..4f) {
+          when (courseFilterViewModel.levelFilter.value) {
+            1f..1f -> {
+              for (i in semesterViewModel.courseList.filter { course ->
+                (!(course.crse.first().toString().toFloat() <= 1.0))
+              }) {
+                courses.value.remove(i)
+              }
+            }
+
+            4f..4f -> {
+              for (i in semesterViewModel.courseList.filter { course ->
+                (!(course.crse.first().toString().toFloat() >= 4.0))
+              }) {
+                courses.value.remove(i)
+              }
+            }
+
+            else -> {
+              for (i in semesterViewModel.courseList.filter { course ->
+                !courseFilterViewModel.levelFilter.value.contains(
+                  course.crse.first().toString().toFloat()
+                )
+              }) {
+                courses.value.remove(i)
+              }
+            }
           }
         }
-        if (courseFilterViewModel.creditFilter.isNotEmpty()) {
-          for (i in semesterViewModel.courseList.filter { course ->
-            course.maxCredits.toString() !in courseFilterViewModel.creditFilter
-          }) {
-            courses.remove(i)
+        //Credit
+        if (courseFilterViewModel.creditFilter.value != 0f..4f) {
+          when (courseFilterViewModel.creditFilter.value) {
+            0f..0f -> {
+              for (i in semesterViewModel.courseList.filter { course -> (!(course.maxCredits <= 1.0)) }) {
+                courses.value.remove(i)
+              }
+            }
+
+            4f..4f -> {
+              for (i in semesterViewModel.courseList.filter { course -> (!(course.maxCredits >= 4.0)) }) {
+                courses.value.remove(i)
+              }
+            }
+
+            else -> {
+              for (i in semesterViewModel.courseList.filter { course ->
+                (!courseFilterViewModel.creditFilter.value.contains(course.maxCredits) || !courseFilterViewModel.creditFilter.value.contains(course.minCredits))
+              }) {
+                courses.value.remove(i)
+              }
+            }
           }
         }
-        courses.filter { course ->
+        courses.value.filter { course ->
           course.title.contains(courseFilterViewModel.searchBarValue.value)
         }
       },
@@ -87,7 +133,7 @@ fun LazyCourseList(
           .padding(10.dp),
       ) {
         Text(
-          text = "${item.subject}${item.crse} - ${item.title}",
+          text = "${item.subject}${item.crse} - ${item.title} (${item.minCredits} - ${item.maxCredits})",
           modifier = Modifier
             .padding(
               horizontal = 10.dp
@@ -110,7 +156,3 @@ fun LazyCourseList(
     }
   }
 }
-
-fun List<Any>?.filterQueryText(queryText: String?) = this?.filter {
-  queryText.equals(it.toString())
-}?.run { ifEmpty { this@filterQueryText } }.orEmpty()

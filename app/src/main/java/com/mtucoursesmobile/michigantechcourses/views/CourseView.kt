@@ -93,6 +93,9 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
                   )
                   semesterText.value = i.readable
                   expanded = false
+                  scope.launch {
+                    listState.animateScrollToItem(0)
+                  }
                 })
             }
           }
@@ -136,7 +139,7 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
       listState = listState,
     )
     FilterModal(
-      ctx = context
+      listState = listState
     )
   }
 }

@@ -4,11 +4,15 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -16,35 +20,48 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Done
+import androidx.compose.material.icons.outlined.DoneOutline
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(
+  ExperimentalMaterial3Api::class,
+  ExperimentalLayoutApi::class
+)
 @Composable
-fun FilterModal(ctx: Context) {
+fun FilterModal(listState: LazyListState) {
+  val scope = rememberCoroutineScope()
   val courseFilterViewModel: CourseFilterViewModel = viewModel()
   BottomSheetDefaults.windowInsets
   if (courseFilterViewModel.showFilter.value) {
@@ -55,203 +72,201 @@ fun FilterModal(ctx: Context) {
         courseFilterViewModel.showFilter.value = false
       }
     ) {
-      CollapsableList(
-        sections = listOf(
-          CollapsableListSection(
-            {
-              Text(
-                text = "Course Type",
-                style = MaterialTheme.typography.bodyLarge
-              )
-            },
-            rows = listOf {
-              Column {
-                courseFilterViewModel.courseTypes.forEach() { it ->
-                  CoolCheckBox(
-                    pair = it,
-                    action = 0
-                  )
-                }
-              }
-            }
-          ),
-          CollapsableListSection(
-            {
-              Text(
-                text = "Course Level",
-                style = MaterialTheme.typography.bodyLarge
-              )
-            },
-            rows = listOf {
-              Column {
-                courseFilterViewModel.courseLevels.forEach() { it ->
-                  CoolCheckBox(
-                    pair = it,
-                    action = 1
-                  )
-                }
-              }
-            }
-          ),
-          CollapsableListSection(
-            { Text(text = "Course Credits") },
-            rows = listOf {
-              Column {
-                courseFilterViewModel.courseCredits.forEach() { it ->
-                  CoolCheckBox(
-                    pair = it,
-                    action = 2
-                  )
-                }
-              }
-            }
-          ),
-          CollapsableListSection(
-            { Text(text = "Other") },
-            rows = listOf {
-              Column {
-                courseFilterViewModel.otherCourseFilters.forEach() { it ->
-                  CoolCheckBox(
-                    pair = it,
-                    action = 3
-                  )
-                }
-              }
-            }
-          )
-        ),
+      //Type
+      Text(
+        text = "Course Type",
+        style = MaterialTheme.typography.bodyLarge,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier
+          .padding(horizontal = 16.dp)
+          .padding(bottom = 8.dp)
       )
-
-    }
-  }
-}
-
-@Composable
-fun CoolCheckBox(pair: Pair<String, MutableState<Boolean>>, action: Number) {
-  val scope = rememberCoroutineScope()
-  val courseFilterViewModel: CourseFilterViewModel = viewModel()
-  val (checked, onCheckChange) = remember {
-    mutableStateOf(pair.second.value)
-  }
-  Row(
-    Modifier
-      .fillMaxWidth()
-      .height(56.dp)
-      .toggleable(
-        value = checked,
-        onValueChange = {
-          pair.second.value = !checked
-          onCheckChange(!checked)
-          scope.launch {
-            when (action) {
-              0 -> {
-                courseFilterViewModel.toggleType(pair.first)
-              }
-
-              1 -> {
-                courseFilterViewModel.toggleLevel(pair.first)
-              }
-
-              2 -> {
-                courseFilterViewModel.toggleCredit(pair.first)
-              }
-
-              3 -> {
-                courseFilterViewModel.toggleOther(pair.first)
-              }
+      Column {
+        FlowRow(
+          horizontalArrangement = Arrangement.Start,
+          modifier = Modifier
+            .padding(horizontal = 28.dp)
+            .padding(bottom = 8.dp)
+            .fillMaxWidth(1f)
+            .wrapContentHeight(align = Alignment.Top)
+        ) {
+          courseFilterViewModel.courseTypes.forEach() { it ->
+            val (checked, onCheckChange) = remember {
+              mutableStateOf(it.second.value)
             }
+            FilterChip(
+              selected = checked,
+              onClick = {
+                onCheckChange(!checked)
+                it.second.value = !it.second.value
+                scope.launch {
+                  courseFilterViewModel.toggleType(it.first)
+                  listState.animateScrollToItem(0)
+                }
+              },
+              label = { Text(text = it.first) },
+              modifier = Modifier.padding(horizontal = 4.dp),
+              leadingIcon = if (checked) {
+                {
+                  Icon(
+                    imageVector = Icons.Outlined.Done,
+                    contentDescription = "Check Mark",
+                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                  )
+                }
+              } else {
+                null
+              }
+            )
           }
-        },
-        role = Role.Checkbox
-      )
-      .padding(vertical = 16.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Checkbox(
-      checked = checked,
-      onCheckedChange = null,
-      modifier = Modifier.padding(start = 32.dp)
-    )
-    Text(
-      text = pair.first,
-      style = MaterialTheme.typography.bodyLarge,
-      modifier = Modifier.padding(start = 16.dp)
-    )
-  }
-}
+        }
+      }
+      // Level
+      var levelSliderPosition by remember {
+        mutableStateOf(courseFilterViewModel.levelFilter.value)
+      }
+      when (levelSliderPosition.toString()) {
+        "1.0..1.0" -> Text(
+          text = "Course Level: 1000",
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(start = 16.dp)
+        )
 
+        "4.0..4.0" -> Text(
+          text = "Course Level: 4000+",
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(start = 16.dp)
+        )
 
-@Composable
-fun CollapsableList(
-  sections: List<CollapsableListSection>,
-  modifier: Modifier = Modifier.padding(bottom = 40.dp),
-  state: LazyListState = rememberLazyListState(),
-  expandByDefault: Boolean = false
-) {
-  val expandState =
-    remember(sections) { sections.map { expandByDefault }.toMutableStateList() }
-
-  LazyColumn(
-    modifier,
-    state = state
-  ) {
-    sections.forEachIndexed { i, section ->
-      val expand = expandState[i]
-      item(key = "header_$i") {
-        CollapsableListRow(
-          {
-            Row(
-              modifier = Modifier
-                .padding(start = 16.dp)
-                .fillMaxWidth()
-                .height(56.dp)
-                .wrapContentHeight(align = Alignment.CenterVertically)
-            ) {
-              Crossfade(targetState = expandState) { state ->
-                when (state[i]) {
-                  true -> Icon(
-                    imageVector = Icons.Outlined.KeyboardArrowUp,
-                    contentDescription = "Arrow",
-                    modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically)
-                  )
-
-                  false -> Icon(
-                    imageVector = Icons.Outlined.KeyboardArrowDown,
-                    contentDescription = "Arrow",
-                    modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically)
-                  )
-                }
-              }
-
-              section.header()
-            }
-          },
-          Modifier.clickable { expandState[i] = !expand }
+        else -> Text(
+          text = "Course Level: ${
+            levelSliderPosition.toString().first()
+          }000-${
+            levelSliderPosition.toString().substring(
+              5,
+              6
+            )
+          }000${
+            if (levelSliderPosition.toString().substring(
+                5,
+                6
+              ) == "4"
+            ) "+" else ""
+          }",
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(start = 16.dp)
         )
       }
+      RangeSlider(
+        value = levelSliderPosition,
+        onValueChange = { range -> levelSliderPosition = range },
+        steps = 2,
+        valueRange = 1f..4f,
+        onValueChangeFinished = {
+          courseFilterViewModel.toggleLevel(levelSliderPosition)
+          scope.launch {
+            listState.animateScrollToItem(0)
+          }
+        },
+        modifier = Modifier
+          .padding(horizontal = 32.dp)
+          .padding(bottom = 8.dp)
+      )
 
-      items(section.rows) { row ->
-        when (expand) {
-          true -> CollapsableListRow({ row() })
-          false -> {}
+      //Credits
+      var creditSliderPosition by remember {
+        mutableStateOf(courseFilterViewModel.creditFilter.value)
+      }
+      when (creditSliderPosition.toString()) {
+        "0.0..0.0" -> Text(
+          text = "Course Credits: ≤ 1",
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(start = 16.dp)
+        )
+
+        "4.0..4.0" -> Text(
+          text = "Course Credits: ≥ 4",
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(start = 16.dp)
+        )
+
+        else -> Text(
+          text = "Course Credits: ${
+            creditSliderPosition.toString().first()
+          }-${
+            creditSliderPosition.toString().substring(
+              5,
+              6
+            )
+          }",
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(start = 16.dp)
+        )
+      }
+      RangeSlider(
+        value = creditSliderPosition,
+        onValueChange = { range -> creditSliderPosition = range },
+        steps = 3,
+        valueRange = 0f..4f,
+        onValueChangeFinished = {
+          courseFilterViewModel.toggleCredit(creditSliderPosition)
+          scope.launch {
+            listState.animateScrollToItem(0)
+          }
+        },
+        modifier = Modifier
+          .padding(horizontal = 32.dp)
+          .padding(bottom = 8.dp)
+      )
+      //Other
+      Text(
+        text = "Other",
+        style = MaterialTheme.typography.bodyLarge,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier
+          .padding(horizontal = 16.dp)
+          .padding(bottom = 8.dp)
+      )
+      Column {
+        FlowRow(
+          horizontalArrangement = Arrangement.Start,
+          modifier = Modifier
+            .padding(bottom = 60.dp)
+            .padding(horizontal = 28.dp)
+            .fillMaxWidth(1f)
+            .wrapContentHeight(align = Alignment.Top)
+        ) {
+          courseFilterViewModel.otherCourseFilters.forEach() { it ->
+            val (checked, onCheckChange) = remember {
+              mutableStateOf(it.second.value)
+            }
+            FilterChip(
+              selected = checked,
+              onClick = {
+                onCheckChange(!checked)
+                it.second.value = !it.second.value
+                scope.launch {
+                  courseFilterViewModel.toggleOther(it.first)
+                  listState.animateScrollToItem(0)
+                }
+              },
+              label = { Text(text = it.first) },
+              modifier = Modifier.padding(horizontal = 4.dp),
+              leadingIcon = if (checked) {
+                {
+                  Icon(
+                    imageVector = Icons.Outlined.Done,
+                    contentDescription = "Check Mark",
+                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                  )
+                }
+              } else {
+                null
+              }
+            )
+          }
         }
       }
     }
   }
 }
-
-@Composable
-private fun CollapsableListRow(content: @Composable () -> Unit, modifier: Modifier = Modifier) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .then(modifier)
-  ) {
-    content()
-  }
-}
-
-data class CollapsableListSection(
-  val header: @Composable () -> Unit,
-  val rows: List<@Composable () -> Unit>
-)
