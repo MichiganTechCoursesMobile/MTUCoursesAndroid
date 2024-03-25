@@ -1,6 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.api
 
 import android.content.Context
+import android.icu.text.SimpleDateFormat
 import android.util.Log
 import android.widget.Toast
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
@@ -8,6 +9,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
+import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntryDate
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -21,6 +23,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import java.sql.Time
+import java.time.Instant
+import java.time.ZoneId
+import java.util.Calendar
+import java.util.Date
 
 // Define RetroFit API interface
 interface RetroFitAPI {
@@ -55,25 +62,15 @@ fun getSemesterCourses(
   val courseDao = db.courseDao()
 
   // Look for the current semester + year in local storage
-  val findCourse: List<MTUCoursesEntry> = courseDao.getSpecificCourseEntry(
+  val findCourse: List<MTUCoursesEntry> = courseDao.getSemesterEntries(
     semester,
     year
   )
-
-  // If course already in DB, return from local storage, otherwise, continue.
-  if (findCourse.isNotEmpty()) {
-    Log.d(
-      "SQL DEBUG",
-      "Course already in local DB, using that instead of API call."
-    )
-    courseList.clear()
-    courseList.addAll(findCourse)
-    return
-  }
+  val currentDateAndTime = Instant.now()
 
   Log.d(
-    "SQL DEBUG",
-    "Course not found in local DB. Calling API for data."
+    "DEBUG",
+    currentDateAndTime.toString()
   )
 
   // Initiate API Call via retrofit
@@ -100,28 +97,30 @@ fun getSemesterCourses(
     ) {
       if (response.isSuccessful) {
 
-        var courseData: ArrayList<MTUCourses> = response.body()!!
+        val courseData: ArrayList<MTUCourses> = response.body()!!
 
         sectionCall!!.enqueue(object : Callback<ArrayList<MTUSections>?> {
           override fun onResponse(
             call: Call<ArrayList<MTUSections>?>, response: Response<ArrayList<MTUSections>?>
           ) {
             if (response.isSuccessful) {
-              var sectionData: ArrayList<MTUSections> = response.body()!!
+              val sectionData: ArrayList<MTUSections> = response.body()!!
+              val timeGot = Instant.now().toString()
 
               if (courseList.size != 0) {
                 courseList.clear()
               }
 
               for (entry in courseData) {
-                var courseBundle = MTUCourseSectionBundle(
-                  entry,
-                  sectionData.filter { section -> section.courseId == entry.id })
+                val courseBundle = MTUCourseSectionBundle(
+                  mutableListOf(entry),
+                  sectionData.filter { section -> section.courseId == entry.id }.toMutableList()
+                )
                 courseList.add(
                   MTUCoursesEntry(
                     semester,
                     year,
-                    courseBundle.course.id,
+                    courseBundle.course[0].id,
                     courseBundle
                   )
                 )
@@ -131,6 +130,13 @@ fun getSemesterCourses(
               }
 
               GlobalScope.launch(Dispatchers.Default) {
+                courseDao.insertDateEntry(
+                  MTUCoursesEntryDate(
+                    semester,
+                    year,
+                    timeGot
+                  )
+                )
                 for (i in courseList) {
                   courseDao.insertCourseEntry(
                     i
@@ -147,9 +153,24 @@ fun getSemesterCourses(
             );
             Toast.makeText(
               ctx,
-              "Failed to get data..",
+              "Failed to get data attempting to use local DB..",
               Toast.LENGTH_SHORT
             ).show()
+            if (findCourse.isNotEmpty()) {
+              Log.d(
+                "SQL DEBUG",
+                "Course already in local DB, using that instead of API call."
+              )
+              courseList.clear()
+              courseList.addAll(findCourse)
+              return
+            } else {
+              Toast.makeText(
+                ctx,
+                "Local DB empty. Please make sure you have a stable internet connection and try again",
+                Toast.LENGTH_LONG
+              ).show()
+            }
           }
         })
         return
@@ -164,10 +185,24 @@ fun getSemesterCourses(
       );
       Toast.makeText(
         ctx,
-        "Failed to get data..",
+        "Failed to get data attempting to use local DB...",
         Toast.LENGTH_SHORT
       ).show()
-
+      if (findCourse.isNotEmpty()) {
+        Log.d(
+          "SQL DEBUG",
+          "Course already in local DB, using that instead of API call."
+        )
+        courseList.clear()
+        courseList.addAll(findCourse)
+        return
+      } else {
+        Toast.makeText(
+          ctx,
+          "Local DB not initiated, please check internet connection and try again...",
+          Toast.LENGTH_LONG
+        ).show()
+      }
     }
   })
 }

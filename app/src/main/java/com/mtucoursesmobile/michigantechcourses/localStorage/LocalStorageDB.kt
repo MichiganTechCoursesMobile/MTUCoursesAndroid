@@ -34,7 +34,7 @@ class MTUCoursesConverter {
 
 
 @Database(
-  entities = [MTUCoursesEntry::class],
+  entities = [MTUCoursesEntry::class, MTUCoursesEntryDate::class],
   version = 1
 )
 @TypeConverters(MTUCoursesConverter::class)
@@ -53,14 +53,36 @@ data class MTUCoursesEntry(
   val entry: MTUCourseSectionBundle
 )
 
+@Entity(
+  tableName = "mtucoursesDate",
+  primaryKeys = ["semester", "year"]
+)
+data class MTUCoursesEntryDate(
+  val semester: String,
+  val year: String,
+  val lastUpdated: String,
+)
+
 @Dao
 interface CourseDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   fun insertCourseEntry(data: MTUCoursesEntry)
 
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  fun insertDateEntry(data: MTUCoursesEntryDate)
+
   @Query("SELECT * FROM mtucourses")
   fun getAllCourseEntries(): List<MTUCoursesEntry>
 
   @Query("SELECT * FROM mtucourses WHERE semester LIKE :semester AND year LIKE :year")
-  fun getSpecificCourseEntry(semester: String, year: String): List<MTUCoursesEntry>
+  fun getSemesterEntries(semester: String, year: String): List<MTUCoursesEntry>
+
+  @Query("SELECT * FROM mtucourses WHERE semester LIKE :semester AND year LIKE :year AND courseId LIKE :courseId")
+  fun getSpecificCourse(semester: String, year: String, courseId: String): MTUCoursesEntry
+
+  @Query("SELECT * FROM mtucoursesDate WHERE semester LIKE :semester AND year LIKE :year")
+  fun getSemesterDate(semester: String, year: String): MTUCoursesEntryDate
+
+  @Query("DELETE FROM mtucourses WHERE semester LIKE :semester AND year LIKE :year AND courseId LIKE :courseId")
+  fun deleteCourseEntry(semester: String, year: String, courseId: String)
 }

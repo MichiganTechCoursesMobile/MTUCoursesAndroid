@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mtucoursesmobile.michigantechcourses.api.getSemesterCourses
+import com.mtucoursesmobile.michigantechcourses.api.updateSemesterCourses
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
@@ -42,6 +43,18 @@ class CurrentSemesterViewModel : ViewModel() {
         context,
         currentSemester.semester,
         currentSemester.year,
+        db
+      )
+    }
+  }
+
+  fun updateSemester(semester: CurrentSemester, db: AppDatabase, context: Context) {
+    viewModelScope.launch(Dispatchers.IO) {
+      updateSemesterCourses(
+        courseList,
+        context,
+        semester.semester,
+        semester.year,
         db
       )
     }

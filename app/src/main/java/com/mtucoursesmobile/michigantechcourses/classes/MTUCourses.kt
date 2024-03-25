@@ -7,6 +7,6 @@ data class MTUCourses(
 )
 
 data class MTUCourseSectionBundle(
-  val course: MTUCourses,
-  val sections: List<MTUSections>
+  val course: MutableList<MTUCourses>,
+  val sections: MutableList<MTUSections>
 )
