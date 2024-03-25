@@ -1,15 +1,13 @@
 package com.mtucoursesmobile.michigantechcourses.api
 
 import android.content.Context
-import android.icu.text.SimpleDateFormat
 import android.util.Log
 import android.widget.Toast
+import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
-import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
-import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
-import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntryDate
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -23,11 +21,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-import java.sql.Time
 import java.time.Instant
-import java.time.ZoneId
-import java.util.Calendar
-import java.util.Date
 
 // Define RetroFit API interface
 interface RetroFitAPI {
@@ -46,7 +40,7 @@ interface RetroFitAPI {
 @OptIn(DelicateCoroutinesApi::class)
 fun getSemesterCourses(
   courseList: MutableList<MTUCoursesEntry>, ctx: Context, semester: String, year: String,
-  db: AppDatabase
+  lastUpdatedSince: MutableList<LastUpdatedSince>
 ) {
   // 100 MB of Cache for API GET requests
   val cacheSize = 100 * 1024 * 1024
@@ -55,17 +49,8 @@ fun getSemesterCourses(
     cacheSize.toLong()
   )
   val okHttpClient = OkHttpClient.Builder()
-    .cache(cache)
     .build()
 
-  // Initialize the DB courseDAO
-  val courseDao = db.courseDao()
-
-  // Look for the current semester + year in local storage
-  val findCourse: List<MTUCoursesEntry> = courseDao.getSemesterEntries(
-    semester,
-    year
-  )
   val currentDateAndTime = Instant.now()
 
   Log.d(
@@ -112,36 +97,44 @@ fun getSemesterCourses(
               }
 
               for (entry in courseData) {
-                val courseBundle = MTUCourseSectionBundle(
-                  mutableListOf(entry),
-                  sectionData.filter { section -> section.courseId == entry.id }.toMutableList()
-                )
-                courseList.add(
-                  MTUCoursesEntry(
-                    semester,
-                    year,
-                    courseBundle.course[0].id,
-                    courseBundle
+                if (entry.deletedAt == null) {
+                  val courseBundle = MTUCourseSectionBundle(
+                    mutableListOf(entry),
+                    sectionData.filter { section -> section.courseId == entry.id && section.deletedAt == null }
+                      .toMutableList()
                   )
-                )
+                  courseList.add(
+                    MTUCoursesEntry(
+                      semester,
+                      year,
+                      courseBundle.course[0].id,
+                      courseBundle
+                    )
+                  )
+                }
               }
               if (courseList.isEmpty()) {
                 throw NoSuchElementException()
               }
 
               GlobalScope.launch(Dispatchers.Default) {
-                courseDao.insertDateEntry(
-                  MTUCoursesEntryDate(
+                lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year })
+                lastUpdatedSince.add(
+                  LastUpdatedSince(
                     semester,
                     year,
+                    "course",
                     timeGot
                   )
                 )
-                for (i in courseList) {
-                  courseDao.insertCourseEntry(
-                    i
+                lastUpdatedSince.add(
+                  LastUpdatedSince(
+                    semester,
+                    year,
+                    "section",
+                    timeGot
                   )
-                }
+                )
               }
             }
           }
@@ -153,24 +146,9 @@ fun getSemesterCourses(
             );
             Toast.makeText(
               ctx,
-              "Failed to get data attempting to use local DB..",
-              Toast.LENGTH_SHORT
+              "Failed to get data, ensure you have a stable internet connection and try again.",
+              Toast.LENGTH_LONG
             ).show()
-            if (findCourse.isNotEmpty()) {
-              Log.d(
-                "SQL DEBUG",
-                "Course already in local DB, using that instead of API call."
-              )
-              courseList.clear()
-              courseList.addAll(findCourse)
-              return
-            } else {
-              Toast.makeText(
-                ctx,
-                "Local DB empty. Please make sure you have a stable internet connection and try again",
-                Toast.LENGTH_LONG
-              ).show()
-            }
           }
         })
         return
@@ -185,24 +163,9 @@ fun getSemesterCourses(
       );
       Toast.makeText(
         ctx,
-        "Failed to get data attempting to use local DB...",
-        Toast.LENGTH_SHORT
+        "Failed to get data, ensure you have a stable internet connection and try again.",
+        Toast.LENGTH_LONG
       ).show()
-      if (findCourse.isNotEmpty()) {
-        Log.d(
-          "SQL DEBUG",
-          "Course already in local DB, using that instead of API call."
-        )
-        courseList.clear()
-        courseList.addAll(findCourse)
-        return
-      } else {
-        Toast.makeText(
-          ctx,
-          "Local DB not initiated, please check internet connection and try again...",
-          Toast.LENGTH_LONG
-        ).show()
-      }
     }
   })
 }

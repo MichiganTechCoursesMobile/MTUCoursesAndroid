@@ -3,10 +3,11 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
-import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
-import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -39,22 +40,14 @@ interface RetroFitAPIDate {
 @OptIn(DelicateCoroutinesApi::class)
 fun updateSemesterCourses(
   courseList: MutableList<MTUCoursesEntry>, ctx: Context, semester: String, year: String,
-  courseDB: AppDatabase
+  lastUpdatedSince: MutableList<LastUpdatedSince>
 ) {
-  val courseDao = courseDB.courseDao()
-  val dateDao = courseDB.courseDao()
+  val lastUpdatedCourse =
+    lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "course" }[0].time
 
-  val data = dateDao.getSemesterDate(
-    semester,
-    year
-  )
+  val lastUpdatedSection =
+    lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "section" }[0].time
 
-  Log.d(
-    "DEBUG",
-    data.toString()
-  )
-
-  val lastUpdated = data.lastUpdated
 
   val cacheSize = 100 * 1024 * 1024
   val cache = Cache(
@@ -73,13 +66,13 @@ fun updateSemesterCourses(
   val courseCall: Call<ArrayList<MTUCourses>> = retrofitAPI.updatedCourseData(
     semester,
     year,
-    lastUpdated
+    lastUpdatedCourse
   )
 
   val sectionCall: Call<ArrayList<MTUSections>> = retrofitAPI.updatedSectionData(
     semester,
     year,
-    lastUpdated
+    lastUpdatedSection
   )
 
   courseCall!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
@@ -89,95 +82,88 @@ fun updateSemesterCourses(
     ) {
       if (response.isSuccessful) {
         val courseData: ArrayList<MTUCourses> = response.body()!!
+        val timeGot = Instant.now().toString()
         sectionCall!!.enqueue(object : Callback<ArrayList<MTUSections>?> {
           override fun onResponse(
             call: Call<ArrayList<MTUSections>?>, response: Response<ArrayList<MTUSections>?>
           ) {
             if (response.isSuccessful) {
               val sectionData: ArrayList<MTUSections> = response.body()!!
-              val timeGot = Instant.now().toString()
-              if (sectionData.size == 0 && courseData.size == 0) {
+              if (sectionData.size == 0) {
                 Toast.makeText(
                   ctx,
-                  "Nothing to update...",
+                  "No sections to update",
                   Toast.LENGTH_SHORT
                 ).show()
-                return
               } else {
-                Toast.makeText(
-                  ctx,
-                  "Found data",
-                  Toast.LENGTH_SHORT
-                ).show()
                 GlobalScope.launch(Dispatchers.Default) {
-                  val coursesToYeet = mutableListOf<MTUCoursesEntry>()
-                  val sectionsToYeet = mutableListOf<Pair<MTUCoursesEntry, MTUSections>>()
-                  val sectionsToUpdate = mutableListOf<Pair<MTUCoursesEntry, MTUSections>>()
-                  for (i in courseData) {
-                    if (i.deletedAt != null) {
-                      courseList.find { entry -> i.id == entry.courseId }
-                        ?.let { coursesToYeet.add(it) }
-                    } else {
-                      courseList.find { entry -> i.id == entry.courseId }?.let { j ->
-                        val iterator = j.entry.course.listIterator()
-                        while (iterator.hasNext()) {
-                          val course = iterator.next()
-                          if (course.id == i.id) {
-                            iterator.set(i)
-                          }
-                        }
-                      }
-                    }
-                  }
                   for (i in sectionData) {
-                    if (i.deletedAt != null) {
-                      courseList.find { entry -> i.courseId == entry.courseId }?.let { course ->
-                        course.entry.sections.find { section -> i.id == section.id }?.let {
-                          sectionsToYeet.add(
-                            Pair(
-                              course,
-                              it
-                            )
-                          )
-                        }
-                      }
-                    } else {
-                      courseList.find { entry -> i.courseId == entry.courseId }?.let { course ->
-                        course.entry.sections.find { section -> i.id == section.id }?.let {
-                          sectionsToUpdate.add(
-                            Pair(
-                              course,
-                              it
-                            )
-                          )
-                        }
-                      }
-                    }
-                  }
-                  for (i in sectionsToYeet) {
-                    courseList.find { course -> course.courseId == i.first.courseId }?.let {
-                      val iterator = it.entry.sections.iterator()
-                      while (iterator.hasNext()) {
-                        val section = iterator.next()
-                        if (section.id == i.second.id) {
-                          iterator.remove()
-                        }
-                      }
-                    }
-                  }
-                  for (i in sectionsToUpdate) {
-                    courseList.find { course -> course.courseId == i.first.courseId }?.let {
-                      val iterator = it.entry.sections.listIterator()
+                    courseList.find { entry -> entry.courseId == i.courseId }?.let { course ->
+                      val iterator = course.entry.sections.listIterator()
                       while (iterator.hasNext()) {
                         val oldSection = iterator.next()
-                        if (oldSection.id == i.second.id) iterator.set(i.second)
+                        if (oldSection!!.id == i.id) iterator.set(i)
                       }
                     }
                   }
-                  courseList.removeAll(coursesToYeet)
                 }
-                return
+                GlobalScope.launch(Dispatchers.Default) {
+                  lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "section" })
+                  lastUpdatedSince.add(
+                    LastUpdatedSince(
+                      semester,
+                      year,
+                      "section",
+                      timeGot
+                    )
+                  )
+                }
               }
+              if (courseData.size == 0) {
+                Toast.makeText(
+                  ctx,
+                  "No courses to update",
+                  Toast.LENGTH_SHORT
+                ).show()
+              } else {
+                GlobalScope.launch(Dispatchers.Default) {
+                  for (i in courseData) {
+                    val course = courseList.find { entry -> i.id == entry.courseId }
+                    if (course != null) {
+                      val iterator = course.entry.course.listIterator()
+                      while (iterator.hasNext()) {
+                        val oldCourse = iterator.next()
+                        if (oldCourse.id == i.id) iterator.set(i)
+                      }
+                    } else {
+                      val newCourseSections =
+                        mutableListOf(sectionData.find { section -> section.courseId == i.id })
+                      val newCourseYay = MTUCoursesEntry(
+                        semester,
+                        year,
+                        i.id,
+                        MTUCourseSectionBundle(
+                          mutableListOf(i),
+                          newCourseSections
+                        )
+                      )
+                      courseList.add(newCourseYay)
+                    }
+                  }
+                }
+                GlobalScope.launch(Dispatchers.Default) {
+                  lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "course" })
+                  lastUpdatedSince.add(
+                    LastUpdatedSince(
+                      semester,
+                      year,
+                      "course",
+                      timeGot
+                    )
+                  )
+                }
+              }
+              return
             }
           }
 

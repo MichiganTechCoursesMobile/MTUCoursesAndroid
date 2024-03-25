@@ -14,7 +14,7 @@ data class MTUSections(
   var availableSeats: Number,
   var fee: Number,
   var updatedAt: String,
-  var deletedAt: String,
+  var deletedAt: String?,
   var room: String,
   var buildingName: String,
   var localType: String,

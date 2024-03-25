@@ -7,10 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.mtucoursesmobile.michigantechcourses.api.getSemesterCourses
 import com.mtucoursesmobile.michigantechcourses.api.updateSemesterCourses
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
-import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
-import com.mtucoursesmobile.michigantechcourses.localStorage.MTUCoursesEntry
+import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -23,7 +21,9 @@ class CurrentSemesterViewModel : ViewModel() {
     )
   val courseList = mutableStateListOf<MTUCoursesEntry>()
 
-  fun setSemester(newSemester: CurrentSemester, db: AppDatabase, context: Context) {
+  val lastUpdatedSince = mutableListOf<LastUpdatedSince>()
+
+  fun setSemester(newSemester: CurrentSemester, context: Context) {
     currentSemester = newSemester
     viewModelScope.launch(Dispatchers.IO) {
       getSemesterCourses(
@@ -31,31 +31,31 @@ class CurrentSemesterViewModel : ViewModel() {
         context,
         newSemester.semester,
         newSemester.year,
-        db
+        lastUpdatedSince
       )
     }
   }
 
-  fun initialCourselist(db: AppDatabase, context: Context) {
+  fun initialCourselist(context: Context) {
     viewModelScope.launch(Dispatchers.IO) {
       getSemesterCourses(
         courseList,
         context,
         currentSemester.semester,
         currentSemester.year,
-        db
+        lastUpdatedSince
       )
     }
   }
 
-  fun updateSemester(semester: CurrentSemester, db: AppDatabase, context: Context) {
+  fun updateSemester(semester: CurrentSemester, context: Context) {
     viewModelScope.launch(Dispatchers.IO) {
       updateSemesterCourses(
         courseList,
         context,
         semester.semester,
         semester.year,
-        db
+        lastUpdatedSince
       )
     }
   }

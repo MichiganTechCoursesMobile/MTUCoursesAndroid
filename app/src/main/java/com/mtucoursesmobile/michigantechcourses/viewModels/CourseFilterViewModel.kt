@@ -1,11 +1,9 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
-import android.util.Range
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 
 class CourseFilterViewModel : ViewModel() {
   var searchBarValue = mutableStateOf("")

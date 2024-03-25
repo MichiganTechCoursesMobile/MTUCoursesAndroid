@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.outlined.DateRange
@@ -40,22 +40,21 @@ import com.mtucoursesmobile.michigantechcourses.classes.semesterList
 import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
-import com.mtucoursesmobile.michigantechcourses.localStorage.AppDatabase
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(
   ExperimentalMaterial3Api::class,
 )
 @Composable
-fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
+fun CourseView(innerPadding: PaddingValues, listState: LazyListState) {
   val context = LocalContext.current
   val semesterViewModel: CurrentSemesterViewModel = viewModel()
   val courseFilterViewModel: CourseFilterViewModel = viewModel()
   val scope = rememberCoroutineScope()
   var expanded by remember { mutableStateOf(false) }
-  val listState = rememberLazyListState()
   val expandedFab by remember {
     derivedStateOf { listState.firstVisibleItemIndex == 0 }
   }
@@ -93,22 +92,27 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
                 text = { Text(i.readable) },
                 onClick = {
                   if (i.readable != semesterViewModel.currentSemester.readable) {
-                    semesterViewModel.courseList.clear()
-                    semesterViewModel.setSemester(
-                      i,
-                      db,
-                      context
-                    )
-                    semesterText.value = i.readable
+                    scope.launch {
+                      listState.animateScrollToItem(0)
+                      delay(100)
+                      semesterViewModel.courseList.clear()
+                      semesterViewModel.setSemester(
+                        i,
+                        context
+                      )
+                      semesterText.value = i.readable
+                    }
+                  } else {
                     scope.launch {
                       listState.animateScrollToItem(0)
                     }
-                  } else {
-                    semesterViewModel.updateSemester(
-                      i,
-                      db,
-                      context
-                    )
+                    scope.launch {
+                      semesterViewModel.updateSemester(
+                        i,
+                        context
+                      )
+                    }
+
                   }
                   expanded = false
                 })
@@ -168,7 +172,6 @@ fun CourseView(db: AppDatabase, innerPadding: PaddingValues) {
       LazyCourseList(
         innerPadding = innerPadding,
         listState = listState,
-        db = db
       )
     }
 
