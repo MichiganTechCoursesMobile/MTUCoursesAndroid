@@ -66,13 +66,13 @@ fun updateSemesterCourses(
   val courseCall: Call<ArrayList<MTUCourses>> = retrofitAPI.updatedCourseData(
     semester,
     year,
-    lastUpdatedCourse
+    "2024-03-19T19:10:56.925Z"
   )
 
   val sectionCall: Call<ArrayList<MTUSections>> = retrofitAPI.updatedSectionData(
     semester,
     year,
-    lastUpdatedSection
+    "2024-03-19T19:10:56.925Z"
   )
 
   courseCall!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
@@ -96,16 +96,15 @@ fun updateSemesterCourses(
                   Toast.LENGTH_SHORT
                 ).show()
               } else {
+                // Sections
                 GlobalScope.launch(Dispatchers.Default) {
                   for (i in sectionData) {
                     courseList.find { entry -> entry.courseId == i.courseId }?.let { course ->
-                      val iterator = course.entry.sections.listIterator()
-                      while (iterator.hasNext()) {
-                        val oldSection = iterator.next()
-                        if (oldSection!!.id == i.id) iterator.set(i)
-                      }
+                      course.entry.sections.removeIf{section -> section?.id == i.id}
+                      course.entry.sections.add(i)
                     }
                   }
+
                 }
                 GlobalScope.launch(Dispatchers.Default) {
                   lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "section" })
@@ -126,15 +125,13 @@ fun updateSemesterCourses(
                   Toast.LENGTH_SHORT
                 ).show()
               } else {
+                // Courses
                 GlobalScope.launch(Dispatchers.Default) {
+                  val newCourseList = mutableListOf<MTUCoursesEntry>()
                   for (i in courseData) {
                     val course = courseList.find { entry -> i.id == entry.courseId }
                     if (course != null) {
-                      val iterator = course.entry.course.listIterator()
-                      while (iterator.hasNext()) {
-                        val oldCourse = iterator.next()
-                        if (oldCourse.id == i.id) iterator.set(i)
-                      }
+                      course.entry.course[0] = i
                     } else {
                       val newCourseSections =
                         mutableListOf(sectionData.find { section -> section.courseId == i.id })
@@ -147,9 +144,10 @@ fun updateSemesterCourses(
                           newCourseSections
                         )
                       )
-                      courseList.add(newCourseYay)
+                      newCourseList.add(newCourseYay)
                     }
                   }
+                  courseList.addAll(newCourseList)
                 }
                 GlobalScope.launch(Dispatchers.Default) {
                   lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "course" })
