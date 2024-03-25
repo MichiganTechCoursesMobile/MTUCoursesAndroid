@@ -106,13 +106,6 @@ fun CourseView(innerPadding: PaddingValues, listState: LazyListState) {
                     scope.launch {
                       listState.animateScrollToItem(0)
                     }
-                    scope.launch {
-                      semesterViewModel.updateSemester(
-                        i,
-                        context
-                      )
-                    }
-
                   }
                   expanded = false
                 })

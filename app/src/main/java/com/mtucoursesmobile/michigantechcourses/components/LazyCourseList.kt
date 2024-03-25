@@ -48,10 +48,9 @@ fun LazyCourseList(
     LaunchedEffect(true) {
       semesterViewModel.updateSemester(
         semesterViewModel.currentSemester,
-        context
+        context,
+        refreshState
       )
-      delay(500)
-      refreshState.endRefresh()
     }
   }
 

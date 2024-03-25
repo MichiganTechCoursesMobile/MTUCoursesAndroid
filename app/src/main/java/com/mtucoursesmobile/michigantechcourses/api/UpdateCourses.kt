@@ -3,14 +3,20 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.runtime.MutableState
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -37,10 +43,13 @@ interface RetroFitAPIDate {
   ): Call<ArrayList<MTUCourses>>
 }
 
-@OptIn(DelicateCoroutinesApi::class)
+@OptIn(
+  DelicateCoroutinesApi::class,
+  ExperimentalMaterial3Api::class
+)
 fun updateSemesterCourses(
   courseList: MutableList<MTUCoursesEntry>, ctx: Context, semester: String, year: String,
-  lastUpdatedSince: MutableList<LastUpdatedSince>
+  lastUpdatedSince: MutableList<LastUpdatedSince>, loading: PullToRefreshState?
 ) {
   val lastUpdatedCourse =
     lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "course" }[0].time
@@ -48,14 +57,7 @@ fun updateSemesterCourses(
   val lastUpdatedSection =
     lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "section" }[0].time
 
-
-  val cacheSize = 100 * 1024 * 1024
-  val cache = Cache(
-    ctx.cacheDir,
-    cacheSize.toLong()
-  )
   val okHttpClient = OkHttpClient.Builder()
-    .cache(cache)
     .build()
 
   val retrofit = Retrofit.Builder()
@@ -66,13 +68,13 @@ fun updateSemesterCourses(
   val courseCall: Call<ArrayList<MTUCourses>> = retrofitAPI.updatedCourseData(
     semester,
     year,
-    "2024-03-19T19:10:56.925Z"
+    lastUpdatedCourse
   )
 
   val sectionCall: Call<ArrayList<MTUSections>> = retrofitAPI.updatedSectionData(
     semester,
     year,
-    "2024-03-19T19:10:56.925Z"
+    lastUpdatedSection
   )
 
   courseCall!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
@@ -89,67 +91,19 @@ fun updateSemesterCourses(
           ) {
             if (response.isSuccessful) {
               val sectionData: ArrayList<MTUSections> = response.body()!!
-              if (sectionData.size == 0) {
-                Toast.makeText(
-                  ctx,
-                  "No sections to update",
-                  Toast.LENGTH_SHORT
-                ).show()
-              } else {
-                // Sections
-                GlobalScope.launch(Dispatchers.Default) {
-                  for (i in sectionData) {
-                    courseList.find { entry -> entry.courseId == i.courseId }?.let { course ->
-                      course.entry.sections.removeIf{section -> section?.id == i.id}
-                      course.entry.sections.add(i)
-                    }
-                  }
-
+              if (courseData.size == 0 && sectionData.size == 0) {
+                if (loading != null) {
+                  Toast.makeText(
+                    ctx,
+                    "Nothing to update",
+                    Toast.LENGTH_SHORT
+                  ).show()
+                  loading.endRefresh()
                 }
-                GlobalScope.launch(Dispatchers.Default) {
-                  lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "section" })
-                  lastUpdatedSince.add(
-                    LastUpdatedSince(
-                      semester,
-                      year,
-                      "section",
-                      timeGot
-                    )
-                  )
-                }
+                return
               }
-              if (courseData.size == 0) {
-                Toast.makeText(
-                  ctx,
-                  "No courses to update",
-                  Toast.LENGTH_SHORT
-                ).show()
-              } else {
-                // Courses
-                GlobalScope.launch(Dispatchers.Default) {
-                  val newCourseList = mutableListOf<MTUCoursesEntry>()
-                  for (i in courseData) {
-                    val course = courseList.find { entry -> i.id == entry.courseId }
-                    if (course != null) {
-                      course.entry.course[0] = i
-                    } else {
-                      val newCourseSections =
-                        mutableListOf(sectionData.find { section -> section.courseId == i.id })
-                      val newCourseYay = MTUCoursesEntry(
-                        semester,
-                        year,
-                        i.id,
-                        MTUCourseSectionBundle(
-                          mutableListOf(i),
-                          newCourseSections
-                        )
-                      )
-                      newCourseList.add(newCourseYay)
-                    }
-                  }
-                  courseList.addAll(newCourseList)
-                }
-                GlobalScope.launch(Dispatchers.Default) {
+              GlobalScope.launch(Dispatchers.IO) {
+                if (courseData.size != 0) {
                   lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "course" })
                   lastUpdatedSince.add(
                     LastUpdatedSince(
@@ -159,10 +113,60 @@ fun updateSemesterCourses(
                       timeGot
                     )
                   )
+                  // Courses
+                  val newCourseList = mutableListOf<MTUCoursesEntry>()
+                  for (i in courseData) {
+                    val course = courseList.find { entry -> i.id == entry.courseId }
+                    if (course != null) {
+                      course.entry.course[0] = i
+                    } else {
+                      val newCourseYay = MTUCoursesEntry(
+                        semester,
+                        year,
+                        i.id,
+                        MTUCourseSectionBundle(
+                          mutableListOf(i),
+                          mutableListOf()
+                        )
+                      )
+                      newCourseList.add(newCourseYay)
+                    }
+                  }
+                  courseList.addAll(newCourseList)
+                }
+                if (sectionData.size != 0) {
+                  lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "section" })
+                  lastUpdatedSince.add(
+                    LastUpdatedSince(
+                      semester,
+                      year,
+                      "section",
+                      timeGot
+                    )
+                  )
+                  // Sections
+                  for (i in sectionData) {
+                    val foundCourse = courseList.filter { entry -> entry.courseId == i.courseId }
+                    if (foundCourse.isNotEmpty()) {
+                      foundCourse[0].entry.sections.removeIf { section -> section?.id == i.id }
+                      foundCourse[0].entry.sections.add(i)
+                    }
+                  }
+                }
+
+                if (loading != null) {
+                  MainScope().launch {
+                    loading.endRefresh()
+                    Toast.makeText(
+                      ctx,
+                      "Updated ${courseData.size} Courses and ${sectionData.size} Sections",
+                      Toast.LENGTH_SHORT
+                    ).show()
+                  }
                 }
               }
-              return
             }
+            return
           }
 
           override fun onFailure(call: Call<ArrayList<MTUSections>?>, t: Throwable) {
@@ -194,5 +198,4 @@ fun updateSemesterCourses(
 
     }
   })
-
 }

@@ -42,12 +42,6 @@ fun getSemesterCourses(
   courseList: MutableList<MTUCoursesEntry>, ctx: Context, semester: String, year: String,
   lastUpdatedSince: MutableList<LastUpdatedSince>
 ) {
-  // 100 MB of Cache for API GET requests
-  val cacheSize = 100 * 1024 * 1024
-  val cache = Cache(
-    ctx.cacheDir,
-    cacheSize.toLong()
-  )
   val okHttpClient = OkHttpClient.Builder()
     .build()
 

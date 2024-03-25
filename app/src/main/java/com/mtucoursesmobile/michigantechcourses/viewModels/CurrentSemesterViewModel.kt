@@ -1,6 +1,9 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
 import android.content.Context
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -48,14 +51,16 @@ class CurrentSemesterViewModel : ViewModel() {
     }
   }
 
-  fun updateSemester(semester: CurrentSemester, context: Context) {
+  @OptIn(ExperimentalMaterial3Api::class)
+  fun updateSemester(semester: CurrentSemester, context: Context, loading: PullToRefreshState?) {
     viewModelScope.launch(Dispatchers.IO) {
       updateSemesterCourses(
         courseList,
         context,
         semester.semester,
         semester.year,
-        lastUpdatedSince
+        lastUpdatedSince,
+        loading
       )
     }
   }
