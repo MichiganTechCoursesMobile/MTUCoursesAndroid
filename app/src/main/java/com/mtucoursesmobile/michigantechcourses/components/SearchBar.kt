@@ -122,7 +122,7 @@ fun ExpandedSearchView(
           bottom = 6.dp
         )
         .height(64.dp),
-      textStyle = TextStyle(fontSize = 19.sp),
+      textStyle = TextStyle(fontSize = 20.sp),
       label = {
         Text(
           text = "Course Search",
