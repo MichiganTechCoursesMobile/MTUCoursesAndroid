@@ -1,5 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -60,6 +62,13 @@ fun CourseView(innerPadding: PaddingValues, listState: LazyListState) {
   }
   val (searching, onSearchExpandedChanged) = remember {
     mutableStateOf(false)
+  }
+  BackHandler {
+    if (searching) {
+      onSearchExpandedChanged(false)
+    } else {
+      (context as? Activity)?.finish()
+    }
   }
   val semesterText = remember { mutableStateOf(semesterViewModel.currentSemester.readable) }
   Scaffold(modifier = Modifier.padding(innerPadding),
