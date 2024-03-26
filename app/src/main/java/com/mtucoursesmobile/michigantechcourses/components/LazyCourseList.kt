@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
 import kotlinx.coroutines.delay
@@ -37,8 +38,9 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LazyCourseList(
-  innerPadding: PaddingValues, listState: LazyListState,
-  courseFilterViewModel: CourseFilterViewModel, semesterViewModel: CurrentSemesterViewModel
+  listState: LazyListState,
+  courseFilterViewModel: CourseFilterViewModel, semesterViewModel: CurrentSemesterViewModel,
+  navController: NavController, innerPadding: PaddingValues
 ) {
   val context = LocalContext.current
   val courses = remember { mutableStateOf(semesterViewModel.courseList.toMutableList()) }
@@ -56,8 +58,8 @@ fun LazyCourseList(
 
   Box(
     modifier = Modifier
-      .padding(innerPadding)
       .fillMaxSize()
+      .padding(innerPadding)
       .nestedScroll(refreshState.nestedScrollConnection)
   ) {
     LazyColumn(
@@ -152,6 +154,14 @@ fun LazyCourseList(
             .fillMaxWidth()
             .height(200.dp)
             .padding(10.dp),
+          onClick = {
+            navController.navigate("courseDetail")
+            {
+              popUpTo("courseDetail") {
+                inclusive = true
+              }
+            }
+          }
         ) {
           Text(
             text = "${item.entry.course[0].subject}${item.entry.course[0].crse} - ${item.entry.course[0].title} - (${item.entry.sections.size} section${if (item.entry.sections.size != 1) "s" else ""})",

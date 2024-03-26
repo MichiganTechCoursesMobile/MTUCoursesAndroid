@@ -67,7 +67,7 @@ dependencies {
   implementation("androidx.room:room-ktx:$room_version")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
   implementation("androidx.compose.material3:material3:1.3.0-alpha03")
-  implementation("androidx.activity:activity:1.8.2")
+  implementation("androidx.activity:activity:1.9.0-beta01")
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)

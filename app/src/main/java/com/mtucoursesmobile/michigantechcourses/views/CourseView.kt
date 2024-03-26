@@ -2,6 +2,7 @@ package com.mtucoursesmobile.michigantechcourses.views
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -36,6 +37,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.mtucoursesmobile.michigantechcourses.classes.semesterList
 import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.FilterModal
@@ -51,7 +56,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CourseView(
   semesterViewModel: CurrentSemesterViewModel,
-  courseFilterViewModel: CourseFilterViewModel
+  courseFilterViewModel: CourseFilterViewModel, navController: NavController
 ) {
   val context = LocalContext.current
   val listState = rememberLazyListState()
@@ -173,11 +178,11 @@ fun CourseView(
       }
     } else {
       LazyCourseList(
-        innerPadding = innerPadding,
         listState = listState,
         courseFilterViewModel,
-        semesterViewModel
-
+        semesterViewModel,
+        navController,
+        innerPadding
       )
     }
 

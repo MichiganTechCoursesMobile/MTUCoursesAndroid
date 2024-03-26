@@ -39,9 +39,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainView() {
-  var selectedItem by remember {
-    mutableIntStateOf(0)
-  }
   val items = remember {
     listOf(
       Pair(
@@ -75,11 +72,10 @@ fun MainView() {
             selected = currentDestination?.hierarchy?.any { it.route == item.first } == true,
             onClick = {
               navController.navigate(item.first) {
-                // Pop up to the start destination of the graph to
-                // avoid building up a large stack of destinations
-                // on the back stack as users select items
-                // reselecting the same item
-                launchSingleTop = true
+
+                popUpTo(navController.graph.findStartDestination().id) {
+                  saveState = true
+                }
                 // Restore state when reselecting a previously selected item
                 restoreState = true
 
@@ -112,10 +108,36 @@ fun MainView() {
         exitTransition = {
           slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         }) {
-        CourseView(
-          semesterViewModel = semesterViewModel,
-          courseFilterViewModel = courseFilterViewModel
-        )
+
+        val courseNavController = rememberNavController()
+        NavHost(
+          navController = courseNavController,
+          startDestination = "courseList",
+          modifier = Modifier,
+        ) {
+          composable("courseList",
+            enterTransition = {
+              slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            },
+            exitTransition = {
+              slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            }) {
+            CourseView(
+              semesterViewModel = semesterViewModel,
+              courseFilterViewModel = courseFilterViewModel,
+              courseNavController
+            )
+          }
+          composable("courseDetail",
+            enterTransition = {
+              slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            },
+            exitTransition = {
+              slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            }) {
+            CourseDetailView()
+          }
+        }
       }
       composable("Basket",
         enterTransition = {
@@ -143,7 +165,6 @@ fun MainView() {
         }) {
         SettingsView()
       }
-
     }
 //    when (selectedItem) {
 //      0 -> CourseView(
