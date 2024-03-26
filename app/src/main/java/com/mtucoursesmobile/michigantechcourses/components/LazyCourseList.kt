@@ -153,49 +153,10 @@ fun LazyCourseList(
         key = { _, item -> item.entry.course[0].id }
       )
       { _, item ->
-        ElevatedCard(
-          elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-          ),
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .padding(10.dp),
-          onClick = {
-            navController.navigate("courseDetail/${item.courseId}") {
-
-              popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-              }
-              // Restore state when reselecting a previously selected item
-              restoreState = true
-
-            }
-          }
-        ) {
-          Text(
-            text = "${item.entry.course[0].subject}${item.entry.course[0].crse} - ${item.entry.course[0].title} - (${item.entry.sections.size} section${if (item.entry.sections.size != 1) "s" else ""})",
-            modifier = Modifier
-              .padding(
-                horizontal = 10.dp
-              )
-              .paddingFromBaseline(
-                top = 30.dp,
-                bottom = 10.dp
-              ),
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            textAlign = TextAlign.Left,
-          )
-          (if (item.entry.course[0].description != null) item.entry.course[0].description else "¯\\_(ツ)_/¯")?.let {
-            Text(
-              text = it,
-              modifier = Modifier.padding(horizontal = 10.dp),
-              maxLines = 4,
-              overflow = TextOverflow.Ellipsis
-            )
-          }
-        }
+        CourseItem(
+          item,
+          navController
+        )
       }
     }
     PullToRefreshContainer(
