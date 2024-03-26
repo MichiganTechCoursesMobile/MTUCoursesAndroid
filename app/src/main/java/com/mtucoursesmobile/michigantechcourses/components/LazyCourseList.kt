@@ -29,11 +29,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
-import kotlinx.coroutines.delay
+import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +71,7 @@ fun LazyCourseList(
         items =
         if (courseFilterViewModel.typeFilter.isEmpty() && courseFilterViewModel.creditFilter.value == 1f..4f && courseFilterViewModel.creditFilter.value == 0f..4f && courseFilterViewModel.otherFilter.isEmpty()) {
           semesterViewModel.courseList.filter { course ->
-            course.entry.course[0].deletedAt == null && course.entry.course[0].title.contains(courseFilterViewModel.searchBarValue.value)
+            course.entry.course[0].deletedAt == null && (course.entry.course[0].subject + course.entry.course[0].crse + course.entry.course[0].title).contains(courseFilterViewModel.searchBarValue.value)
           }
         } else {
           courses.value.clear()
@@ -140,7 +139,7 @@ fun LazyCourseList(
             }
           }
           courses.value.filter { course ->
-            course.entry.course[0].deletedAt == null && course.entry.course[0].title.contains(courseFilterViewModel.searchBarValue.value)
+            course.entry.course[0].deletedAt == null && (course.entry.course[0].subject + course.entry.course[0].crse + course.entry.course[0].title).contains(courseFilterViewModel.searchBarValue.value)
           }
         },
         key = { _, item -> item.entry.course[0].id }
@@ -155,11 +154,14 @@ fun LazyCourseList(
             .height(200.dp)
             .padding(10.dp),
           onClick = {
-            navController.navigate("courseDetail")
-            {
-              popUpTo("courseDetail") {
-                inclusive = true
+            navController.navigate("courseDetail/${item.courseId}"){
+
+              popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
               }
+              // Restore state when reselecting a previously selected item
+              restoreState = true
+
             }
           }
         ) {

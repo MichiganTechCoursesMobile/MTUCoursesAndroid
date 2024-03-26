@@ -2,7 +2,6 @@ package com.mtucoursesmobile.michigantechcourses.views
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -38,9 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.mtucoursesmobile.michigantechcourses.classes.semesterList
 import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.FilterModal
@@ -71,6 +67,7 @@ fun CourseView(
   BackHandler {
     if (searching) {
       onSearchExpandedChanged(false)
+      courseFilterViewModel.searchBarValue.value = ""
       scope.launch { listState.animateScrollToItem(0) }
     } else {
       (context as? Activity)?.finish()
@@ -132,12 +129,10 @@ fun CourseView(
             Text(text = "Courses for ${semesterText.value}")
           }
           ExpandableSearchView(
-            searchDisplay = courseFilterViewModel.searchBarValue.value,
-            onSearchDisplayChanged = { courseFilterViewModel.searchBarValue.value = it },
+            courseFilterViewModel,
             onSearchDisplayClosed = {
               onSearchExpandedChanged(false)
               courseFilterViewModel.searchBarValue.value = ""
-              scope.launch { listState.animateScrollToItem(0) }
             },
             expanded = searching,
             onExpandedChanged = onSearchExpandedChanged
