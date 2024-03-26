@@ -1,6 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +70,13 @@ fun CourseView(
   val (searching, onSearchExpandedChanged) = remember {
     mutableStateOf(false)
   }
+
+  LaunchedEffect(Unit) {
+    if (courseFilterViewModel.searchBarValue.value != "") {
+      onSearchExpandedChanged(true)
+    }
+  }
+
   BackHandler {
     if (searching) {
       onSearchExpandedChanged(false)
@@ -85,12 +94,14 @@ fun CourseView(
         titleContentColor = MaterialTheme.colorScheme.primary
       ),
         actions = {
-          IconButton(onClick = { onSearchExpandedChanged(true) }) {
-            Icon(
-              imageVector = Icons.Outlined.Search,
-              contentDescription = "Search Courses",
-              tint = MaterialTheme.colorScheme.primary,
-            )
+          if (!searching) {
+            IconButton(onClick = { onSearchExpandedChanged(true) }) {
+              Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = "Search Courses",
+                tint = MaterialTheme.colorScheme.primary,
+              )
+            }
           }
           IconButton(onClick = { expanded = true }) {
             Icon(

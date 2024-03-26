@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ShoppingBasket
 import androidx.compose.material3.Icon
@@ -129,7 +130,20 @@ fun ExpandedSearchView(
         onDone = {
           focusManager.clearFocus()
         }
-      )
+      ),
+      trailingIcon = {
+        IconButton(onClick = {
+          textFieldValue = TextFieldValue("")
+          onSearchDisplayChanged("")
+        }) {
+          Icon(
+            imageVector = Icons.Filled.Clear,
+            contentDescription = "Clear",
+            tint = tint
+          )
+        }
+      }
     )
+
   }
 }

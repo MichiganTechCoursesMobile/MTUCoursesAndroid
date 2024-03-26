@@ -57,8 +57,6 @@ fun MainView() {
       )
     )
   }
-
-  val scope = rememberCoroutineScope()
   val semesterViewModel: CurrentSemesterViewModel = viewModel()
   val courseFilterViewModel: CourseFilterViewModel = viewModel()
   val navController = rememberNavController()
