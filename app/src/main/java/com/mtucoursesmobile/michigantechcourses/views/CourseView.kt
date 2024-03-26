@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.outlined.DateRange
@@ -51,10 +52,12 @@ import kotlinx.coroutines.launch
   ExperimentalMaterial3Api::class,
 )
 @Composable
-fun CourseView(innerPadding: PaddingValues, listState: LazyListState) {
+fun CourseView(
+  semesterViewModel: CurrentSemesterViewModel,
+  courseFilterViewModel: CourseFilterViewModel
+) {
   val context = LocalContext.current
-  val semesterViewModel: CurrentSemesterViewModel = viewModel()
-  val courseFilterViewModel: CourseFilterViewModel = viewModel()
+  val listState = rememberLazyListState()
   val scope = rememberCoroutineScope()
   var expanded by remember { mutableStateOf(false) }
   val expandedFab by remember {
@@ -71,7 +74,7 @@ fun CourseView(innerPadding: PaddingValues, listState: LazyListState) {
     }
   }
   val semesterText = remember { mutableStateOf(semesterViewModel.currentSemester.readable) }
-  Scaffold(modifier = Modifier.padding(innerPadding),
+  Scaffold(modifier = Modifier,
     contentWindowInsets = WindowInsets(0.dp),
     topBar = {
       TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
@@ -174,6 +177,9 @@ fun CourseView(innerPadding: PaddingValues, listState: LazyListState) {
       LazyCourseList(
         innerPadding = innerPadding,
         listState = listState,
+        courseFilterViewModel,
+        semesterViewModel
+
       )
     }
 

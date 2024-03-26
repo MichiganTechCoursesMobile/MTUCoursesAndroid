@@ -37,11 +37,10 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LazyCourseList(
-  innerPadding: PaddingValues, listState: LazyListState
+  innerPadding: PaddingValues, listState: LazyListState,
+  courseFilterViewModel: CourseFilterViewModel, semesterViewModel: CurrentSemesterViewModel
 ) {
   val context = LocalContext.current
-  val semesterViewModel: CurrentSemesterViewModel = viewModel()
-  val courseFilterViewModel: CourseFilterViewModel = viewModel()
   val courses = remember { mutableStateOf(semesterViewModel.courseList.toMutableList()) }
   val refreshState = rememberPullToRefreshState()
   if (refreshState.isRefreshing) {
