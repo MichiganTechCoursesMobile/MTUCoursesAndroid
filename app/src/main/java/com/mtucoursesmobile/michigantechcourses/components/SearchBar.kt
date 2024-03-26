@@ -4,6 +4,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.outlined.ShoppingBasket
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -33,9 +35,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.FontScaling
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun ExpandableSearchView(
@@ -102,7 +107,7 @@ fun ExpandedSearchView(
         tint = tint
       )
     }
-    TextField(
+    OutlinedTextField(
       singleLine = true,
       value = textFieldValue,
       onValueChange = {
@@ -112,7 +117,12 @@ fun ExpandedSearchView(
       modifier = Modifier
         .fillMaxWidth()
         .focusRequester(textFieldFocusRequester)
-        .padding(end = 4.dp),
+        .padding(
+          end = 16.dp,
+          bottom = 6.dp
+        )
+        .height(64.dp),
+      textStyle = TextStyle(fontSize = 19.sp),
       label = {
         Text(
           text = "Course Search",

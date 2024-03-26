@@ -73,7 +73,10 @@ fun LazyCourseList(
         items =
         if (courseFilterViewModel.typeFilter.isEmpty() && courseFilterViewModel.creditFilter.value == 1f..4f && courseFilterViewModel.creditFilter.value == 0f..4f && courseFilterViewModel.otherFilter.isEmpty()) {
           semesterViewModel.courseList.filter { course ->
-            course.entry.course[0].deletedAt == null && (course.entry.course[0].subject + course.entry.course[0].crse + course.entry.course[0].title).contains(courseFilterViewModel.searchBarValue.value)
+            course.entry.course[0].deletedAt == null && (course.entry.course[0].subject + course.entry.course[0].crse + course.entry.course[0].title).contains(
+              courseFilterViewModel.searchBarValue.value,
+              ignoreCase = true
+            )
           }
         } else {
           courses.value.clear()
@@ -141,7 +144,10 @@ fun LazyCourseList(
             }
           }
           courses.value.filter { course ->
-            course.entry.course[0].deletedAt == null && (course.entry.course[0].subject + course.entry.course[0].crse + course.entry.course[0].title).contains(courseFilterViewModel.searchBarValue.value)
+            course.entry.course[0].deletedAt == null && (course.entry.course[0].subject + course.entry.course[0].crse + course.entry.course[0].title).contains(
+              courseFilterViewModel.searchBarValue.value,
+              ignoreCase = true
+            )
           }
         },
         key = { _, item -> item.entry.course[0].id }

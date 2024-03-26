@@ -93,6 +93,7 @@ fun MainView() {
         }
       }
     }) { innerPadding ->
+    // Bottom Nav Bar
     NavHost(
       navController = navController,
       startDestination = "Courses",
@@ -108,6 +109,7 @@ fun MainView() {
         exitTransition = {
           slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         }) {
+        // Nested NavHost for Courses
         CourseNav(
           semesterViewModel,
           courseFilterViewModel
@@ -178,6 +180,7 @@ fun CourseNav(
       CourseDetailView(
         semesterViewModel,
         courseFilterViewModel,
+        courseNavController,
         backStackEntry.arguments?.getString("courseId")
       )
     }
