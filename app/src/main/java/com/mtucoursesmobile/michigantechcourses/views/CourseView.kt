@@ -4,12 +4,10 @@ import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
@@ -38,13 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.classes.semesterList
 import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
-import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -69,6 +66,7 @@ fun CourseView(
   BackHandler {
     if (searching) {
       onSearchExpandedChanged(false)
+      scope.launch { listState.animateScrollToItem(0) }
     } else {
       (context as? Activity)?.finish()
     }
@@ -184,7 +182,8 @@ fun CourseView(
     }
 
     FilterModal(
-      listState = listState
+      listState = listState,
+      courseFilterViewModel
     )
   }
 }
