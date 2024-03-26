@@ -1,9 +1,14 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.slideOut
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Settings
@@ -18,17 +23,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainView() {
@@ -52,7 +59,6 @@ fun MainView() {
   val scope = rememberCoroutineScope()
   val semesterViewModel: CurrentSemesterViewModel = viewModel()
   val courseFilterViewModel: CourseFilterViewModel = viewModel()
-  val selectedItem = remember { mutableIntStateOf(0) }
   val navController = rememberNavController()
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
@@ -60,12 +66,21 @@ fun MainView() {
       NavigationBar {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
-        items.forEachIndexed { index, item ->
+        items.forEachIndexed { _, item ->
           NavigationBarItem(
             label = { Text(text = item.first) },
-            selected = selectedItem.intValue == index,
+            selected = currentDestination?.hierarchy?.any { it.route == item.first } == true,
             onClick = {
-              selectedItem.intValue = index
+              navController.navigate(item.first) {
+
+                popUpTo(navController.graph.findStartDestination().id) {
+                  saveState = true
+                }
+                // Restore state when reselecting a previously selected item
+                restoreState = true
+
+              }
+
             },
             icon = {
               Icon(
@@ -93,7 +108,36 @@ fun MainView() {
         exitTransition = {
           slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         }) {
-        CourseNav(semesterViewModel, courseFilterViewModel)
+
+        val courseNavController = rememberNavController()
+        NavHost(
+          navController = courseNavController,
+          startDestination = "courseList",
+          modifier = Modifier,
+        ) {
+          composable("courseList",
+            enterTransition = {
+              slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            },
+            exitTransition = {
+              slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            }) {
+            CourseView(
+              semesterViewModel = semesterViewModel,
+              courseFilterViewModel = courseFilterViewModel,
+              courseNavController
+            )
+          }
+          composable("courseDetail",
+            enterTransition = {
+              slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            },
+            exitTransition = {
+              slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            }) {
+            CourseDetailView()
+          }
+        }
       }
       composable("Basket",
         enterTransition = {
@@ -122,40 +166,12 @@ fun MainView() {
         SettingsView()
       }
     }
-  }
-}
+//    when (selectedItem) {
+//      0 -> CourseView(
+//        innerPadding,
+//        listState
+//      )
+//    }
 
-// Courses
-@Composable
-fun CourseNav(semesterViewModel: CurrentSemesterViewModel, courseFilterViewModel: CourseFilterViewModel) {
-  val courseNavController = rememberNavController()
-  NavHost(
-    navController = courseNavController,
-    startDestination = "courseList",
-    modifier = Modifier,
-  ) {
-    composable("courseList",
-      enterTransition = {
-        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-      },
-      exitTransition = {
-        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-      }) {
-      CourseView(
-        semesterViewModel = semesterViewModel,
-        courseFilterViewModel = courseFilterViewModel,
-        courseNavController
-      )
-    }
-    composable("courseDetail/{courseId}",
-      arguments = listOf(navArgument("courseId") {type = NavType.StringType}),
-      enterTransition = {
-        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-      },
-      exitTransition = {
-        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-      }) { backStackEntry ->
-      CourseDetailView(semesterViewModel, courseFilterViewModel, backStackEntry.arguments?.getString("courseId"))
-    }
   }
 }

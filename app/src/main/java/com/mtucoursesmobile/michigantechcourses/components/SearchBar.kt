@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,6 +9,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.ShoppingBasket
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -15,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,15 +29,16 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
 
 @Composable
 fun ExpandableSearchView(
-  courseFilterViewModel: CourseFilterViewModel,
+  searchDisplay: String,
+  onSearchDisplayChanged: (String) -> Unit,
   onSearchDisplayClosed: () -> Unit,
   modifier: Modifier = Modifier,
   expandedInitially: Boolean = false,
@@ -43,8 +46,6 @@ fun ExpandableSearchView(
   expanded: Boolean,
   onExpandedChanged: (Boolean) -> Unit
 ) {
-  val searchDisplay = courseFilterViewModel.searchBarValue
-  val onSearchDisplayChanged: (String) -> Unit = {courseFilterViewModel.searchBarValue.value = it}
 
   if (expanded) {
     ExpandedSearchView(
@@ -60,7 +61,7 @@ fun ExpandableSearchView(
 
 @Composable
 fun ExpandedSearchView(
-  searchDisplay: MutableState<String>,
+  searchDisplay: String,
   onSearchDisplayChanged: (String) -> Unit,
   onSearchDisplayClosed: () -> Unit,
   onExpandedChanged: (Boolean) -> Unit,
@@ -78,8 +79,8 @@ fun ExpandedSearchView(
   var textFieldValue by remember {
     mutableStateOf(
       TextFieldValue(
-        searchDisplay.value,
-        TextRange(searchDisplay.value.length)
+        searchDisplay,
+        TextRange(searchDisplay.length)
       )
     )
   }

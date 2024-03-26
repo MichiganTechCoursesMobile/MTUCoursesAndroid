@@ -66,7 +66,6 @@ dependencies {
   // optional - Kotlin Extensions and Coroutines support for Room
   implementation("androidx.room:room-ktx:$room_version")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-  implementation("androidx.compose.ui:ui:1.7.0-alpha05")
   implementation("androidx.compose.material3:material3:1.3.0-alpha03")
   implementation("androidx.activity:activity:1.9.0-beta01")
   implementation(libs.androidx.core.ktx)
@@ -74,7 +73,7 @@ dependencies {
   implementation(libs.androidx.activity.compose)
   implementation("androidx.compose.material:material-icons-extended")
   implementation(platform(libs.androidx.compose.bom))
-
+  implementation(libs.androidx.ui)
   implementation(libs.androidx.ui.graphics)
   implementation(libs.androidx.ui.tooling.preview)
   implementation(libs.androidx.material3)
