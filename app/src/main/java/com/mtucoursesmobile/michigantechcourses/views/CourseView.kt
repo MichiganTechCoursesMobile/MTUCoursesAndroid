@@ -87,6 +87,7 @@ fun CourseView(
   }
   BackHandler {
     if (searching) {
+      courseFilterViewModel.searchBarValue.value = ""
       onSearchExpandedChanged(false)
       scope.launch { listState.animateScrollToItem(0) }
     } else {
