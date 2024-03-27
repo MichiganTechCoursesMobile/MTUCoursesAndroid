@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.mtucoursesmobile.michigantechcourses.R
 import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
@@ -149,8 +150,8 @@ fun CourseView(
           text = "404 Courses not found",
         )
         AsyncImage(
-          model = "https://i.kym-cdn.com/entries/icons/original/000/026/638/cat.jpg",
-          contentDescription = "404",
+          model = R.drawable.cat404,
+          contentDescription = "404 Cat"
         )
       }
     } else if (semesterViewModel.courseList.toMutableList().isEmpty()) {

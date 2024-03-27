@@ -1,11 +1,10 @@
 package com.mtucoursesmobile.michigantechcourses.api
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
-import kotlinx.coroutines.delay
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -13,7 +12,6 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Query
 
 interface RetroFitAPISemesters {
   @GET("semesters")
@@ -21,7 +19,7 @@ interface RetroFitAPISemesters {
   ): Call<ArrayList<MTUSemesters>>
 }
 
-fun getSemesters(semesterList: MutableList<CurrentSemester>) {
+fun getSemesters(semesterList: MutableList<CurrentSemester>, context: Context) {
   Log.d(
     "DEBUG",
     "Started Semester Call"
@@ -60,7 +58,7 @@ fun getSemesters(semesterList: MutableList<CurrentSemester>) {
     }
 
     override fun onFailure(call: Call<ArrayList<MTUSemesters>?>, t: Throwable) {
-      TODO("Not yet implemented")
+      Toast.makeText(context, "API not available, check Network Connection", Toast.LENGTH_LONG).show()
     }
   })
 }

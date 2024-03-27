@@ -1,10 +1,8 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.slideOut
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,10 +19,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -105,7 +101,9 @@ fun MainView() {
       startDestination = "Courses",
       Modifier
         .padding(innerPadding)
-        .fillMaxSize()
+        .fillMaxSize(),
+      enterTransition = { EnterTransition.None },
+      exitTransition = { ExitTransition.None }
     ) {
       composable(
         "Courses",
@@ -155,7 +153,8 @@ fun MainView() {
 // Courses
 @Composable
 fun CourseNav(
-  semesterViewModel: CurrentSemesterViewModel, courseFilterViewModel: CourseFilterViewModel,
+  semesterViewModel: CurrentSemesterViewModel,
+  courseFilterViewModel: CourseFilterViewModel,
   listState: LazyListState
 ) {
   val courseNavController = rememberNavController()

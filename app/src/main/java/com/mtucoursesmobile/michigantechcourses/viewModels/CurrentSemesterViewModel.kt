@@ -1,10 +1,8 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -16,9 +14,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.time.Year
 import java.util.Calendar
 
@@ -65,6 +61,7 @@ class CurrentSemesterViewModel : ViewModel() {
 
   fun setSemester(newSemester: CurrentSemester, context: Context) {
     courseList.clear()
+    courseNotFound.value = false
     currentSemester = newSemester
     viewModelScope.launch(Dispatchers.IO) {
       getSemesterCourses(
@@ -79,8 +76,9 @@ class CurrentSemesterViewModel : ViewModel() {
   }
 
   fun initialCourselist(context: Context) {
+    courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
-      getSemesters(semesterList)
+      getSemesters(semesterList, context)
       var targetSemester = "FALL"
       var targetYear = Year.now().value.toString()
       if (Calendar.getInstance().get(Calendar.MONTH) + 1 > 8) {
@@ -107,6 +105,7 @@ class CurrentSemesterViewModel : ViewModel() {
 
   @OptIn(ExperimentalMaterial3Api::class)
   fun updateSemester(semester: CurrentSemester, context: Context, loading: PullToRefreshState?) {
+    courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
       updateSemesterCourses(
         courseList,

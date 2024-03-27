@@ -15,17 +15,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.Color
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Year
 
 @Composable
 fun SemesterPicker(
-  expanded: MutableState<Boolean>, listState: LazyListState,
-  semesterViewModel: CurrentSemesterViewModel, scope: CoroutineScope, context: Context,
+  expanded: MutableState<Boolean>,
+  listState: LazyListState,
+  semesterViewModel: CurrentSemesterViewModel,
+  scope: CoroutineScope,
+  context: Context,
   semesterText: MutableState<String>
 ) {
 
@@ -55,15 +56,15 @@ fun SemesterPicker(
       DropdownMenuItem(
         text = { Text(i) },
         onClick = {
-          scope.launch {
-            semesterViewModel.updateSemesterPeriod(
-              i,
-              context
-            )
-            semesterText.value = "$i ${semesterViewModel.currentSemester.year}"
-            delay(100)
+          if (semesterViewModel.currentSemester.semester.lowercase() != i.lowercase()) {
             expanded.value = false
-
+            scope.launch {
+              semesterViewModel.updateSemesterPeriod(
+                i,
+                context
+              )
+              semesterText.value = "$i ${semesterViewModel.currentSemester.year}"
+            }
           }
         },
         trailingIcon = {
@@ -81,18 +82,18 @@ fun SemesterPicker(
       DropdownMenuItem(
         text = { Text(i.toString()) },
         onClick = {
-          scope.launch {
-            semesterViewModel.updateSemesterYear(
-              i,
-              context
-            )
-            semesterText.value = "${
-              semesterViewModel.currentSemester.semester.lowercase()
-                .replaceFirstChar(Char::titlecase)
-            } $i"
-            delay(100)
+          if (semesterViewModel.currentSemester.year != i.toString()) {
             expanded.value = false
-
+            scope.launch {
+              semesterViewModel.updateSemesterYear(
+                i,
+                context
+              )
+              semesterText.value = "${
+                semesterViewModel.currentSemester.semester.lowercase()
+                  .replaceFirstChar(Char::titlecase)
+              } $i"
+            }
           }
         },
         trailingIcon = {
