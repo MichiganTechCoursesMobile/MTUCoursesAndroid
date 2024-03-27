@@ -38,7 +38,6 @@ fun LazyCourseList(
   val context = LocalContext.current
   val courses = remember { mutableStateOf(semesterViewModel.courseList.toMutableList()) }
   val refreshState = rememberPullToRefreshState()
-  val noCourses = true
   if (refreshState.isRefreshing) {
     LaunchedEffect(true) {
       semesterViewModel.updateSemester(

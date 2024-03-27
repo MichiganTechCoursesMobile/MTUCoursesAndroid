@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,30 +16,15 @@ import com.mtucoursesmobile.michigantechcourses.views.MainView
 
 
 class MainActivity : ComponentActivity() {
-  @OptIn(ExperimentalMaterial3Api::class)
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge(
       statusBarStyle = SystemBarStyle.light(
-        Color.TRANSPARENT,
-        Color.TRANSPARENT
-      ),
-      navigationBarStyle = SystemBarStyle.light(
-        Color.TRANSPARENT,
-        Color.TRANSPARENT
+        Color.TRANSPARENT, Color.TRANSPARENT
+      ), navigationBarStyle = SystemBarStyle.light(
+        Color.TRANSPARENT, Color.TRANSPARENT
       )
     )
     super.onCreate(savedInstanceState)
-//    try {
-//      @SuppressLint("PrivateApi") val field: Field =
-//        CursorWindow::class.java.getDeclaredField("sCursorWindowSize")
-//      field.setAccessible(true)
-//      field.set(
-//        null,
-//        100 * 1024 * 1024
-//      ) //the 100MB is the new size
-//    } catch (e: Exception) {
-//      e.printStackTrace()
-//    }
     setContent {
       MichiganTechCoursesTheme {
         val context = LocalContext.current
@@ -55,8 +39,7 @@ class MainActivity : ComponentActivity() {
 //        }
         LaunchedEffect(Unit) {
           Log.d(
-            "DEBUG",
-            "Ran Initial Course List data grab"
+            "DEBUG", "Ran Initial Course List data grab"
           )
           semesterViewModel.initialCourselist(
             context

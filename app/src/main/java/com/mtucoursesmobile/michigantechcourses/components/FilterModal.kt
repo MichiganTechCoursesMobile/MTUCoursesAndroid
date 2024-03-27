@@ -35,21 +35,21 @@ import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(
-  ExperimentalMaterial3Api::class,
-  ExperimentalLayoutApi::class
+  ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class
 )
 @Composable
-fun FilterModal(listState: LazyListState, courseFilterViewModel: CourseFilterViewModel) {
+fun FilterModal(
+  listState: LazyListState,
+  courseFilterViewModel: CourseFilterViewModel
+) {
   val scope = rememberCoroutineScope()
   BottomSheetDefaults.windowInsets
   if (courseFilterViewModel.showFilter.value) {
 
-    ModalBottomSheet(
-      sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ModalBottomSheet(sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
       onDismissRequest = {
         courseFilterViewModel.showFilter.value = false
-      }
-    ) {
+      }) {
       //Type
       Text(
         text = "Course Type",
@@ -72,8 +72,7 @@ fun FilterModal(listState: LazyListState, courseFilterViewModel: CourseFilterVie
             val (checked, onCheckChange) = remember {
               mutableStateOf(it.second.value)
             }
-            FilterChip(
-              selected = checked,
+            FilterChip(selected = checked,
               onClick = {
                 onCheckChange(!checked)
                 it.second.value = !it.second.value
@@ -94,8 +93,7 @@ fun FilterModal(listState: LazyListState, courseFilterViewModel: CourseFilterVie
                 }
               } else {
                 null
-              }
-            )
+              })
           }
         }
       }
@@ -121,18 +119,14 @@ fun FilterModal(listState: LazyListState, courseFilterViewModel: CourseFilterVie
             levelSliderPosition.toString().first()
           }000-${
             levelSliderPosition.toString().substring(
-              5,
-              6
+              5, 6
             )
           }000${
             if (levelSliderPosition.toString().substring(
-                5,
-                6
+                5, 6
               ) == "4"
             ) "+" else ""
-          }",
-          fontWeight = FontWeight.Bold,
-          modifier = Modifier.padding(start = 16.dp)
+          }", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp)
         )
       }
       RangeSlider(
@@ -173,12 +167,9 @@ fun FilterModal(listState: LazyListState, courseFilterViewModel: CourseFilterVie
             creditSliderPosition.toString().first()
           }-${
             creditSliderPosition.toString().substring(
-              5,
-              6
+              5, 6
             )
-          }",
-          fontWeight = FontWeight.Bold,
-          modifier = Modifier.padding(start = 16.dp)
+          }", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp)
         )
       }
       RangeSlider(
@@ -218,8 +209,7 @@ fun FilterModal(listState: LazyListState, courseFilterViewModel: CourseFilterVie
             val (checked, onCheckChange) = remember {
               mutableStateOf(it.second.value)
             }
-            FilterChip(
-              selected = checked,
+            FilterChip(selected = checked,
               onClick = {
                 onCheckChange(!checked)
                 it.second.value = !it.second.value
@@ -240,8 +230,7 @@ fun FilterModal(listState: LazyListState, courseFilterViewModel: CourseFilterVie
                 }
               } else {
                 null
-              }
-            )
+              })
           }
         }
       }
