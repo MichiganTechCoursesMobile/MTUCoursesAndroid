@@ -42,7 +42,6 @@ fun LazyCourseList(
   if (refreshState.isRefreshing) {
     LaunchedEffect(true) {
       semesterViewModel.updateSemester(
-        semesterViewModel.currentSemester,
         context,
         refreshState
       )

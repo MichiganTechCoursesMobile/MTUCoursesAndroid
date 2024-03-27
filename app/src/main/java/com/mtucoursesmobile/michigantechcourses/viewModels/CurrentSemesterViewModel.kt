@@ -104,14 +104,14 @@ class CurrentSemesterViewModel : ViewModel() {
   }
 
   @OptIn(ExperimentalMaterial3Api::class)
-  fun updateSemester(semester: CurrentSemester, context: Context, loading: PullToRefreshState?) {
+  fun updateSemester(context: Context, loading: PullToRefreshState?) {
     courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
       updateSemesterCourses(
         courseList,
         context,
-        semester.semester,
-        semester.year,
+        currentSemester.semester,
+        currentSemester.year,
         lastUpdatedSince,
         loading
       )

@@ -24,6 +24,17 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import java.text.DecimalFormat
 
+fun navToCourse(navController: NavController, courseId: String) {
+  navController.navigate("courseDetail/${courseId}") {
+
+    popUpTo(navController.graph.findStartDestination().id) {
+      saveState = true
+    }
+    // Restore state when reselecting a previously selected item
+    restoreState = true
+
+  }
+}
 
 @Composable
 fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
@@ -40,10 +51,10 @@ fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
       )
     },
     headlineContent = {
-      Row () {
+      Row {
         SuggestionChip(
           label = { Text(text = "${item.entry.course[0].subject}${item.entry.course[0].crse}") },
-          onClick = {},
+          onClick = { navToCourse(navController, item.courseId) },
           modifier = Modifier
             .padding(
               end = 4.dp
@@ -60,15 +71,15 @@ fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
               } Credit${if (item.entry.course[0].maxCredits > 1) "s" else ""}"
             )
           },
-          onClick = {},
+          onClick = { navToCourse(navController, item.courseId) },
           modifier = Modifier
             .padding(
               end = 4.dp
             )
         )
         SuggestionChip(
-          label = { Text(text = "${item.entry.sections.filter { section -> section?.deletedAt == null }.size} Sections") },
-          onClick = {},
+          label = { Text(text = "${item.entry.sections.size} Section${if(item.entry.sections.size != 1) "s" else ""}") },
+          onClick = { navToCourse(navController, item.courseId) },
           modifier = Modifier
             .padding(
               end = 4.dp
@@ -89,15 +100,7 @@ fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
       .padding(vertical = 8.dp)
       .clip(RoundedCornerShape(16.dp))
       .clickable {
-        navController.navigate("courseDetail/${item.courseId}") {
-
-          popUpTo(navController.graph.findStartDestination().id) {
-            saveState = true
-          }
-          // Restore state when reselecting a previously selected item
-          restoreState = true
-
-        }
+        navToCourse(navController, item.courseId)
       },
   )
 }
