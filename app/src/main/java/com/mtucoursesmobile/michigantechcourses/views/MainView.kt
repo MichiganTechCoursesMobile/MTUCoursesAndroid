@@ -8,6 +8,7 @@ import androidx.compose.animation.slideOut
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.School
@@ -59,6 +60,8 @@ fun MainView() {
   }
   val semesterViewModel: CurrentSemesterViewModel = viewModel()
   val courseFilterViewModel: CourseFilterViewModel = viewModel()
+  val scope = rememberCoroutineScope()
+  val listState = rememberLazyListState()
   val navController = rememberNavController()
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
@@ -71,6 +74,9 @@ fun MainView() {
             label = { Text(text = item.first) },
             selected = currentDestination?.hierarchy?.any { it.route == item.first } == true,
             onClick = {
+              if (currentDestination?.hierarchy?.any { it.route == "Courses" } == true) {
+                scope.launch { listState.animateScrollToItem(0) }
+              }
               navController.navigate(item.first) {
 
                 popUpTo(navController.graph.findStartDestination().id) {
@@ -112,7 +118,8 @@ fun MainView() {
         // Nested NavHost for Courses
         CourseNav(
           semesterViewModel,
-          courseFilterViewModel
+          courseFilterViewModel,
+          listState
         )
       }
       composable("Basket",
@@ -148,7 +155,8 @@ fun MainView() {
 // Courses
 @Composable
 fun CourseNav(
-  semesterViewModel: CurrentSemesterViewModel, courseFilterViewModel: CourseFilterViewModel
+  semesterViewModel: CurrentSemesterViewModel, courseFilterViewModel: CourseFilterViewModel,
+  listState: LazyListState
 ) {
   val courseNavController = rememberNavController()
   NavHost(
@@ -166,7 +174,8 @@ fun CourseNav(
       CourseView(
         semesterViewModel = semesterViewModel,
         courseFilterViewModel = courseFilterViewModel,
-        courseNavController
+        courseNavController,
+        listState
       )
     }
     composable("courseDetail/{courseId}",

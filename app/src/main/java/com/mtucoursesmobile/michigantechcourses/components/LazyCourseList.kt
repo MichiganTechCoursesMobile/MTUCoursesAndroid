@@ -84,38 +84,30 @@ fun LazyCourseList(
 
           //Type
           if (courseFilterViewModel.typeFilter.isNotEmpty()) {
-            for (i in semesterViewModel.courseList.filter { course -> course.entry.course[0].subject !in courseFilterViewModel.typeFilter }) {
-              courses.value.remove(i)
-            }
+            courses.value.removeAll(semesterViewModel.courseList.filter { course -> course.entry.course[0].subject !in courseFilterViewModel.typeFilter })
           }
 
           //Level
           if (courseFilterViewModel.levelFilter.value != 1f..4f) {
             when (courseFilterViewModel.levelFilter.value) {
               1f..1f -> {
-                for (i in semesterViewModel.courseList.filter { course ->
+                courses.value.removeAll(semesterViewModel.courseList.filter { course ->
                   (!(course.entry.course[0].crse.first().toString().toFloat() <= 1.0))
-                }) {
-                  courses.value.remove(i)
-                }
+                })
               }
 
               4f..4f -> {
-                for (i in semesterViewModel.courseList.filter { course ->
+                courses.value.removeAll(semesterViewModel.courseList.filter { course ->
                   (!(course.entry.course[0].crse.first().toString().toFloat() >= 4.0))
-                }) {
-                  courses.value.remove(i)
-                }
+                })
               }
 
               else -> {
-                for (i in semesterViewModel.courseList.filter { course ->
+                courses.value.removeAll(semesterViewModel.courseList.filter { course ->
                   !courseFilterViewModel.levelFilter.value.contains(
                     course.entry.course[0].crse.first().toString().toFloat()
                   )
-                }) {
-                  courses.value.remove(i)
-                }
+                })
               }
             }
           }
@@ -123,22 +115,28 @@ fun LazyCourseList(
           if (courseFilterViewModel.creditFilter.value != 0f..4f) {
             when (courseFilterViewModel.creditFilter.value) {
               0f..0f -> {
-                for (i in semesterViewModel.courseList.filter { course -> (!(course.entry.course[0].maxCredits <= 1.0)) }) {
-                  courses.value.remove(i)
-                }
+                courses.value.removeAll(semesterViewModel.courseList.filter { course -> (!(course.entry.course[0].maxCredits <= 1.0)) })
               }
 
               4f..4f -> {
-                for (i in semesterViewModel.courseList.filter { course -> (!(course.entry.course[0].maxCredits >= 4.0)) }) {
-                  courses.value.remove(i)
-                }
+                courses.value.removeAll(semesterViewModel.courseList.filter { course -> (!(course.entry.course[0].maxCredits >= 4.0)) })
               }
 
               else -> {
-                for (i in semesterViewModel.courseList.filter { course ->
+                courses.value.removeAll(semesterViewModel.courseList.filter { course ->
                   (!courseFilterViewModel.creditFilter.value.contains(course.entry.course[0].maxCredits) || !courseFilterViewModel.creditFilter.value.contains(course.entry.course[0].minCredits))
-                }) {
-                  courses.value.remove(i)
+                })
+              }
+            }
+          }
+          //Other
+          if (courseFilterViewModel.otherFilter.isNotEmpty()) {
+            for (other in courseFilterViewModel.otherFilter) {
+              when (other) {
+                "Has Seats" -> {
+                  courses.value.removeAll(semesterViewModel.courseList.filter { course ->
+                    course.entry.sections.none { section -> section?.availableSeats?.toFloat()!! > 0 }
+                  })
                 }
               }
             }

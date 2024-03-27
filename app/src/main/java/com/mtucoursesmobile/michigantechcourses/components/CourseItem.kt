@@ -1,20 +1,14 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
+
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ChipColors
-import androidx.compose.material3.ChipElevation
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ElevatedSuggestionChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.SuggestionChip
@@ -22,39 +16,78 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
+import java.text.DecimalFormat
 
 
 @Composable
 fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
   ListItem(
-    headlineContent = {
+    overlineContent = {
       Text(
-        text = "${item.entry.course[0].subject}${item.entry.course[0].crse} - ${item.entry.course[0].title}",
+        text = item.entry.course[0].title,
         fontWeight = FontWeight.Bold,
         fontSize = 20.sp,
         textAlign = TextAlign.Left,
+        modifier = Modifier.padding(top = 4.dp),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+      )
+    },
+    headlineContent = {
+      Text(
+        text = "${item.entry.course[0].subject}${item.entry.course[0].crse}",
+        modifier = Modifier.fillMaxHeight()
       )
     },
     supportingContent = {
       Row {
         SuggestionChip(
-          label = { Text(text = "Hi") },
+          label = { Text(text = item.entry.course[0].subject) },
           onClick = {},
-          modifier = Modifier.padding(end = 4.dp)
+          modifier = Modifier
+            .padding(
+              end = 4.dp
+            )
         )
         SuggestionChip(
-          label = { Text(text = "Hi") },
+          label = {
+            Text(
+              text =
+              "${
+                if (item.entry.course[0].maxCredits == item.entry.course[0].minCredits) DecimalFormat("0.#").format(item.entry.course[0].maxCredits) else {
+                  "${DecimalFormat("0.#").format(item.entry.course[0].minCredits)} - ${DecimalFormat("0.#").format(item.entry.course[0].maxCredits)}"
+                }
+              } Credit${if (item.entry.course[0].maxCredits > 1) "s" else ""}"
+            )
+          },
           onClick = {},
+          modifier = Modifier
+            .padding(
+              end = 4.dp
+            )
+        )
+        SuggestionChip(
+          label = { Text(text = "${item.entry.sections.filter { section -> section?.deletedAt == null }.size} Sections") },
+          onClick = {},
+          modifier = Modifier
+            .padding(
+              end = 4.dp
+            )
         )
       }
+
     },
     trailingContent = {
       Icon(
@@ -65,44 +98,18 @@ fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
     tonalElevation = 4.dp,
     modifier = Modifier
       .padding(horizontal = 10.dp)
-      .height(90.dp)
-      .clip(RoundedCornerShape(16.dp)),
+      .padding(vertical = 8.dp)
+      .clip(RoundedCornerShape(16.dp))
+      .clickable {
+        navController.navigate("courseDetail/${item.courseId}") {
+
+          popUpTo(navController.graph.findStartDestination().id) {
+            saveState = true
+          }
+          // Restore state when reselecting a previously selected item
+          restoreState = true
+
+        }
+      },
   )
-
-  ElevatedCard(
-    elevation = CardDefaults.cardElevation(
-      defaultElevation = 4.dp
-    ),
-    modifier = Modifier
-      .fillMaxWidth()
-      .height(110.dp)
-      .padding(10.dp),
-
-    ) {
-    Text(
-      text = "${item.entry.course[0].subject}${item.entry.course[0].crse} - ${item.entry.course[0].title}",
-      modifier = Modifier
-        .padding(
-          horizontal = 10.dp
-        )
-        .paddingFromBaseline(
-          top = 30.dp,
-        ),
-      fontWeight = FontWeight.Bold,
-      fontSize = 20.sp,
-      textAlign = TextAlign.Left,
-    )
-    Row {
-      SuggestionChip(
-        label = { Text(text = "Hi") },
-        onClick = {},
-        modifier = Modifier.padding(start = 10.dp)
-      )
-      SuggestionChip(
-        label = { Text(text = "Hi") },
-        onClick = {},
-        modifier = Modifier.padding(start = 4.dp)
-      )
-    }
-  }
 }

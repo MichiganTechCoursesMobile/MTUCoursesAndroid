@@ -3,6 +3,7 @@ package com.mtucoursesmobile.michigantechcourses.api
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.runtime.MutableState
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
@@ -39,7 +40,8 @@ interface RetroFitAPI {
 
 @OptIn(DelicateCoroutinesApi::class)
 fun getSemesterCourses(
-  courseList: MutableList<MTUCoursesEntry>, ctx: Context, semester: String, year: String,
+  courseList: MutableList<MTUCoursesEntry>, courseNotFound: MutableState<Boolean>, ctx: Context,
+  semester: String, year: String,
   lastUpdatedSince: MutableList<LastUpdatedSince>
 ) {
   val okHttpClient = OkHttpClient.Builder()
@@ -108,7 +110,7 @@ fun getSemesterCourses(
                 }
               }
               if (courseList.isEmpty()) {
-                throw NoSuchElementException()
+                courseNotFound.value = true
               }
 
               GlobalScope.launch(Dispatchers.Default) {
@@ -138,11 +140,7 @@ fun getSemesterCourses(
               "DEBUG",
               t.cause.toString()
             );
-            Toast.makeText(
-              ctx,
-              "Failed to get data, ensure you have a stable internet connection and try again.",
-              Toast.LENGTH_LONG
-            ).show()
+            courseNotFound.value = true
           }
         })
         return
@@ -155,11 +153,7 @@ fun getSemesterCourses(
         "DEBUG",
         t.cause.toString()
       );
-      Toast.makeText(
-        ctx,
-        "Failed to get data, ensure you have a stable internet connection and try again.",
-        Toast.LENGTH_LONG
-      ).show()
+      courseNotFound.value = true
     }
   })
 }

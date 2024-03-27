@@ -69,6 +69,8 @@ dependencies {
   implementation("androidx.compose.material3:material3:1.3.0-alpha02")
   implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.0.0-alpha05")
   implementation("androidx.activity:activity:1.8.2")
+  implementation("androidx.compose.ui:ui:1.6.4")
+  implementation("io.coil-kt:coil-compose:2.6.0")
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.activity.compose)

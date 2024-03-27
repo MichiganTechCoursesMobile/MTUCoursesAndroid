@@ -1,7 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.classes
 
-data class CurrentSemester(
-  val readable: String,
-  val year: String,
+data class MTUSemesters(
+  val year: Number,
   val semester: String
 )

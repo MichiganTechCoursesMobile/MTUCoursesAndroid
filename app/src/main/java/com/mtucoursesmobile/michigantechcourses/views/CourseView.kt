@@ -1,26 +1,15 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
 import android.app.Activity
-import android.content.Context
-import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -32,22 +21,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.mtucoursesmobile.michigantechcourses.classes.semesterList
+import coil.compose.AsyncImage
 import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
@@ -55,9 +39,8 @@ import com.mtucoursesmobile.michigantechcourses.components.LoadingAnimation
 import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 
 @OptIn(
   ExperimentalMaterial3Api::class,
@@ -65,10 +48,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun CourseView(
   semesterViewModel: CurrentSemesterViewModel,
-  courseFilterViewModel: CourseFilterViewModel, navController: NavController
+  courseFilterViewModel: CourseFilterViewModel, navController: NavController,
+  listState: LazyListState
 ) {
   val context = LocalContext.current
-  val listState = rememberLazyListState()
   val scope = rememberCoroutineScope()
   val expanded = remember { mutableStateOf(false) }
   val semesterText = remember { mutableStateOf(semesterViewModel.currentSemester.readable) }
@@ -155,7 +138,22 @@ fun CourseView(
         text = { Text(text = "Filter") },
       )
     }) { innerPadding ->
-    if (semesterViewModel.courseList.toMutableList().isEmpty()) {
+    if (semesterViewModel.courseNotFound.value) {
+      Column(
+        modifier = Modifier
+          .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+      ) {
+        Text(
+          text = "404 Courses not found",
+        )
+        AsyncImage(
+          model = "https://i.kym-cdn.com/entries/icons/original/000/026/638/cat.jpg",
+          contentDescription = "404",
+        )
+      }
+    } else if (semesterViewModel.courseList.toMutableList().isEmpty()) {
       LoadingAnimation(innerPadding)
     } else {
       LazyCourseList(
