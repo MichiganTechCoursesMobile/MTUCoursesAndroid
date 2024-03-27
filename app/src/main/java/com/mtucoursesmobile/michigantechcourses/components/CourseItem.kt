@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +26,10 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import java.text.DecimalFormat
 
-fun navToCourse(navController: NavController, courseId: String) {
+fun navToCourse(
+  navController: NavController,
+  courseId: String
+) {
   navController.navigate("courseDetail/${courseId}") {
 
     popUpTo(navController.graph.findStartDestination().id) {
@@ -37,7 +42,10 @@ fun navToCourse(navController: NavController, courseId: String) {
 }
 
 @Composable
-fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
+fun CourseItem(
+  item: MTUCoursesEntry,
+  navController: NavController
+) {
   ListItem(
     overlineContent = {
       Text(
@@ -65,8 +73,14 @@ fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
             Text(
               text =
               "${
-                if (item.entry.course[0].maxCredits == item.entry.course[0].minCredits) DecimalFormat("0.#").format(item.entry.course[0].maxCredits) else {
-                  "${DecimalFormat("0.#").format(item.entry.course[0].minCredits)} - ${DecimalFormat("0.#").format(item.entry.course[0].maxCredits)}"
+                if (item.entry.course[0].maxCredits == item.entry.course[0].minCredits) DecimalFormat(
+                  "0.#"
+                ).format(item.entry.course[0].maxCredits) else {
+                  "${DecimalFormat("0.#").format(item.entry.course[0].minCredits)} - ${
+                    DecimalFormat(
+                      "0.#"
+                    ).format(item.entry.course[0].maxCredits)
+                  }"
                 }
               } Credit${if (item.entry.course[0].maxCredits > 1) "s" else ""}"
             )
@@ -78,7 +92,7 @@ fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
             )
         )
         SuggestionChip(
-          label = { Text(text = "${item.entry.sections.size} Section${if(item.entry.sections.size != 1) "s" else ""}") },
+          label = { Text(text = "${item.entry.sections.size} Section${if (item.entry.sections.size != 1) "s" else ""}") },
           onClick = { navToCourse(navController, item.courseId) },
           modifier = Modifier
             .padding(
@@ -94,7 +108,7 @@ fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
         modifier = Modifier.padding()
       )
     },
-    tonalElevation = 4.dp,
+
     modifier = Modifier
       .padding(horizontal = 10.dp)
       .padding(vertical = 8.dp)
@@ -102,5 +116,10 @@ fun CourseItem(item: MTUCoursesEntry, navController: NavController) {
       .clickable {
         navToCourse(navController, item.courseId)
       },
+    colors = ListItemDefaults.colors(
+      containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+      overlineColor = MaterialTheme.colorScheme.onSurface,
+      headlineColor = MaterialTheme.colorScheme.onSurface
+    )
   )
 }

@@ -41,7 +41,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
@@ -84,16 +83,14 @@ fun CourseDetailView(
           .padding(innerPadding)
           .padding(horizontal = 8.dp)
       ) {
-
+        var description = "¯\\_(ツ)_/¯"
         if (foundCourse.course[0].description != null) {
-          ExpandableCard(
-            title = "Course Description:",
-            description = foundCourse.course[0].description!!
-          )
-        } else {
-          Text(text = "Course Description:", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-          Text(text = "¯\\_(ツ)_/¯")
+          description = foundCourse.course[0].description!!
         }
+        ExpandableCard(
+          title = "Course Description:",
+          description = description
+        )
         LazyColumn(
           modifier = Modifier
             .fillMaxSize(),
@@ -134,9 +131,9 @@ fun ExpandableCard(
 ) {
 
   var expandedState by remember { mutableStateOf(false) }
-  var showExpand by remember { mutableStateOf(true)}
+  var showExpand by remember { mutableStateOf(true) }
   val rotationState by animateFloatAsState(
-    targetValue = if (expandedState) 180f else 0f
+    targetValue = if (expandedState) 180f else 0f, label = "flip"
   )
   Card(
     modifier = Modifier
@@ -147,14 +144,17 @@ fun ExpandableCard(
           easing = LinearOutSlowInEasing
         )
       ),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
     shape = shape,
     onClick = {
       expandedState = !expandedState
-    }
+    },
   ) {
     Column(
       modifier = Modifier
-        .fillMaxWidth().padding(horizontal = 6.dp).padding(bottom = 4.dp)
+        .fillMaxWidth()
+        .padding(horizontal = 12.dp)
+        .padding(bottom = 6.dp)
     ) {
       Row(
         verticalAlignment = Alignment.CenterVertically
@@ -191,8 +191,9 @@ fun ExpandableCard(
           fontWeight = descriptionFontWeight,
           maxLines = descriptionMaxLines,
           overflow = TextOverflow.Ellipsis,
-          onTextLayout = {textLayoutResult -> showExpand =
-            textLayoutResult.isLineEllipsized(textLayoutResult.lineCount - 1)
+          onTextLayout = { textLayoutResult ->
+            showExpand =
+              textLayoutResult.isLineEllipsized(textLayoutResult.lineCount - 1)
           }
         )
       } else {
