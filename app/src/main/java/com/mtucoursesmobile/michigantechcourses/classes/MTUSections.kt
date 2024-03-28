@@ -18,21 +18,21 @@ data class MTUSections(
   var room: String,
   var buildingName: String,
   var localType: String,
-  var instructors: Array<SectionInstructors>
+  var instructors: List<SectionInstructors>
 )
 
 data class SectionTimeRoot(
   var type: String,
   var rdates: SectionTimeRDates,
-  var rrules: Array<SectionTimeRRules>,
+  var rrules: List<SectionTimeRRules>,
   var exdates: SectionTimeExDates,
-  var exrules: Array<Any>,
+  var exrules: List<Any>,
   var timezone: String
 )
 
 data class SectionTimeRDates(
   var type: String,
-  var dates: Array<String>,
+  var dates: List<String>,
 )
 
 data class SectionTimeRRules(
@@ -45,7 +45,7 @@ data class SectionTimeRRulesConfig(
   var start: SectionTimeRRulesConfigDates,
   var duration: Number,
   var frequency: String,
-  var byDayOfWeek: Array<String>
+  var byDayOfWeek: List<String>
 )
 
 data class SectionTimeRRulesConfigDates(
@@ -61,7 +61,7 @@ data class SectionTimeRRulesConfigDates(
 
 data class SectionTimeExDates(
   var type: String,
-  var dates: Array<Any>
+  var dates: List<Any>
 )
 
 data class SectionInstructors(

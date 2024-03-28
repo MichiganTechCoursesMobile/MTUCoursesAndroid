@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
+import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -13,43 +14,39 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-interface RetroFitAPISemesters {
-  @GET("semesters")
-  fun getCurrentSemesters(
-  ): Call<List<MTUSemesters>>
+interface RetroFitAPIInstructors {
+  @GET("instructors")
+  fun getCurrentInstructors(
+  ): Call<List<MTUInstructor>>
 }
 
-fun getSemesters(semesterList: MutableList<CurrentSemester>, context: Context) {
+fun getInstructors(instructorList: MutableList<MTUInstructor>, context: Context) {
+  Log.d(
+    "DEBUG",
+    "Started Semester Call"
+  )
   val okHttpClient = OkHttpClient.Builder()
     .build()
 
   val retrofit = Retrofit.Builder()
     .baseUrl("https://api.michigantechcourses.com/").client(okHttpClient)
     .addConverterFactory(GsonConverterFactory.create()).build()
-  val retrofitAPI = retrofit.create(RetroFitAPISemesters::class.java)
+  val retrofitAPI = retrofit.create(RetroFitAPIInstructors::class.java)
 
-  val semesterCall: Call<List<MTUSemesters>> = retrofitAPI.getCurrentSemesters()
+  val semesterCall: Call<List<MTUInstructor>> = retrofitAPI.getCurrentInstructors()
 
-  semesterCall!!.enqueue(object : Callback<List<MTUSemesters>?> {
+  semesterCall!!.enqueue(object : Callback<List<MTUInstructor>?> {
     override fun onResponse(
-      call: Call<List<MTUSemesters>?>, response: Response<List<MTUSemesters>?>
+      call: Call<List<MTUInstructor>?>, response: Response<List<MTUInstructor>?>
     ) {
       if (response.isSuccessful) {
-        val semesterData: List<MTUSemesters> = response.body()!!
-
-        for (semester in semesterData) {
-          semesterList.add(
-            CurrentSemester(
-              "${semester.semester.lowercase().replaceFirstChar(Char::titlecase)} ${semester.year}",
-              semester.year.toString(),
-              semester.semester
-            )
-          )
-        }
+        val instructorData: List<MTUInstructor> = response.body()!!
+        instructorList.clear()
+        instructorList.addAll(instructorData)
       }
     }
 
-    override fun onFailure(call: Call<List<MTUSemesters>?>, t: Throwable) {
+    override fun onFailure(call: Call<List<MTUInstructor>?>, t: Throwable) {
       Toast.makeText(
         context,
         "API not available, check Network Connection",

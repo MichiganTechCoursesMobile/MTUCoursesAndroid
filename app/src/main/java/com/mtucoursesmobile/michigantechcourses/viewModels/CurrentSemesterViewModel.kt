@@ -7,12 +7,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mtucoursesmobile.michigantechcourses.api.getInstructors
 import com.mtucoursesmobile.michigantechcourses.api.getSemesterCourses
 import com.mtucoursesmobile.michigantechcourses.api.getSemesters
 import com.mtucoursesmobile.michigantechcourses.api.updateSemesterCourses
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
+import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.Year
@@ -27,6 +29,7 @@ class CurrentSemesterViewModel : ViewModel() {
     )
   val courseList = mutableStateListOf<MTUCoursesEntry>()
   val semesterList = mutableStateListOf<CurrentSemester>()
+  val instructorList = mutableStateListOf<MTUInstructor>()
   val courseNotFound = mutableStateOf(false)
 
   val lastUpdatedSince = mutableListOf<LastUpdatedSince>()
@@ -78,7 +81,14 @@ class CurrentSemesterViewModel : ViewModel() {
   fun initialCourselist(context: Context) {
     courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
-      getSemesters(semesterList, context)
+      getInstructors(
+        instructorList,
+        context
+      )
+      getSemesters(
+        semesterList,
+        context
+      )
       var targetSemester = "FALL"
       var targetYear = Year.now().value.toString()
       if (Calendar.getInstance().get(Calendar.MONTH) + 1 > 8) {

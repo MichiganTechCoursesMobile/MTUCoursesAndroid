@@ -30,12 +30,12 @@ interface RetroFitAPI {
   @GET("courses")
   fun getCourseData(
     @Query("semester") semester: String, @Query("year") year: String
-  ): Call<ArrayList<MTUCourses>>
+  ): Call<List<MTUCourses>>
 
   @GET("sections")
   fun getSectionData(
     @Query("semester") semester: String, @Query("year") year: String
-  ): Call<ArrayList<MTUSections>>
+  ): Call<List<MTUSections>>
 }
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -49,11 +49,6 @@ fun getSemesterCourses(
 
   val currentDateAndTime = Instant.now()
 
-  Log.d(
-    "DEBUG",
-    currentDateAndTime.toString()
-  )
-
   // Initiate API Call via retrofit
   val retrofit = Retrofit.Builder()
     .baseUrl("https://api.michigantechcourses.com/").client(okHttpClient)
@@ -61,31 +56,31 @@ fun getSemesterCourses(
   val retrofitAPI = retrofit.create(RetroFitAPI::class.java)
 
   // Define the course call
-  val courseCall: Call<ArrayList<MTUCourses>> = retrofitAPI.getCourseData(
+  val courseCall: Call<List<MTUCourses>> = retrofitAPI.getCourseData(
     semester,
     year
   )
 
-  val sectionCall: Call<ArrayList<MTUSections>> = retrofitAPI.getSectionData(
+  val sectionCall: Call<List<MTUSections>> = retrofitAPI.getSectionData(
     semester,
     year
   )
   // Get Data from API
-  courseCall!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
+  courseCall!!.enqueue(object : Callback<List<MTUCourses>?> {
     override fun onResponse(
-      call: Call<ArrayList<MTUCourses>?>,
-      response: Response<ArrayList<MTUCourses>?>
+      call: Call<List<MTUCourses>?>,
+      response: Response<List<MTUCourses>?>
     ) {
       if (response.isSuccessful) {
 
-        val courseData: ArrayList<MTUCourses> = response.body()!!
+        val courseData: List<MTUCourses> = response.body()!!
 
-        sectionCall!!.enqueue(object : Callback<ArrayList<MTUSections>?> {
+        sectionCall!!.enqueue(object : Callback<List<MTUSections>?> {
           override fun onResponse(
-            call: Call<ArrayList<MTUSections>?>, response: Response<ArrayList<MTUSections>?>
+            call: Call<List<MTUSections>?>, response: Response<List<MTUSections>?>
           ) {
             if (response.isSuccessful) {
-              val sectionData: ArrayList<MTUSections> = response.body()!!
+              val sectionData: List<MTUSections> = response.body()!!
               val timeGot = Instant.now().toString()
 
               if (courseList.size != 0) {
@@ -135,7 +130,7 @@ fun getSemesterCourses(
             }
           }
 
-          override fun onFailure(call: Call<ArrayList<MTUSections>?>, t: Throwable) {
+          override fun onFailure(call: Call<List<MTUSections>?>, t: Throwable) {
             Log.d(
               "DEBUG",
               t.cause.toString()
@@ -148,7 +143,7 @@ fun getSemesterCourses(
     }
 
     // If error occurs
-    override fun onFailure(call: Call<ArrayList<MTUCourses>?>, t: Throwable) {
+    override fun onFailure(call: Call<List<MTUCourses>?>, t: Throwable) {
       Log.d(
         "DEBUG",
         t.cause.toString()

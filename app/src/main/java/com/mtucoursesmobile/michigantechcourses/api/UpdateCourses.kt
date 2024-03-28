@@ -34,13 +34,13 @@ interface RetroFitAPIDate {
   fun updatedSectionData(
     @Query("semester") semester: String, @Query("year") year: String,
     @Query("updatedSince") lastUpdated: String
-  ): Call<ArrayList<MTUSections>>
+  ): Call<List<MTUSections>>
 
   @GET("courses")
   fun updatedCourseData(
     @Query("semester") semester: String, @Query("year") year: String,
     @Query("updatedSince") lastUpdated: String
-  ): Call<ArrayList<MTUCourses>>
+  ): Call<List<MTUCourses>>
 }
 
 @OptIn(
@@ -65,32 +65,32 @@ fun updateSemesterCourses(
     .addConverterFactory(GsonConverterFactory.create()).build()
   val retrofitAPI = retrofit.create(RetroFitAPIDate::class.java)
 
-  val courseCall: Call<ArrayList<MTUCourses>> = retrofitAPI.updatedCourseData(
+  val courseCall: Call<List<MTUCourses>> = retrofitAPI.updatedCourseData(
     semester,
     year,
     lastUpdatedCourse
   )
 
-  val sectionCall: Call<ArrayList<MTUSections>> = retrofitAPI.updatedSectionData(
+  val sectionCall: Call<List<MTUSections>> = retrofitAPI.updatedSectionData(
     semester,
     year,
     lastUpdatedSection
   )
 
-  courseCall!!.enqueue(object : Callback<ArrayList<MTUCourses>?> {
+  courseCall!!.enqueue(object : Callback<List<MTUCourses>?> {
     override fun onResponse(
-      call: Call<ArrayList<MTUCourses>?>,
-      response: Response<ArrayList<MTUCourses>?>
+      call: Call<List<MTUCourses>?>,
+      response: Response<List<MTUCourses>?>
     ) {
       if (response.isSuccessful) {
-        val courseData: ArrayList<MTUCourses> = response.body()!!
+        val courseData: List<MTUCourses> = response.body()!!
         val timeGot = Instant.now().toString()
-        sectionCall!!.enqueue(object : Callback<ArrayList<MTUSections>?> {
+        sectionCall!!.enqueue(object : Callback<List<MTUSections>?> {
           override fun onResponse(
-            call: Call<ArrayList<MTUSections>?>, response: Response<ArrayList<MTUSections>?>
+            call: Call<List<MTUSections>?>, response: Response<List<MTUSections>?>
           ) {
             if (response.isSuccessful) {
-              val sectionData: ArrayList<MTUSections> = response.body()!!
+              val sectionData: List<MTUSections> = response.body()!!
               if (courseData.size == 0 && sectionData.size == 0) {
                 if (loading != null) {
                   Toast.makeText(
@@ -169,7 +169,7 @@ fun updateSemesterCourses(
             return
           }
 
-          override fun onFailure(call: Call<ArrayList<MTUSections>?>, t: Throwable) {
+          override fun onFailure(call: Call<List<MTUSections>?>, t: Throwable) {
             Log.d(
               "DEBUG",
               t.cause.toString()
@@ -185,7 +185,7 @@ fun updateSemesterCourses(
       return
     }
 
-    override fun onFailure(call: Call<ArrayList<MTUCourses>?>, t: Throwable) {
+    override fun onFailure(call: Call<List<MTUCourses>?>, t: Throwable) {
       Log.d(
         "DEBUG",
         t.cause.toString()
