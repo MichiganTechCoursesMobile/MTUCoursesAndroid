@@ -14,20 +14,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
-import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import kotlinx.coroutines.launch
 import java.time.Year
 
 @Composable
 fun SemesterPicker(
   expanded: MutableState<Boolean>,
-  semesterViewModel: CurrentSemesterViewModel,
+  courseViewModel: MTUCoursesViewModel,
   context: Context,
   semesterText: MutableState<String>
 ) {
   val scope = rememberCoroutineScope()
   val semesterTypes = listOf(
-    "Fall", "Summer", "Spring"
+    "Fall",
+    "Summer",
+    "Spring"
   )
   val currentYears = mutableListOf<Number>()
   for (year in -1..1) {
@@ -41,48 +43,58 @@ fun SemesterPicker(
       tint = MaterialTheme.colorScheme.primary,
     )
   }
-  DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
+  DropdownMenu(
+    expanded = expanded.value,
+    onDismissRequest = { expanded.value = false }) {
     for (i in semesterTypes) {
-      DropdownMenuItem(text = { Text(i) }, onClick = {
-        if (semesterViewModel.currentSemester.semester.lowercase() != i.lowercase()) {
-          expanded.value = false
-          scope.launch {
-            semesterViewModel.updateSemesterPeriod(
-              i, context
-            )
-            semesterText.value = "$i ${semesterViewModel.currentSemester.year}"
+      DropdownMenuItem(
+        text = { Text(i) },
+        onClick = {
+          if (courseViewModel.currentSemester.semester.lowercase() != i.lowercase()) {
+            expanded.value = false
+            scope.launch {
+              courseViewModel.updateSemesterPeriod(
+                i,
+                context
+              )
+              semesterText.value = "$i ${courseViewModel.currentSemester.year}"
+            }
           }
-        }
-      }, trailingIcon = {
-        if (semesterViewModel.currentSemester.semester.lowercase() == i.lowercase()) Icon(
-          imageVector = Icons.Filled.Check,
-          contentDescription = "Check",
-          tint = MaterialTheme.colorScheme.primary
-        )
-      })
+        },
+        trailingIcon = {
+          if (courseViewModel.currentSemester.semester.lowercase() == i.lowercase()) Icon(
+            imageVector = Icons.Filled.Check,
+            contentDescription = "Check",
+            tint = MaterialTheme.colorScheme.primary
+          )
+        })
     }
     HorizontalDivider()
     for (i in currentYears) {
-      DropdownMenuItem(text = { Text(i.toString()) }, onClick = {
-        if (semesterViewModel.currentSemester.year != i.toString()) {
-          expanded.value = false
-          scope.launch {
-            semesterViewModel.updateSemesterYear(
-              i, context
-            )
-            semesterText.value = "${
-              semesterViewModel.currentSemester.semester.lowercase()
-                .replaceFirstChar(Char::titlecase)
-            } $i"
+      DropdownMenuItem(
+        text = { Text(i.toString()) },
+        onClick = {
+          if (courseViewModel.currentSemester.year != i.toString()) {
+            expanded.value = false
+            scope.launch {
+              courseViewModel.updateSemesterYear(
+                i,
+                context
+              )
+              semesterText.value = "${
+                courseViewModel.currentSemester.semester.lowercase()
+                  .replaceFirstChar(Char::titlecase)
+              } $i"
+            }
           }
-        }
-      }, trailingIcon = {
-        if (semesterViewModel.currentSemester.year == i.toString()) Icon(
-          imageVector = Icons.Filled.Check,
-          contentDescription = "Check",
-          tint = MaterialTheme.colorScheme.primary
-        )
-      })
+        },
+        trailingIcon = {
+          if (courseViewModel.currentSemester.year == i.toString()) Icon(
+            imageVector = Icons.Filled.Check,
+            contentDescription = "Check",
+            tint = MaterialTheme.colorScheme.primary
+          )
+        })
     }
   }
 }

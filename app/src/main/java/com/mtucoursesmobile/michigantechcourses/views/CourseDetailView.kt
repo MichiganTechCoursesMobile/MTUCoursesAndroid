@@ -48,8 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
 import com.mtucoursesmobile.michigantechcourses.components.SectionItem
-import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import java.text.DecimalFormat
 
 @OptIn(
@@ -58,13 +57,12 @@ import java.text.DecimalFormat
 )
 @Composable
 fun CourseDetailView(
-  semesterViewModel: CurrentSemesterViewModel,
-  courseFilterViewModel: CourseFilterViewModel,
+  courseViewModel: MTUCoursesViewModel,
   navController: NavController,
   courseId: String?
 ) {
   val foundCourse =
-    semesterViewModel.courseList.find { course -> course.courseId == courseId }?.entry
+    courseViewModel.courseList.find { course -> course.courseId == courseId }?.entry
   if (foundCourse != null) {
     Scaffold(
       contentWindowInsets = WindowInsets(0.dp),
@@ -183,7 +181,7 @@ fun CourseDetailView(
           itemsIndexed(items = foundCourse.sections.filter { section -> section?.deletedAt == null },
             key = { _, item -> item!!.id }) { _, item ->
             val sectionInstructor =
-              semesterViewModel.instructorList.filter { instructor -> item!!.instructors.contains(SectionInstructors(instructor.id)) }
+              courseViewModel.courseInstructorList.filter { instructor -> item!!.instructors.contains(SectionInstructors(instructor.id)) }
             SectionItem(
               section = item!!,
               sectionInstructor

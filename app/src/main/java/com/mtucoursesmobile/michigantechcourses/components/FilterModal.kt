@@ -31,24 +31,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(
-  ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class
+  ExperimentalMaterial3Api::class,
+  ExperimentalLayoutApi::class
 )
 @Composable
 fun FilterModal(
   listState: LazyListState,
-  courseFilterViewModel: CourseFilterViewModel
+  courseViewModel: MTUCoursesViewModel
 ) {
   val scope = rememberCoroutineScope()
   BottomSheetDefaults.windowInsets
-  if (courseFilterViewModel.showFilter.value) {
+  if (courseViewModel.showFilter.value) {
 
     ModalBottomSheet(sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
       onDismissRequest = {
-        courseFilterViewModel.showFilter.value = false
+        courseViewModel.showFilter.value = false
       }) {
       //Type
       Text(
@@ -68,7 +69,7 @@ fun FilterModal(
             .fillMaxWidth(1f)
             .wrapContentHeight(align = Alignment.Top)
         ) {
-          courseFilterViewModel.courseTypes.forEach() { it ->
+          courseViewModel.courseTypes.forEach() { it ->
             val (checked, onCheckChange) = remember {
               mutableStateOf(it.second.value)
             }
@@ -77,7 +78,7 @@ fun FilterModal(
                 onCheckChange(!checked)
                 it.second.value = !it.second.value
                 scope.launch {
-                  courseFilterViewModel.toggleType(it.first)
+                  courseViewModel.toggleType(it.first)
                   listState.animateScrollToItem(0)
                 }
               },
@@ -99,7 +100,7 @@ fun FilterModal(
       }
       // Level
       var levelSliderPosition by remember {
-        mutableStateOf(courseFilterViewModel.levelFilter.value)
+        mutableStateOf(courseViewModel.courseLevelFilter.value)
       }
       when (levelSliderPosition.toString()) {
         "1.0..1.0" -> Text(
@@ -119,14 +120,18 @@ fun FilterModal(
             levelSliderPosition.toString().first()
           }000-${
             levelSliderPosition.toString().substring(
-              5, 6
+              5,
+              6
             )
           }000${
             if (levelSliderPosition.toString().substring(
-                5, 6
+                5,
+                6
               ) == "4"
             ) "+" else ""
-          }", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp)
+          }",
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(start = 16.dp)
         )
       }
       RangeSlider(
@@ -135,7 +140,7 @@ fun FilterModal(
         steps = 2,
         valueRange = 1f..4f,
         onValueChangeFinished = {
-          courseFilterViewModel.toggleLevel(levelSliderPosition)
+          courseViewModel.toggleLevel(levelSliderPosition)
           scope.launch {
             listState.animateScrollToItem(0)
           }
@@ -147,7 +152,7 @@ fun FilterModal(
 
       //Credits
       var creditSliderPosition by remember {
-        mutableStateOf(courseFilterViewModel.creditFilter.value)
+        mutableStateOf(courseViewModel.courseCreditFilter.value)
       }
       when (creditSliderPosition.toString()) {
         "0.0..0.0" -> Text(
@@ -167,9 +172,12 @@ fun FilterModal(
             creditSliderPosition.toString().first()
           }-${
             creditSliderPosition.toString().substring(
-              5, 6
+              5,
+              6
             )
-          }", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp)
+          }",
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(start = 16.dp)
         )
       }
       RangeSlider(
@@ -178,7 +186,7 @@ fun FilterModal(
         steps = 3,
         valueRange = 0f..4f,
         onValueChangeFinished = {
-          courseFilterViewModel.toggleCredit(creditSliderPosition)
+          courseViewModel.toggleCredit(creditSliderPosition)
           scope.launch {
             listState.animateScrollToItem(0)
           }
@@ -205,7 +213,7 @@ fun FilterModal(
             .fillMaxWidth(1f)
             .wrapContentHeight(align = Alignment.Top)
         ) {
-          courseFilterViewModel.otherCourseFilters.forEach() { it ->
+          courseViewModel.otherCourseFilters.forEach() { it ->
             val (checked, onCheckChange) = remember {
               mutableStateOf(it.second.value)
             }
@@ -214,7 +222,7 @@ fun FilterModal(
                 onCheckChange(!checked)
                 it.second.value = !it.second.value
                 scope.launch {
-                  courseFilterViewModel.toggleOther(it.first)
+                  courseViewModel.toggleOther(it.first)
                   listState.animateScrollToItem(0)
                 }
               },

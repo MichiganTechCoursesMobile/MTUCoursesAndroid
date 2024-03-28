@@ -8,10 +8,15 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
-import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import com.mtucoursesmobile.michigantechcourses.views.MainView
 
 
@@ -19,16 +24,21 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge(
       statusBarStyle = SystemBarStyle.light(
-        Color.TRANSPARENT, Color.TRANSPARENT
-      ), navigationBarStyle = SystemBarStyle.light(
-        Color.TRANSPARENT, Color.TRANSPARENT
+        Color.TRANSPARENT,
+        Color.TRANSPARENT
+      ),
+      navigationBarStyle = SystemBarStyle.light(
+        Color.TRANSPARENT,
+        Color.TRANSPARENT
       )
     )
+
     super.onCreate(savedInstanceState)
     setContent {
       MichiganTechCoursesTheme {
         val context = LocalContext.current
-        val semesterViewModel: CurrentSemesterViewModel = viewModel()
+        val coursesViewModel: MTUCoursesViewModel = viewModel()
+
         // Initialized the local storage DB
 //        val db = remember {
 //          Room.databaseBuilder(
@@ -37,15 +47,26 @@ class MainActivity : ComponentActivity() {
 //            "mtucourses-db"
 //          ).addTypeConverter(MTUCoursesConverter()).build()
 //        }
+        val courses = coursesViewModel.courseList.toMutableStateList()
         LaunchedEffect(Unit) {
           Log.d(
-            "DEBUG", "Ran Initial Course List data grab"
+            "DEBUG",
+            "Ran Initial Course List data grab"
           )
-          semesterViewModel.initialCourselist(
+          coursesViewModel.initialCourselist(
             context
           )
         }
-        MainView()
+        LaunchedEffect(courses) {
+          Log.d(
+            "DEBUG",
+            "Bruh"
+          )
+          coursesViewModel.updateFilteredList()
+        }
+        MainView(
+          coursesViewModel
+        )
       }
     }
   }

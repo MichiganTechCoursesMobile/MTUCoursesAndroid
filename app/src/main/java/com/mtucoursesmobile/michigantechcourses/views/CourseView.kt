@@ -2,6 +2,8 @@ package com.mtucoursesmobile.michigantechcourses.views
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -38,8 +40,7 @@ import com.mtucoursesmobile.michigantechcourses.components.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
 import com.mtucoursesmobile.michigantechcourses.components.LoadingAnimation
 import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
-import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import kotlinx.coroutines.launch
 
 
@@ -48,15 +49,14 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun CourseView(
-  semesterViewModel: CurrentSemesterViewModel,
-  courseFilterViewModel: CourseFilterViewModel,
+  courseViewModel: MTUCoursesViewModel,
   navController: NavController,
   listState: LazyListState
 ) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val expanded = remember { mutableStateOf(false) }
-  val semesterText = remember { mutableStateOf(semesterViewModel.currentSemester.readable) }
+  val semesterText = remember { mutableStateOf(courseViewModel.currentSemester.readable) }
   val expandedFab by remember {
     derivedStateOf { listState.firstVisibleItemIndex == 0 }
   }
@@ -66,13 +66,13 @@ fun CourseView(
 
   // Ensure that the search bar is open when re-loading page (coming back from course detail view)
   LaunchedEffect(Unit) {
-    if (courseFilterViewModel.searchBarValue.value != "") {
+    if (courseViewModel.courseSearchValue.value != "") {
       onSearchExpandedChanged(true)
     }
   }
   BackHandler {
     if (searching) {
-      courseFilterViewModel.searchBarValue.value = ""
+      courseViewModel.courseSearchValue.value = ""
       onSearchExpandedChanged(false)
       scope.launch { listState.animateScrollToItem(0) }
     } else {
@@ -80,55 +80,65 @@ fun CourseView(
     }
   }
 
-  Scaffold(modifier = Modifier, contentWindowInsets = WindowInsets(0.dp), topBar = {
-    TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
-      containerColor = if (expandedFab) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer,
-      titleContentColor = MaterialTheme.colorScheme.primary
-    ), actions = {
-      if (!searching) {
-        IconButton(onClick = { onSearchExpandedChanged(true) }) {
-          Icon(
-            imageVector = Icons.Outlined.Search,
-            contentDescription = "Search Courses",
-            tint = MaterialTheme.colorScheme.primary,
-          )
-        }
-        SemesterPicker(
-          expanded, semesterViewModel, context, semesterText
-        )
-      }
+  Scaffold(
+    modifier = Modifier,
+    contentWindowInsets = WindowInsets(0.dp),
+    topBar = {
+      TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
+        containerColor = if (expandedFab) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer,
+        titleContentColor = MaterialTheme.colorScheme.primary
+      ),
+        actions = {
+          if (!searching) {
+            IconButton(onClick = { onSearchExpandedChanged(true) }) {
+              Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = "Search Courses",
+                tint = MaterialTheme.colorScheme.primary,
+              )
+            }
+            SemesterPicker(
+              expanded,
+              courseViewModel,
+              context,
+              semesterText
+            )
+          }
 
-    }, title = {
-      if (!searching) {
-        Text(text = "Courses for ${semesterText.value}")
-      }
-      ExpandableSearchView(
-        searchDisplay = courseFilterViewModel.searchBarValue.value,
-        onSearchDisplayChanged = { courseFilterViewModel.searchBarValue.value = it },
-        onSearchDisplayClosed = {
-          onSearchExpandedChanged(false)
-          courseFilterViewModel.searchBarValue.value = ""
-          scope.launch { listState.animateScrollToItem(0) }
         },
-        expanded = searching,
-        onExpandedChanged = onSearchExpandedChanged
+        title = {
+          if (!searching) {
+            Text(text = "Courses for ${semesterText.value}")
+          }
+          ExpandableSearchView(
+            searchDisplay = courseViewModel.courseSearchValue.value,
+            onSearchDisplayChanged = { courseViewModel.courseSearchValue.value = it },
+            onSearchDisplayClosed = {
+              onSearchExpandedChanged(false)
+              courseViewModel.courseSearchValue.value = ""
+              scope.launch { listState.animateScrollToItem(0) }
+            },
+            expanded = searching,
+            onExpandedChanged = onSearchExpandedChanged
+          )
+        })
+    },
+    floatingActionButton = {
+      ExtendedFloatingActionButton(
+        onClick = {
+          courseViewModel.showFilter.value = true
+        },
+        expanded = expandedFab,
+        icon = {
+          Icon(
+            Icons.Filled.FilterList,
+            "Filter Button"
+          )
+        },
+        text = { Text(text = "Filter") },
       )
-    })
-  }, floatingActionButton = {
-    ExtendedFloatingActionButton(
-      onClick = {
-        courseFilterViewModel.showFilter.value = true
-      },
-      expanded = expandedFab,
-      icon = {
-        Icon(
-          Icons.Filled.FilterList, "Filter Button"
-        )
-      },
-      text = { Text(text = "Filter") },
-    )
-  }) { innerPadding ->
-    if (semesterViewModel.courseNotFound.value) {
+    }) { innerPadding ->
+    if (courseViewModel.courseNotFound.value) {
       Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -138,18 +148,30 @@ fun CourseView(
           text = "404 Courses not found",
         )
         AsyncImage(
-          model = R.drawable.cat404, contentDescription = "404 Cat"
+          model = R.drawable.cat404,
+          contentDescription = "404 Cat"
         )
       }
-    } else if (semesterViewModel.courseList.toMutableList().isEmpty()) {
-      LoadingAnimation(innerPadding)
     } else {
-      LazyCourseList(
-        listState = listState, courseFilterViewModel, semesterViewModel, navController, innerPadding
-      )
+      AnimatedContent(
+        targetState = courseViewModel.courseList.isEmpty(),
+        label = "CourseList"
+      ) { isEmpty ->
+        if (isEmpty) {
+          LoadingAnimation(innerPadding)
+        } else {
+          LazyCourseList(
+            listState = listState,
+            courseViewModel,
+            navController,
+            innerPadding
+          )
+        }
+      }
     }
     FilterModal(
-      listState = listState, courseFilterViewModel
+      listState = listState,
+      courseViewModel
     )
   }
 }

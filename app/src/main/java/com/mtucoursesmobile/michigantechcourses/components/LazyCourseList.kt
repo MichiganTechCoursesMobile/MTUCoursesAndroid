@@ -15,8 +15,9 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -25,29 +26,27 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
-import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LazyCourseList(
   listState: LazyListState,
-  courseFilterViewModel: CourseFilterViewModel, semesterViewModel: CurrentSemesterViewModel,
+  courseViewModel: MTUCoursesViewModel,
   navController: NavController, innerPadding: PaddingValues
 ) {
   val context = LocalContext.current
-  val courses = remember { mutableStateOf(semesterViewModel.courseList.toMutableList()) }
+  val courses = remember { courseViewModel.filteredCourseList }
+  val scope = rememberCoroutineScope()
   val refreshState = rememberPullToRefreshState()
   if (refreshState.isRefreshing) {
     LaunchedEffect(true) {
-      semesterViewModel.updateSemester(
+      courseViewModel.updateSemester(
         context,
         refreshState
       )
     }
   }
-
-
   Box(
     modifier = Modifier
       .fillMaxSize()
@@ -61,92 +60,35 @@ fun LazyCourseList(
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       itemsIndexed(
-        items =
-        if (courseFilterViewModel.typeFilter.isEmpty() && courseFilterViewModel.creditFilter.value == 1f..4f && courseFilterViewModel.creditFilter.value == 0f..4f && courseFilterViewModel.otherFilter.isEmpty()) {
-          semesterViewModel.courseList.filter { course ->
-            course.entry.course[0].deletedAt == null && (course.entry.course[0].subject + course.entry.course[0].crse + course.entry.course[0].title).contains(
-              courseFilterViewModel.searchBarValue.value,
-              ignoreCase = true
+        items = if (courses.contains(
+            MTUCoursesEntry(
+              courseId = "404",
+              entry = MTUCourseSectionBundle(
+                mutableListOf(),
+                mutableListOf()
+              ),
+              semester = "404",
+              year = "404"
             )
-          }
+          )
+        ) {
+          courses
         } else {
-          courses.value.clear()
-          courses.value = semesterViewModel.courseList.toMutableList()
-
-          //Type
-          if (courseFilterViewModel.typeFilter.isNotEmpty()) {
-            courses.value.removeAll(semesterViewModel.courseList.filter { course -> course.entry.course[0].subject !in courseFilterViewModel.typeFilter })
-          }
-
-          //Level
-          if (courseFilterViewModel.levelFilter.value != 1f..4f) {
-            when (courseFilterViewModel.levelFilter.value) {
-              1f..1f -> {
-                courses.value.removeAll(semesterViewModel.courseList.filter { course ->
-                  (!(course.entry.course[0].crse.first().toString().toFloat() <= 1.0))
-                })
-              }
-
-              4f..4f -> {
-                courses.value.removeAll(semesterViewModel.courseList.filter { course ->
-                  (!(course.entry.course[0].crse.first().toString().toFloat() >= 4.0))
-                })
-              }
-
-              else -> {
-                courses.value.removeAll(semesterViewModel.courseList.filter { course ->
-                  !courseFilterViewModel.levelFilter.value.contains(
-                    course.entry.course[0].crse.first().toString().toFloat()
-                  )
-                })
-              }
-            }
-          }
-          //Credit
-          if (courseFilterViewModel.creditFilter.value != 0f..4f) {
-            when (courseFilterViewModel.creditFilter.value) {
-              0f..0f -> {
-                courses.value.removeAll(semesterViewModel.courseList.filter { course -> (!(course.entry.course[0].maxCredits <= 1.0)) })
-              }
-
-              4f..4f -> {
-                courses.value.removeAll(semesterViewModel.courseList.filter { course -> (!(course.entry.course[0].maxCredits >= 4.0)) })
-              }
-
-              else -> {
-                courses.value.removeAll(semesterViewModel.courseList.filter { course ->
-                  (!courseFilterViewModel.creditFilter.value.contains(course.entry.course[0].maxCredits) || !courseFilterViewModel.creditFilter.value.contains(course.entry.course[0].minCredits))
-                })
-              }
-            }
-          }
-          //Other
-          if (courseFilterViewModel.otherFilter.isNotEmpty()) {
-            for (other in courseFilterViewModel.otherFilter) {
-              when (other) {
-                "Has Seats" -> {
-                  courses.value.removeAll(semesterViewModel.courseList.filter { course ->
-                    course.entry.sections.none { section -> section?.availableSeats?.toFloat()!! > 0 }
-                  })
-                }
-              }
-            }
-          }
-          courses.value.filter { course ->
+          courses.filter { course ->
             course.entry.course[0].deletedAt == null && (course.entry.course[0].subject + course.entry.course[0].crse + course.entry.course[0].title).contains(
-              courseFilterViewModel.searchBarValue.value,
+              courseViewModel.courseSearchValue.value,
               ignoreCase = true
             )
-          }.ifEmpty { listOf(MTUCoursesEntry(courseId = "404", entry = MTUCourseSectionBundle(
-            mutableListOf(), mutableListOf()), semester = "404", year = "404")) }
+          }
         },
-        key = { _, item -> item.courseId}
+        key = { _, item -> item.courseId }
       )
       { _, item ->
         if (item.courseId == "404" && item.semester == "404") {
           Column(
             modifier = Modifier
-              .fillMaxSize().padding(top = 16.dp),
+              .fillMaxSize()
+              .padding(top = 16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
           ) {
@@ -160,7 +102,6 @@ fun LazyCourseList(
             navController
           )
         }
-
       }
     }
     PullToRefreshContainer(

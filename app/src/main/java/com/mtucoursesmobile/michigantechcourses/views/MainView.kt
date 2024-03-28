@@ -26,7 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -35,14 +34,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.mtucoursesmobile.michigantechcourses.viewModels.CourseFilterViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.CurrentSemesterViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainView() {
+fun MainView(
+  courseViewModel: MTUCoursesViewModel
+) {
   val items = remember {
     listOf(
       Pair(
@@ -59,16 +59,17 @@ fun MainView() {
       )
     )
   }
-  val semesterViewModel: CurrentSemesterViewModel = viewModel()
-  val courseFilterViewModel: CourseFilterViewModel = viewModel()
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val listState = rememberLazyListState()
   val navController = rememberNavController()
   LaunchedEffect(Unit) {
     while (true) {
-      if (!semesterViewModel.courseNotFound.value && semesterViewModel.courseList.isNotEmpty()) {
-        semesterViewModel.updateSemester(context, null)
+      if (!courseViewModel.courseNotFound.value && courseViewModel.courseList.isNotEmpty()) {
+        courseViewModel.updateSemester(
+          context,
+          null
+        )
       }
       delay(30000)
     }
@@ -84,7 +85,7 @@ fun MainView() {
             label = { Text(text = item.first) },
             selected = currentDestination?.hierarchy?.any { it.route == item.first } == true,
             onClick = {
-              if (currentDestination?.hierarchy?.any { it.route == "Courses" } == true) {
+              if (navController.currentDestination?.route == "Courses") {
                 scope.launch { listState.animateScrollToItem(0) }
               }
               navController.navigate(item.first) {
@@ -129,8 +130,7 @@ fun MainView() {
         }) {
         // Nested NavHost for Courses
         CourseNav(
-          semesterViewModel,
-          courseFilterViewModel,
+          courseViewModel,
           listState
         )
       }
@@ -167,8 +167,7 @@ fun MainView() {
 // Courses
 @Composable
 fun CourseNav(
-  semesterViewModel: CurrentSemesterViewModel,
-  courseFilterViewModel: CourseFilterViewModel,
+  courseViewModel: MTUCoursesViewModel,
   listState: LazyListState
 ) {
   val courseNavController = rememberNavController()
@@ -185,8 +184,7 @@ fun CourseNav(
         slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
       }) {
       CourseView(
-        semesterViewModel = semesterViewModel,
-        courseFilterViewModel = courseFilterViewModel,
+        courseViewModel,
         courseNavController,
         listState
       )
@@ -200,8 +198,7 @@ fun CourseNav(
         slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
       }) { backStackEntry ->
       CourseDetailView(
-        semesterViewModel,
-        courseFilterViewModel,
+        courseViewModel,
         courseNavController,
         backStackEntry.arguments?.getString("courseId")
       )
