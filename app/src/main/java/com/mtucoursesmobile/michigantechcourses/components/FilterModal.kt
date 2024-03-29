@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -12,7 +13,11 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -20,9 +25,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,7 +62,7 @@ fun FilterModal(
       }) {
       //Type
       Text(
-        text = "Course Type",
+        text = "Course Subject",
         style = MaterialTheme.typography.bodyLarge,
         fontWeight = FontWeight.Bold,
         modifier = Modifier
@@ -140,8 +149,8 @@ fun FilterModal(
         steps = 2,
         valueRange = 1f..4f,
         onValueChangeFinished = {
-          courseViewModel.toggleLevel(levelSliderPosition)
           scope.launch {
+            courseViewModel.toggleLevel(levelSliderPosition)
             listState.animateScrollToItem(0)
           }
         },
@@ -186,8 +195,8 @@ fun FilterModal(
         steps = 3,
         valueRange = 0f..4f,
         onValueChangeFinished = {
-          courseViewModel.toggleCredit(creditSliderPosition)
           scope.launch {
+            courseViewModel.toggleCredit(creditSliderPosition)
             listState.animateScrollToItem(0)
           }
         },

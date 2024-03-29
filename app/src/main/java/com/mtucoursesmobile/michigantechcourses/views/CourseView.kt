@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -84,10 +85,11 @@ fun CourseView(
     modifier = Modifier,
     contentWindowInsets = WindowInsets(0.dp),
     topBar = {
-      TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = if (expandedFab) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer,
-        titleContentColor = MaterialTheme.colorScheme.primary
-      ),
+      TopAppBar(
+        colors = TopAppBarDefaults.topAppBarColors(
+          containerColor = if (expandedFab) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer,
+          titleContentColor = MaterialTheme.colorScheme.primary
+        ),
         actions = {
           if (!searching) {
             IconButton(onClick = { onSearchExpandedChanged(true) }) {
@@ -121,7 +123,8 @@ fun CourseView(
             expanded = searching,
             onExpandedChanged = onSearchExpandedChanged
           )
-        })
+        }
+      )
     },
     floatingActionButton = {
       ExtendedFloatingActionButton(

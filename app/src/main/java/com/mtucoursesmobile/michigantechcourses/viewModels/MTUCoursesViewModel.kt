@@ -40,10 +40,10 @@ class MTUCoursesViewModel : ViewModel() {
   val filteredCourseList = mutableStateListOf<MTUCoursesEntry>()
   var courseSearchValue = mutableStateOf("")
   var showFilter = mutableStateOf(false)
-  val courseTypeFilter = mutableStateListOf<String>()
+  private val courseTypeFilter = mutableStateListOf<String>()
   val courseLevelFilter = mutableStateOf(1f..4f)
   val courseCreditFilter = mutableStateOf(0f..4f)
-  val courseOtherFilter = mutableStateListOf<String>()
+  private val courseOtherFilter = mutableStateListOf<String>()
 
   private val lastUpdatedSince = mutableListOf<LastUpdatedSince>()
 
@@ -73,6 +73,19 @@ class MTUCoursesViewModel : ViewModel() {
       currentSemester,
       context
     )
+  }
+
+  fun updateCourseTypes() {
+    val tempCourseTypeList = courseList.distinctBy { course -> course.entry.course[0].subject }
+    courseTypes.clear()
+    for (course in tempCourseTypeList) {
+      courseTypes.add(
+        Pair(
+          course.entry.course[0].subject,
+          mutableStateOf(false)
+        )
+      )
+    }
   }
 
   private fun setSemester(newSemester: CurrentSemester, context: Context) {
@@ -181,28 +194,8 @@ class MTUCoursesViewModel : ViewModel() {
     updateFilteredList()
   }
 
-  val courseTypes: List<Pair<String, MutableState<Boolean>>> = listOf(
-    Pair(
-      "CS",
-      mutableStateOf(false)
-    ),
-    Pair(
-      "BL",
-      mutableStateOf(false)
-    ),
-    Pair(
-      "ACC",
-      mutableStateOf(false)
-    ),
-    Pair(
-      "AF",
-      mutableStateOf(false)
-    ),
-    Pair(
-      "EE",
-      mutableStateOf(false)
-    )
-  )
+  val courseTypes = mutableListOf<Pair<String, MutableState<Boolean>>>()
+
   val otherCourseFilters: List<Pair<String, MutableState<Boolean>>> = listOf(
     Pair(
       "Has Seats",
@@ -276,19 +269,6 @@ class MTUCoursesViewModel : ViewModel() {
             }
           }
         }
-      }
-      filteredCourseList.ifEmpty {
-        filteredCourseList.add(
-          MTUCoursesEntry(
-            courseId = "404",
-            entry = MTUCourseSectionBundle(
-              mutableListOf(),
-              mutableListOf()
-            ),
-            semester = "404",
-            year = "404"
-          )
-        )
       }
     }
   }

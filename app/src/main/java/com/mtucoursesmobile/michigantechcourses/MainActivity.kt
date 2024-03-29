@@ -18,6 +18,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import com.mtucoursesmobile.michigantechcourses.views.MainView
+import kotlinx.coroutines.delay
 
 
 class MainActivity : ComponentActivity() {
@@ -49,20 +50,13 @@ class MainActivity : ComponentActivity() {
 //        }
         val courses = coursesViewModel.courseList.toMutableStateList()
         LaunchedEffect(Unit) {
-          Log.d(
-            "DEBUG",
-            "Ran Initial Course List data grab"
-          )
           coursesViewModel.initialCourselist(
             context
           )
         }
         LaunchedEffect(courses) {
-          Log.d(
-            "DEBUG",
-            "Bruh"
-          )
           coursesViewModel.updateFilteredList()
+          coursesViewModel.updateCourseTypes()
         }
         MainView(
           coursesViewModel

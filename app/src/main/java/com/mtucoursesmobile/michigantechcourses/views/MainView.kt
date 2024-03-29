@@ -75,6 +75,7 @@ fun MainView(
     }
   }
   Scaffold(
+    modifier = Modifier.fillMaxSize(),
     contentWindowInsets = WindowInsets(0.dp),
     bottomBar = {
       NavigationBar {
@@ -85,18 +86,23 @@ fun MainView(
             label = { Text(text = item.first) },
             selected = currentDestination?.hierarchy?.any { it.route == item.first } == true,
             onClick = {
-              if (navController.currentDestination?.route == "Courses") {
+              // Scroll Back to top (No need to run rest of code)
+              if (navController.currentBackStackEntry?.destination?.route.toString() == "Courses" && item.first == "Courses") {
                 scope.launch { listState.animateScrollToItem(0) }
+                return@NavigationBarItem
               }
-              navController.navigate(item.first) {
+              scope.launch {
+                navController.navigate(item.first) {
 
-                popUpTo(navController.graph.findStartDestination().id) {
-                  saveState = true
+                  popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                  }
+                  // Restore state when reselecting a previously selected item
+                  restoreState = true
+
                 }
-                // Restore state when reselecting a previously selected item
-                restoreState = true
-
               }
+
 
             },
             icon = {
@@ -174,7 +180,7 @@ fun CourseNav(
   NavHost(
     navController = courseNavController,
     startDestination = "courseList",
-    modifier = Modifier,
+    modifier = Modifier.fillMaxSize(),
   ) {
     composable("courseList",
       enterTransition = {

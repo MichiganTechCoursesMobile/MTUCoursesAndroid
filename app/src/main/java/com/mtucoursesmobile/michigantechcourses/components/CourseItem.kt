@@ -52,60 +52,83 @@ fun CourseItem(
       fontWeight = FontWeight.Bold,
       fontSize = 20.sp,
       textAlign = TextAlign.Left,
-      modifier = Modifier.padding(top = 4.dp, start = 1.dp),
+      modifier = Modifier.padding(top = 4.dp),
       maxLines = 1,
       overflow = TextOverflow.Ellipsis
     )
-  }, headlineContent = {
-    Row {
-      SuggestionChip(
-        label = { Text(text = "${item.entry.course[0].subject}${item.entry.course[0].crse}") },
-        onClick = { navToCourse(navController, item.courseId) },
-        modifier = Modifier.padding(
-            end = 4.dp
-          )
-      )
-      SuggestionChip(label = {
-        Text(
-          text = "${
-            if (item.entry.course[0].maxCredits == item.entry.course[0].minCredits) DecimalFormat(
-              "0.#"
-            ).format(item.entry.course[0].maxCredits) else {
-              "${DecimalFormat("0.#").format(item.entry.course[0].minCredits)} - ${
-                DecimalFormat(
-                  "0.#"
-                ).format(item.entry.course[0].maxCredits)
-              }"
-            }
-          } Credit${if (item.entry.course[0].maxCredits > 1) "s" else ""}"
-        )
-      }, onClick = { navToCourse(navController, item.courseId) }, modifier = Modifier.padding(
-          end = 4.dp
-        )
-      )
-      SuggestionChip(
-        label = { Text(text = "${item.entry.sections.size} Section${if (item.entry.sections.size != 1) "s" else ""}") },
-        onClick = { navToCourse(navController, item.courseId) },
-        modifier = Modifier.padding(
-            end = 4.dp
-          )
-      )
-    }
-  }, trailingContent = {
-    Icon(
-      Icons.AutoMirrored.Filled.ArrowRight,
-      contentDescription = "Go to Course Detail",
-      modifier = Modifier.padding()
-    )
   },
+    headlineContent = {
+      Row {
+        SuggestionChip(
+          label = { Text(text = "${item.entry.course[0].subject}${item.entry.course[0].crse}") },
+          onClick = {
+            navToCourse(
+              navController,
+              item.courseId
+            )
+          },
+          modifier = Modifier.padding(
+            end = 4.dp
+          )
+        )
+        SuggestionChip(label = {
+          Text(
+            text = "${
+              if (item.entry.course[0].maxCredits == item.entry.course[0].minCredits) DecimalFormat(
+                "0.#"
+              ).format(item.entry.course[0].maxCredits) else {
+                "${DecimalFormat("0.#").format(item.entry.course[0].minCredits)} - ${
+                  DecimalFormat(
+                    "0.#"
+                  ).format(item.entry.course[0].maxCredits)
+                }"
+              }
+            } Credit${if (item.entry.course[0].maxCredits > 1) "s" else ""}"
+          )
+        },
+          onClick = {
+            navToCourse(
+              navController,
+              item.courseId
+            )
+          },
+          modifier = Modifier.padding(
+            end = 4.dp
+          )
+        )
+        SuggestionChip(
+          label = { Text(text = "${item.entry.sections.size} Section${if (item.entry.sections.size != 1) "s" else ""}") },
+          onClick = {
+            navToCourse(
+              navController,
+              item.courseId
+            )
+          },
+          modifier = Modifier.padding(
+            end = 4.dp
+          )
+        )
+      }
+    },
+    trailingContent = {
+      Icon(
+        Icons.AutoMirrored.Filled.ArrowRight,
+        contentDescription = "Go to Course Detail",
+        modifier = Modifier.padding()
+      )
+    },
 
     modifier = Modifier
       .padding(horizontal = 10.dp)
       .padding(vertical = 8.dp)
       .clip(RoundedCornerShape(12.dp))
       .clickable {
-        navToCourse(navController, item.courseId)
-      }, colors = ListItemDefaults.colors(
+        navToCourse(
+          navController,
+          item.courseId
+        )
+      },
+    colors = ListItemDefaults.colors(
       containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
       overlineColor = MaterialTheme.colorScheme.onSurface,
       headlineColor = MaterialTheme.colorScheme.onSurface
