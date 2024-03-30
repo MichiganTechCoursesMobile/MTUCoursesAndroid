@@ -24,9 +24,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
-import com.valentinilk.shimmer.shimmer
 import java.text.DecimalFormat
 
 fun navToCourse(

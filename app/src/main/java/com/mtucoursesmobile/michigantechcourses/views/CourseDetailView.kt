@@ -185,7 +185,8 @@ fun CourseDetailView(
                 courseViewModel.instructorList.filter { instructor -> item.instructors.contains(SectionInstructors(instructor.key)) }
               SectionItem(
                 section = item,
-                sectionInstructor
+                sectionInstructor,
+                courseViewModel.buildingList
               )
             }
           }

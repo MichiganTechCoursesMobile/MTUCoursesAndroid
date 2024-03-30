@@ -2,6 +2,7 @@ package com.mtucoursesmobile.michigantechcourses.api
 
 import android.content.Context
 import android.util.Log
+import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -11,14 +12,14 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
-interface RetroFitInstructors {
-  @GET("instructors")
-  fun getMTUInstructors(
-  ): Call<List<MTUInstructor>>
+interface RetroFitBuildings {
+  @GET("buildings")
+  fun getMTUBuildings(
+  ): Call<List<MTUBuilding>>
 
 }
 
-fun getMTUInstructors(instructorList: MutableMap<Number, MTUInstructor>, context: Context) {
+fun getMTUBuildings(buildingList: MutableMap<String, MTUBuilding>) {
   val okHttpClient = OkHttpClient.Builder()
     .build()
 
@@ -26,22 +27,22 @@ fun getMTUInstructors(instructorList: MutableMap<Number, MTUInstructor>, context
     .baseUrl("https://api.michigantechcourses.com/").client(okHttpClient)
     .addConverterFactory(GsonConverterFactory.create()).build()
 
-  val retrofitAPI = retroFit.create(RetroFitInstructors::class.java)
+  val retrofitAPI = retroFit.create(RetroFitBuildings::class.java)
 
-  val instructorCall: Call<List<MTUInstructor>> = retrofitAPI.getMTUInstructors()
+  val buildingCall: Call<List<MTUBuilding>> = retrofitAPI.getMTUBuildings()
 
-  instructorCall!!.enqueue(object : Callback<List<MTUInstructor>?> {
+  buildingCall!!.enqueue(object : Callback<List<MTUBuilding>?> {
     override fun onResponse(
-      call: Call<List<MTUInstructor>?>, response: Response<List<MTUInstructor>?>
+      call: Call<List<MTUBuilding>?>, response: Response<List<MTUBuilding>?>
     ) {
       if (response.isSuccessful) {
-        val instructorData: List<MTUInstructor> = response.body()!!
-        instructorList.clear()
-        instructorList.putAll(instructorData.associateBy { it.id })
+        val buildingData: List<MTUBuilding> = response.body()!!
+        buildingList.clear()
+        buildingList.putAll(buildingData.associateBy { it.name })
       }
     }
 
-    override fun onFailure(call: Call<List<MTUInstructor>?>, t: Throwable) {
+    override fun onFailure(call: Call<List<MTUBuilding>?>, t: Throwable) {
       Log.d(
         "DEBUG",
         t.cause.toString()

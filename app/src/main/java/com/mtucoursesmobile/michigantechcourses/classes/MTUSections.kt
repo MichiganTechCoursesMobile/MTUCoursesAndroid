@@ -15,8 +15,8 @@ data class MTUSections(
   var fee: Number,
   var updatedAt: String,
   var deletedAt: String?,
-  var room: String,
-  var buildingName: String,
+  var room: String?,
+  var buildingName: String?,
   var localType: String,
   var instructors: List<SectionInstructors>
 )

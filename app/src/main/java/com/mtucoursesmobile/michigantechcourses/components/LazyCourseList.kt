@@ -1,7 +1,5 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,23 +17,17 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,7 +72,31 @@ fun LazyCourseList(
             courseViewModel.courseSearchValue.value,
             ignoreCase = true
           )
-        }.toList().sortedBy { item -> "${item.second.subject}${item.second.crse}" }.ifEmpty {
+        }.toList().sortedBy { item ->
+          if (courseViewModel.sortingMode.value.first == "Credits" && courseViewModel.sortingMode.value.second == "ascending") {
+            item.second.maxCredits.toInt()
+          } else {
+            0
+          }
+        }.sortedBy { item ->
+          if (courseViewModel.sortingMode.value.first == "Subject & Level" && courseViewModel.sortingMode.value.second == "ascending") {
+            "${item.second.subject}${item.second.crse}"
+          } else {
+            ""
+          }
+        }.sortedByDescending { item ->
+          if (courseViewModel.sortingMode.value.first == "Credits" && courseViewModel.sortingMode.value.second == "descending") {
+            item.second.maxCredits.toInt()
+          } else {
+            0
+          }
+        }.sortedByDescending { item ->
+          if (courseViewModel.sortingMode.value.first == "Subject & Level" && courseViewModel.sortingMode.value.second == "descending") {
+            "${item.second.subject}${item.second.crse}"
+          } else {
+            ""
+          }
+        }.ifEmpty {
           if (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()) {
             listOf(
               Pair(

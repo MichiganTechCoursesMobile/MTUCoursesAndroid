@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -9,6 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingBasket
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingBasket
@@ -47,15 +51,24 @@ fun MainView(
     listOf(
       Pair(
         "Courses",
-        Icons.Outlined.School,
+        Pair(
+          Icons.Outlined.School,
+          Icons.Filled.School
+        )
       ),
       Pair(
         "Basket",
-        Icons.Outlined.ShoppingBasket,
+        Pair(
+          Icons.Outlined.ShoppingBasket,
+          Icons.Filled.ShoppingBasket
+        )
       ),
       Pair(
         "Settings",
-        Icons.Outlined.Settings,
+        Pair(
+          Icons.Outlined.Settings,
+          Icons.Filled.Settings
+        )
       )
     )
   }
@@ -102,14 +115,22 @@ fun MainView(
 
                 }
               }
-
-
             },
             icon = {
-              Icon(
-                imageVector = item.second,
-                contentDescription = item.first
-              )
+              AnimatedContent(targetState = currentDestination?.hierarchy?.any { it.route == item.first } == true,
+                label = item.first) { targetState ->
+                if (targetState) {
+                  Icon(
+                    imageVector = item.second.second,
+                    contentDescription = item.first
+                  )
+                } else {
+                  Icon(
+                    imageVector = item.second.first,
+                    contentDescription = item.first
+                  )
+                }
+              }
             },
             alwaysShowLabel = false
           )

@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mtucoursesmobile.michigantechcourses.api.getMTUBuildings
 import com.mtucoursesmobile.michigantechcourses.api.getMTUCourses
 import com.mtucoursesmobile.michigantechcourses.api.getMTUInstructors
 import com.mtucoursesmobile.michigantechcourses.api.getMTUSections
@@ -16,6 +17,7 @@ import com.mtucoursesmobile.michigantechcourses.api.getMTUSemesters
 import com.mtucoursesmobile.michigantechcourses.api.updateMTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
+import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
@@ -35,6 +37,7 @@ class MTUCoursesViewModel : ViewModel() {
   val courseList = mutableStateMapOf<String, MTUCourses>()
   val sectionList = mutableStateMapOf<String, MutableList<MTUSections>>()
   val instructorList = mutableStateMapOf<Number, MTUInstructor>()
+  val buildingList = mutableStateMapOf<String, MTUBuilding>()
 
   private val semesterList = mutableStateListOf<CurrentSemester>()
   val courseNotFound = mutableStateOf(false)
@@ -42,7 +45,6 @@ class MTUCoursesViewModel : ViewModel() {
   val filteredCourseList = mutableStateMapOf<String, MTUCourses>()
   var courseSearchValue = mutableStateOf("")
   var showFilter = mutableStateOf(false)
-  private val courseTypeFilter = mutableStateListOf<String>()
   val courseLevelFilter = mutableStateOf(1f..4f)
   val courseCreditFilter = mutableStateOf(0f..4f)
   private val courseOtherFilter = mutableStateListOf<String>()
@@ -77,38 +79,26 @@ class MTUCoursesViewModel : ViewModel() {
     )
   }
 
-  fun updateCourseTypes() {
-    courseTypes.clear()
-    courseList.toList().distinctBy { course -> course.second.subject }.forEach { course ->
-      courseTypes.add(
-        Pair(
-          course.second.subject,
-          mutableStateOf(false)
-        )
-      )
-    }
-  }
-
   private fun setSemester(newSemester: CurrentSemester, context: Context) {
     courseList.clear()
     courseNotFound.value = false
     currentSemester = newSemester
     viewModelScope.launch(Dispatchers.IO) {
-      courseTypes.clear()
-      courseTypeFilter.clear()
       getMTUCourses(
         courseList,
         courseNotFound,
         newSemester.semester,
         newSemester.year,
-        lastUpdatedSince
+        lastUpdatedSince,
+        currentSemester
       )
       getMTUSections(
         sectionList,
         newSemester.semester,
         newSemester.year,
         lastUpdatedSince,
-        context
+        context,
+        currentSemester
       )
     }
 
@@ -117,6 +107,7 @@ class MTUCoursesViewModel : ViewModel() {
   fun initialCourselist(context: Context) {
     courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
+      getMTUBuildings(buildingList)
       getMTUInstructors(
         instructorList,
         context
@@ -143,14 +134,16 @@ class MTUCoursesViewModel : ViewModel() {
         courseNotFound,
         currentSemester.semester,
         currentSemester.year,
-        lastUpdatedSince
+        lastUpdatedSince,
+        currentSemester
       )
       getMTUSections(
         sectionList,
         currentSemester.semester,
         currentSemester.year,
         lastUpdatedSince,
-        context
+        context,
+        currentSemester
       )
     }
   }
@@ -166,24 +159,10 @@ class MTUCoursesViewModel : ViewModel() {
         currentSemester.year,
         lastUpdatedSince,
         loading,
-        context
+        context,
+        currentSemester
       )
     }
-  }
-
-  fun toggleType(value: String) {
-    if (courseTypeFilter.isEmpty()) {
-      courseTypeFilter.add(value)
-      updateFilteredList()
-      return
-    }
-    if (courseTypeFilter.contains(value)) {
-      courseTypeFilter.remove(value)
-      updateFilteredList()
-      return
-    }
-    courseTypeFilter.add(value)
-    updateFilteredList()
   }
 
   fun toggleLevel(value: ClosedFloatingPointRange<Float>) {
@@ -211,8 +190,6 @@ class MTUCoursesViewModel : ViewModel() {
     updateFilteredList()
   }
 
-  val courseTypes = mutableListOf<Pair<String, MutableState<Boolean>>>()
-
   val otherCourseFilters = mutableListOf(
     Pair(
       "Has Seats",
@@ -220,17 +197,28 @@ class MTUCoursesViewModel : ViewModel() {
     )
   )
 
+  val sortingTypes = mutableStateMapOf(
+    Pair(
+      "Subject & Level",
+      "ascending"
+    ),
+    Pair(
+      "Credits",
+      "ascending"
+    )
+  )
+
+  val sortingMode = mutableStateOf(
+    Pair(
+      "Subject & Level",
+      "ascending"
+    )
+  )
+
   fun updateFilteredList() {
     viewModelScope.launch {
       filteredCourseList.clear()
       filteredCourseList.putAll(courseList)
-      //Type
-      if (courseTypeFilter.isNotEmpty()) {
-        with(filteredCourseList.iterator()) {
-          forEach { if (it.value.subject !in courseTypeFilter) remove() }
-        }
-      }
-
       //Level
       if (courseLevelFilter.value != 1f..4f) {
         when (courseLevelFilter.value) {

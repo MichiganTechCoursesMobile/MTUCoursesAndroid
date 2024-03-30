@@ -1,25 +1,18 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
 import android.app.Activity
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.outlined.Search
@@ -27,10 +20,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -43,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -52,10 +42,9 @@ import com.mtucoursesmobile.michigantechcourses.R
 import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
-import com.mtucoursesmobile.michigantechcourses.components.LoadingCourseList
+import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimation
 import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
-import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
 
 
@@ -107,42 +96,38 @@ fun CourseView(
         actions = {
           if (!searching) {
             AnimatedVisibility(
-              visible = (courseViewModel.instructorList.isNotEmpty()),
-              enter = scaleIn(),
-              exit = scaleOut()
+              visible = (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()),
+              enter = scaleIn(
+                animationSpec = tween(
+                  delayMillis = 700
+                )
+              ),
+              exit = scaleOut(
+                animationSpec = tween(
+                  delayMillis = 700
+                )
+              )
             ) {
-              Row {
-                IconButton(onClick = { onSearchExpandedChanged(true) }) {
-                  Icon(
-                    imageVector = Icons.Outlined.Search,
-                    contentDescription = "Search Courses",
-                    tint = MaterialTheme.colorScheme.primary,
-                  )
-                }
-                SemesterPicker(
-                  expanded,
-                  courseViewModel,
-                  context,
-                  semesterText
+              IconButton(onClick = { onSearchExpandedChanged(true) }) {
+                Icon(
+                  imageVector = Icons.Outlined.Search,
+                  contentDescription = "Search Courses",
+                  tint = MaterialTheme.colorScheme.primary,
                 )
               }
             }
+            SemesterPicker(
+              expanded,
+              courseViewModel,
+              context,
+              semesterText
+            )
           }
 
         },
         title = {
           if (!searching) {
-            Crossfade(
-              targetState = (courseViewModel.courseList.isEmpty() && courseViewModel.sectionList.isEmpty()),
-              label = "CourseViewTitle",
-            ) { targetState ->
-              if (targetState) {
-                Text(text = "Loading Courses...")
-              } else {
-                Text(text = "Courses for ${semesterText.value}")
-              }
-            }
-
+            Text(text = "Courses for ${semesterText.value}")
           }
           ExpandableSearchView(
             searchDisplay = courseViewModel.courseSearchValue.value,
@@ -160,9 +145,17 @@ fun CourseView(
     },
     floatingActionButton = {
       AnimatedVisibility(
-        visible = (courseViewModel.instructorList.isNotEmpty()),
-        enter = scaleIn(),
-        exit = scaleOut(),
+        visible = (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()),
+        enter = scaleIn(
+          animationSpec = tween(
+            delayMillis = 700
+          )
+        ),
+        exit = scaleOut(
+          animationSpec = tween(
+            delayMillis = 700
+          )
+        ),
       ) {
         ExtendedFloatingActionButton(
           onClick = {
@@ -199,7 +192,7 @@ fun CourseView(
         label = "CourseList",
       ) { isEmpty ->
         if (isEmpty) {
-          LoadingCourseList(innerPadding)
+          LoadingSpinnerAnimation(innerPadding)
         } else {
           LazyCourseList(
             listState = listState,

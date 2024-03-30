@@ -1,20 +1,5 @@
 package com.mtucoursesmobile.michigantechcourses.localStorage
 
-import androidx.room.Dao
-import androidx.room.Database
-import androidx.room.Entity
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.ProvidedTypeConverter
-import androidx.room.Query
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverter
-import androidx.room.TypeConverters
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
-
 
 //@ProvidedTypeConverter
 //class MTUCoursesConverter {

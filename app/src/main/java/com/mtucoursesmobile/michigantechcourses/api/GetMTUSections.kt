@@ -6,6 +6,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
+import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -35,7 +36,8 @@ interface RetroFitSection {
 
 fun getMTUSections(
   sectionList: MutableMap<String, MutableList<MTUSections>>,
-  semester: String, year: String, lastUpdatedSince: MutableList<LastUpdatedSince>, context: Context
+  semester: String, year: String, lastUpdatedSince: MutableList<LastUpdatedSince>, context: Context,
+  currentSemester: CurrentSemester
 ) {
   val okHttpClient = OkHttpClient.Builder()
     .build()
@@ -59,28 +61,24 @@ fun getMTUSections(
       if (response.isSuccessful) {
         val timeGot = Instant.now().toString()
         val sectionData: List<MTUSections> = response.body()!!
-        if (sectionData.isEmpty()) {
-          MainScope().launch {
-            Toast.makeText(
-              context,
-              "Something went wrong, please restart app to try again...",
-              Toast.LENGTH_LONG
-            ).show()
+        if (currentSemester.semester == semester && currentSemester.year == year) {
+          if (sectionData.isEmpty()) {
+            return
           }
-
-        }
-        sectionList.putAll(sectionData.groupBy { it.courseId }.mapValuesTo(
-          HashMap()
-        ) { it -> it.value.map { it }.toMutableList() })
-        lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "section" })
-        lastUpdatedSince.add(
-          LastUpdatedSince(
-            semester,
-            year,
-            "section",
-            timeGot
+          sectionList.putAll(sectionData.groupBy { it.courseId }.mapValuesTo(
+            HashMap()
+          ) { it -> it.value.map { it }.toMutableList() })
+          lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "section" })
+          lastUpdatedSince.add(
+            LastUpdatedSince(
+              semester,
+              year,
+              "section",
+              timeGot
+            )
           )
-        )
+        }
+        return
       }
     }
 
@@ -94,8 +92,8 @@ fun getMTUSections(
         "Something went wrong, please try again...",
         Toast.LENGTH_LONG
       ).show()
+      return
     }
-
   })
 
 }

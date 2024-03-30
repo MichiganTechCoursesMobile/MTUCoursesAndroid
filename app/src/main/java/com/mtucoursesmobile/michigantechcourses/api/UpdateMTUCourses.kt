@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
@@ -49,7 +50,8 @@ fun updateMTUCourses(
   semester: String, year: String,
   lastUpdatedSince: MutableList<LastUpdatedSince>,
   loading: PullToRefreshState?,
-  ctx: Context
+  ctx: Context,
+  currentSemester: CurrentSemester
 ) {
   var lastUpdatedCourses =
     lastUpdatedSince.find { entry -> entry.type == "course" && entry.semester == semester && entry.year == year }?.time
@@ -91,7 +93,10 @@ fun updateMTUCourses(
     ) {
       if (response.isSuccessful) {
         val updatedCourseData: List<MTUCourses> = response.body()!!
-        courseList.putAll(updatedCourseData.associateBy { it.id })
+        if (currentSemester.semester == semester && currentSemester.year == year) {
+          courseList.putAll(updatedCourseData.associateBy { it.id })
+        }
+        return
       }
     }
 
@@ -100,6 +105,7 @@ fun updateMTUCourses(
         "DEBUG",
         t.cause.toString()
       )
+      return
     }
   })
 
@@ -109,21 +115,24 @@ fun updateMTUCourses(
     ) {
       if (response.isSuccessful) {
         val updatedSectionData: List<MTUSections> = response.body()!!
-        if (updatedSectionData.isEmpty()) {
-          if (loading != null) {
-            Toast.makeText(
-              ctx,
-              "Nothing to update",
-              Toast.LENGTH_SHORT
-            ).show()
-            loading.endRefresh()
+        if (currentSemester.semester == semester && currentSemester.year == year) {
+          if (updatedSectionData.isEmpty()) {
+            if (loading != null) {
+              Toast.makeText(
+                ctx,
+                "Nothing to update",
+                Toast.LENGTH_SHORT
+              ).show()
+              loading.endRefresh()
+            }
+            return
           }
-          return
+          sectionList.putAll(updatedSectionData.groupBy { it.courseId }.mapValuesTo(
+            HashMap()
+          ) { it -> it.value.map { it }.toMutableList() })
+          loading?.endRefresh()
         }
-        sectionList.putAll(updatedSectionData.groupBy { it.courseId }.mapValuesTo(
-          HashMap()
-        ) { it -> it.value.map { it }.toMutableList() })
-        loading?.endRefresh()
+        return
       }
     }
 
@@ -132,6 +141,7 @@ fun updateMTUCourses(
         "DEBUG",
         t.cause.toString()
       )
+      return
     }
 
   })

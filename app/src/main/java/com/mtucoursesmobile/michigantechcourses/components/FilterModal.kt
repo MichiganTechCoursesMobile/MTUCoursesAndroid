@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Checkbox
@@ -60,9 +64,9 @@ fun FilterModal(
       onDismissRequest = {
         courseViewModel.showFilter.value = false
       }) {
-      //Type
+      //Sorting
       Text(
-        text = "Course Subject",
+        text = "Sort By",
         style = MaterialTheme.typography.bodyLarge,
         fontWeight = FontWeight.Bold,
         modifier = Modifier
@@ -73,37 +77,42 @@ fun FilterModal(
         FlowRow(
           horizontalArrangement = Arrangement.Start,
           modifier = Modifier
-            .padding(horizontal = 28.dp)
             .padding(bottom = 8.dp)
+            .padding(horizontal = 28.dp)
             .fillMaxWidth(1f)
             .wrapContentHeight(align = Alignment.Top)
         ) {
-          courseViewModel.courseTypes.forEach() { it ->
-            val (checked, onCheckChange) = remember {
-              mutableStateOf(it.second.value)
-            }
-            FilterChip(selected = checked,
+          for (type in courseViewModel.sortingTypes) {
+            FilterChip(
+              selected = courseViewModel.sortingMode.value.first == type.key,
               onClick = {
-                onCheckChange(!checked)
-                it.second.value = !it.second.value
-                scope.launch {
-                  courseViewModel.toggleType(it.first)
-                  listState.animateScrollToItem(0)
+                if (courseViewModel.sortingMode.value.first == type.key) {
+                  if (courseViewModel.sortingMode.value.second == "ascending") {
+                    courseViewModel.sortingMode.value = Pair(
+                      type.key,
+                      "descending"
+                    )
+                  } else {
+                    courseViewModel.sortingMode.value = Pair(
+                      type.key,
+                      "ascending"
+                    )
+                  }
+                } else {
+                  courseViewModel.sortingMode.value = type.toPair()
                 }
               },
-              label = { Text(text = it.first) },
-              modifier = Modifier.padding(horizontal = 4.dp),
-              leadingIcon = if (checked) {
-                {
+              label = { Text(text = type.key) },
+              leadingIcon = {
+                if (courseViewModel.sortingMode.value.first == type.key) {
                   Icon(
-                    imageVector = Icons.Outlined.Done,
-                    contentDescription = "Check Mark",
-                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    imageVector = if (courseViewModel.sortingMode.value.second == "ascending") Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
+                    contentDescription = "Arrow Up"
                   )
                 }
-              } else {
-                null
-              })
+              },
+              modifier = Modifier.padding(end = 4.dp)
+            )
           }
         }
       }
@@ -236,7 +245,7 @@ fun FilterModal(
                 }
               },
               label = { Text(text = it.first) },
-              modifier = Modifier.padding(horizontal = 4.dp),
+              modifier = Modifier.padding(end = 4.dp),
               leadingIcon = if (checked) {
                 {
                   Icon(
