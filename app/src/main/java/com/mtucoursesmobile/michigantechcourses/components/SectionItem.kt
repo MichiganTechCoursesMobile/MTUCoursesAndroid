@@ -45,7 +45,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 
 @Composable
-fun SectionItem(section: MTUSections, instructors: List<MTUInstructor>) {
+fun SectionItem(section: MTUSections, instructors: Map<Number, MTUInstructor>) {
   var expandedState by remember { mutableStateOf(false) }
   val rotationState by animateFloatAsState(
     targetValue = if (expandedState) 180f else 0f,
@@ -132,21 +132,22 @@ fun SectionItem(section: MTUSections, instructors: List<MTUInstructor>) {
           )
           if (instructors.isNotEmpty()) {
             for (instructor in instructors) {
-              val instructorNames = instructor.fullName.split(" ").toList()
+              val instructorNames = instructor.value.fullName.split(" ").toList()
               Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 8.dp)
               ) {
-                if (instructor.thumbnailURL == null) {
+                if (instructor.value.thumbnailURL == null) {
                   PlaceHolderAvatar(
-                    id = instructor.id.toString(),
+                    id = instructor.key.toString(),
                     firstName = instructorNames.first(),
                     lastName = instructorNames.last(),
                     modifier = Modifier.padding(end = 8.dp)
                   )
                 } else {
                   val painter = rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(LocalContext.current).data(instructor.thumbnailURL)
+                    model = ImageRequest.Builder(LocalContext.current)
+                      .data(instructor.value.thumbnailURL)
                       .size(Size.ORIGINAL).build()
                   )
                   if (painter.state is AsyncImagePainter.State.Success) {
@@ -156,11 +157,11 @@ fun SectionItem(section: MTUSections, instructors: List<MTUInstructor>) {
                         .size(40.dp)
                         .clip(shape = CircleShape),
                       painter = painter,
-                      contentDescription = instructor.fullName
+                      contentDescription = instructor.value.fullName
                     )
                   } else {
                     PlaceHolderAvatar(
-                      id = instructor.id.toString(),
+                      id = instructor.key.toString(),
                       firstName = instructorNames.first(),
                       lastName = instructorNames.last(),
                       modifier = Modifier.padding(end = 8.dp)
@@ -169,7 +170,7 @@ fun SectionItem(section: MTUSections, instructors: List<MTUInstructor>) {
                 }
                 Text(
                   modifier = Modifier,
-                  text = instructor.fullName,
+                  text = instructor.value.fullName,
                   fontSize = MaterialTheme.typography.bodyLarge.fontSize,
                   maxLines = 1,
                   overflow = TextOverflow.Ellipsis

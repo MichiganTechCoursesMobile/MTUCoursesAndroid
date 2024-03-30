@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun LoadingAnimation(innerPadding: PaddingValues) {
+fun LoadingSpinnerAnimation(innerPadding: PaddingValues) {
   Column(
     modifier = Modifier
       .padding(innerPadding)

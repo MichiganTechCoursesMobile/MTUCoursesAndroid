@@ -61,12 +61,12 @@ fun CourseDetailView(
   courseId: String?
 ) {
   val foundCourse =
-    courseViewModel.courseList.find { course -> course.courseId == courseId }?.entry
+    courseViewModel.courseList[courseId]
   if (foundCourse != null) {
     Scaffold(
       contentWindowInsets = WindowInsets(0.dp),
       topBar = {
-        TopAppBar(title = { Text(text = foundCourse.course[0].title) },
+        TopAppBar(title = { Text(text = foundCourse.title) },
           colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
             titleContentColor = MaterialTheme.colorScheme.primary
@@ -89,8 +89,8 @@ fun CourseDetailView(
           .padding(horizontal = 8.dp)
       ) {
         var description = "¯\\_(ツ)_/¯"
-        if (foundCourse.course[0].description != null) {
-          description = foundCourse.course[0].description!!
+        if (foundCourse.description != null) {
+          description = foundCourse.description
         }
         val rowScrollState = rememberScrollState()
         Row(
@@ -100,15 +100,15 @@ fun CourseDetailView(
             .offset(y = (-4).dp)
         ) {
           SuggestionChip(
-            label = { Text(text = "${foundCourse.course[0].subject}${foundCourse.course[0].crse}") },
+            label = { Text(text = "${foundCourse.subject}${foundCourse.crse}") },
             onClick = { },
             modifier = Modifier.padding(
               end = 4.dp
             )
           )
-          if (foundCourse.course[0].offered.isNotEmpty()) {
+          if (foundCourse.offered.isNotEmpty()) {
             val offeredSem = StringBuilder()
-            for (i in foundCourse.course[0].offered) {
+            for (i in foundCourse.offered) {
               offeredSem.append("${i.lowercase().replaceFirstChar(Char::titlecase)}, ")
             }
             SuggestionChip(
@@ -131,16 +131,16 @@ fun CourseDetailView(
             label = {
               Text(
                 text = "${
-                  if (foundCourse.course[0].maxCredits == foundCourse.course[0].minCredits) DecimalFormat(
+                  if (foundCourse.maxCredits == foundCourse.minCredits) DecimalFormat(
                     "0.#"
-                  ).format(foundCourse.course[0].maxCredits) else {
-                    "${DecimalFormat("0.#").format(foundCourse.course[0].minCredits)} - ${
+                  ).format(foundCourse.maxCredits) else {
+                    "${DecimalFormat("0.#").format(foundCourse.minCredits)} - ${
                       DecimalFormat(
                         "0.#"
-                      ).format(foundCourse.course[0].maxCredits)
+                      ).format(foundCourse.maxCredits)
                     }"
                   }
-                } Credit${if (foundCourse.course[0].maxCredits > 1) "s" else ""}"
+                } Credit${if (foundCourse.maxCredits > 1) "s" else ""}"
               )
             },
             onClick = { },
@@ -177,14 +177,17 @@ fun CourseDetailView(
           modifier = Modifier.fillMaxSize(),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          itemsIndexed(items = foundCourse.sections.filter { section -> section?.deletedAt == null },
-            key = { _, item -> item!!.id }) { _, item ->
-            val sectionInstructor =
-              courseViewModel.courseInstructorList.filter { instructor -> item!!.instructors.contains(SectionInstructors(instructor.id)) }
-            SectionItem(
-              section = item!!,
-              sectionInstructor
-            )
+          val sections = courseViewModel.sectionList[courseId]
+          if (sections != null) {
+            itemsIndexed(items = sections.filter { section -> section.deletedAt == null },
+              key = { _, item -> item.id }) { _, item ->
+              val sectionInstructor =
+                courseViewModel.instructorList.filter { instructor -> item.instructors.contains(SectionInstructors(instructor.key)) }
+              SectionItem(
+                section = item,
+                sectionInstructor
+              )
+            }
           }
         }
       }

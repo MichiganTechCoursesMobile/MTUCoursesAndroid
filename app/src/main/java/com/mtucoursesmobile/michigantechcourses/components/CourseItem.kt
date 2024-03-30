@@ -23,7 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
+import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.valentinilk.shimmer.shimmer
 import java.text.DecimalFormat
 
 fun navToCourse(
@@ -43,53 +46,29 @@ fun navToCourse(
 
 @Composable
 fun CourseItem(
-  item: MTUCoursesEntry,
-  navController: NavController
+  item: Pair<String, MTUCourses>,
+  navController: NavController,
 ) {
-  ListItem(overlineContent = {
-    Text(
-      text = item.entry.course[0].title,
-      fontWeight = FontWeight.Bold,
-      fontSize = 20.sp,
-      textAlign = TextAlign.Left,
-      modifier = Modifier.padding(top = 4.dp),
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis
-    )
-  },
+  ListItem(
+    overlineContent = {
+      Text(
+        text = item.second.title,
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp,
+        textAlign = TextAlign.Left,
+        modifier = Modifier.padding(top = 4.dp),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+      )
+    },
     headlineContent = {
       Row {
         SuggestionChip(
-          label = { Text(text = "${item.entry.course[0].subject}${item.entry.course[0].crse}") },
+          label = { Text(text = "${item.second.subject}${item.second.crse}") },
           onClick = {
             navToCourse(
               navController,
-              item.courseId
-            )
-          },
-          modifier = Modifier.padding(
-            end = 4.dp
-          )
-        )
-        SuggestionChip(label = {
-          Text(
-            text = "${
-              if (item.entry.course[0].maxCredits == item.entry.course[0].minCredits) DecimalFormat(
-                "0.#"
-              ).format(item.entry.course[0].maxCredits) else {
-                "${DecimalFormat("0.#").format(item.entry.course[0].minCredits)} - ${
-                  DecimalFormat(
-                    "0.#"
-                  ).format(item.entry.course[0].maxCredits)
-                }"
-              }
-            } Credit${if (item.entry.course[0].maxCredits > 1) "s" else ""}"
-          )
-        },
-          onClick = {
-            navToCourse(
-              navController,
-              item.courseId
+              item.first
             )
           },
           modifier = Modifier.padding(
@@ -97,11 +76,25 @@ fun CourseItem(
           )
         )
         SuggestionChip(
-          label = { Text(text = "${item.entry.sections.size} Section${if (item.entry.sections.size != 1) "s" else ""}") },
+          label = {
+            Text(
+              text = "${
+                if (item.second.maxCredits == item.second.minCredits) DecimalFormat(
+                  "0.#"
+                ).format(item.second.maxCredits) else {
+                  "${DecimalFormat("0.#").format(item.second.minCredits)} - ${
+                    DecimalFormat(
+                      "0.#"
+                    ).format(item.second.maxCredits)
+                  }"
+                }
+              } Credit${if (item.second.maxCredits > 1) "s" else ""}"
+            )
+          },
           onClick = {
             navToCourse(
               navController,
-              item.courseId
+              item.first
             )
           },
           modifier = Modifier.padding(
@@ -125,7 +118,7 @@ fun CourseItem(
       .clickable {
         navToCourse(
           navController,
-          item.courseId
+          item.first
         )
       },
     colors = ListItemDefaults.colors(

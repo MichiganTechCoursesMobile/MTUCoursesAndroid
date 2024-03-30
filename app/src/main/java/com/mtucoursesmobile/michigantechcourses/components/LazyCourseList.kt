@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.layout.Arrangement
@@ -30,8 +31,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +47,7 @@ fun LazyCourseList(
   val context = LocalContext.current
   val courses = remember { courseViewModel.filteredCourseList }
   val refreshState = rememberPullToRefreshState()
+  val scope = rememberCoroutineScope()
   val scaleFraction =
     if (refreshState.isRefreshing) 1f else LinearOutSlowInEasing.transform(refreshState.progress)
       .coerceIn(
@@ -71,27 +76,41 @@ fun LazyCourseList(
     ) {
       itemsIndexed(
         items = courses.filter { course ->
-          course.entry.course[0].deletedAt == null && (course.entry.course[0].subject + course.entry.course[0].crse + course.entry.course[0].title).contains(
+          course.value.deletedAt == null && (course.value.subject + course.value.crse + course.value.title).contains(
             courseViewModel.courseSearchValue.value,
             ignoreCase = true
           )
-        }.ifEmpty {
-          listOf(
-            MTUCoursesEntry(
-              courseId = "404",
-              entry = MTUCourseSectionBundle(
-                mutableListOf(),
-                mutableListOf()
-              ),
-              semester = "404",
-              year = "404"
+        }.toList().sortedBy { item -> "${item.second.subject}${item.second.crse}" }.ifEmpty {
+          if (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()) {
+            listOf(
+              Pair(
+                "404",
+                MTUCourses(
+                  "404",
+                  404,
+                  "404",
+                  "404",
+                  "404",
+                  "404",
+                  null,
+                  "404",
+                  null,
+                  "404",
+                  listOf("404"),
+                  404.0,
+                  404.0
+                )
+              )
             )
-          )
+          } else {
+            emptyList()
+          }
+
         },
-        key = { _, item -> item.courseId }
+        key = { _, item -> item.first }
       )
       { _, item ->
-        if (item.courseId == "404" && item.semester == "404") {
+        if (item.first == "404") {
           Column(
             modifier = Modifier
               .fillMaxSize()

@@ -1,25 +1,25 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mtucoursesmobile.michigantechcourses.api.getInstructors
-import com.mtucoursesmobile.michigantechcourses.api.getSemesterCourses
-import com.mtucoursesmobile.michigantechcourses.api.getSemesters
-import com.mtucoursesmobile.michigantechcourses.api.updateSemesterCourses
+import com.mtucoursesmobile.michigantechcourses.api.getMTUCourses
+import com.mtucoursesmobile.michigantechcourses.api.getMTUInstructors
+import com.mtucoursesmobile.michigantechcourses.api.getMTUSections
+import com.mtucoursesmobile.michigantechcourses.api.getMTUSemesters
+import com.mtucoursesmobile.michigantechcourses.api.updateMTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCourseSectionBundle
-import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
+import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Year
 import java.util.Calendar
@@ -32,12 +32,14 @@ class MTUCoursesViewModel : ViewModel() {
       "FALL"
     )
 
-  val courseList = mutableStateListOf<MTUCoursesEntry>()
+  val courseList = mutableStateMapOf<String, MTUCourses>()
+  val sectionList = mutableStateMapOf<String, MutableList<MTUSections>>()
+  val instructorList = mutableStateMapOf<Number, MTUInstructor>()
+
   private val semesterList = mutableStateListOf<CurrentSemester>()
-  val courseInstructorList = mutableStateListOf<MTUInstructor>()
   val courseNotFound = mutableStateOf(false)
 
-  val filteredCourseList = mutableStateListOf<MTUCoursesEntry>()
+  val filteredCourseList = mutableStateMapOf<String, MTUCourses>()
   var courseSearchValue = mutableStateOf("")
   var showFilter = mutableStateOf(false)
   private val courseTypeFilter = mutableStateListOf<String>()
@@ -76,12 +78,11 @@ class MTUCoursesViewModel : ViewModel() {
   }
 
   fun updateCourseTypes() {
-    val tempCourseTypeList = courseList.distinctBy { course -> course.entry.course[0].subject }
     courseTypes.clear()
-    for (course in tempCourseTypeList) {
+    courseList.toList().distinctBy { course -> course.second.subject }.forEach { course ->
       courseTypes.add(
         Pair(
-          course.entry.course[0].subject,
+          course.second.subject,
           mutableStateOf(false)
         )
       )
@@ -93,13 +94,21 @@ class MTUCoursesViewModel : ViewModel() {
     courseNotFound.value = false
     currentSemester = newSemester
     viewModelScope.launch(Dispatchers.IO) {
-      getSemesterCourses(
+      courseTypes.clear()
+      courseTypeFilter.clear()
+      getMTUCourses(
         courseList,
         courseNotFound,
-        context,
         newSemester.semester,
         newSemester.year,
         lastUpdatedSince
+      )
+      getMTUSections(
+        sectionList,
+        newSemester.semester,
+        newSemester.year,
+        lastUpdatedSince,
+        context
       )
     }
   }
@@ -107,11 +116,11 @@ class MTUCoursesViewModel : ViewModel() {
   fun initialCourselist(context: Context) {
     courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
-      getInstructors(
-        courseInstructorList,
+      getMTUInstructors(
+        instructorList,
         context
       )
-      getSemesters(
+      getMTUSemesters(
         semesterList,
         context
       )
@@ -128,13 +137,19 @@ class MTUCoursesViewModel : ViewModel() {
         targetYear,
         targetSemester
       )
-      getSemesterCourses(
+      getMTUCourses(
         courseList,
         courseNotFound,
-        context,
         currentSemester.semester,
         currentSemester.year,
         lastUpdatedSince
+      )
+      getMTUSections(
+        sectionList,
+        currentSemester.semester,
+        currentSemester.year,
+        lastUpdatedSince,
+        context
       )
     }
   }
@@ -143,13 +158,14 @@ class MTUCoursesViewModel : ViewModel() {
   fun updateSemester(context: Context, loading: PullToRefreshState?) {
     courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
-      updateSemesterCourses(
+      updateMTUCourses(
         courseList,
-        context,
+        sectionList,
         currentSemester.semester,
         currentSemester.year,
         lastUpdatedSince,
-        loading
+        loading,
+        context
       )
     }
   }
@@ -196,7 +212,7 @@ class MTUCoursesViewModel : ViewModel() {
 
   val courseTypes = mutableListOf<Pair<String, MutableState<Boolean>>>()
 
-  val otherCourseFilters: List<Pair<String, MutableState<Boolean>>> = listOf(
+  val otherCourseFilters = mutableListOf(
     Pair(
       "Has Seats",
       mutableStateOf(false)
@@ -204,39 +220,40 @@ class MTUCoursesViewModel : ViewModel() {
   )
 
   fun updateFilteredList() {
-    Log.d(
-      "DEBUG",
-      "I am updating Filters"
-    )
     viewModelScope.launch {
       filteredCourseList.clear()
-      filteredCourseList.addAll(courseList)
+      filteredCourseList.putAll(courseList)
       //Type
       if (courseTypeFilter.isNotEmpty()) {
-        filteredCourseList.removeAll(courseList.filter { course -> course.entry.course[0].subject !in courseTypeFilter })
+        with(filteredCourseList.iterator()) {
+          forEach { if (it.value.subject !in courseTypeFilter) remove() }
+        }
       }
 
       //Level
       if (courseLevelFilter.value != 1f..4f) {
         when (courseLevelFilter.value) {
           1f..1f -> {
-            filteredCourseList.removeAll(courseList.filter { course ->
-              (!(course.entry.course[0].crse.first().toString().toFloat() <= 1.0))
-            })
+            with(filteredCourseList.iterator()) {
+              forEach { if (!(it.value.crse.first().toString().toFloat() <= 1.0)) remove() }
+            }
           }
 
           4f..4f -> {
-            filteredCourseList.removeAll(courseList.filter { course ->
-              (!(course.entry.course[0].crse.first().toString().toFloat() >= 4.0))
-            })
+            with(filteredCourseList.iterator()) {
+              forEach { if (!(it.value.crse.first().toString().toFloat() >= 4.0)) remove() }
+            }
           }
 
           else -> {
-            filteredCourseList.removeAll(courseList.filter { course ->
-              !courseLevelFilter.value.contains(
-                course.entry.course[0].crse.first().toString().toFloat()
-              )
-            })
+            with(filteredCourseList.iterator()) {
+              forEach {
+                if (!courseLevelFilter.value.contains(
+                    it.value.crse.first().toString().toFloat()
+                  )
+                ) remove()
+              }
+            }
           }
         }
       }
@@ -244,17 +261,21 @@ class MTUCoursesViewModel : ViewModel() {
       if (courseCreditFilter.value != 0f..4f) {
         when (courseCreditFilter.value) {
           0f..0f -> {
-            filteredCourseList.removeAll(courseList.filter { course -> (!(course.entry.course[0].maxCredits <= 1.0)) })
+            with(filteredCourseList.iterator()) {
+              forEach { if (!(it.value.maxCredits <= 1.0)) remove() }
+            }
           }
 
           4f..4f -> {
-            filteredCourseList.removeAll(courseList.filter { course -> (!(course.entry.course[0].maxCredits >= 4.0)) })
+            with(filteredCourseList.iterator()) {
+              forEach { if (!(it.value.maxCredits >= 4.0)) remove() }
+            }
           }
 
           else -> {
-            filteredCourseList.removeAll(courseList.filter { course ->
-              (!courseCreditFilter.value.contains(course.entry.course[0].maxCredits) || !courseCreditFilter.value.contains(course.entry.course[0].minCredits))
-            })
+            with(filteredCourseList.iterator()) {
+              forEach { if (!courseCreditFilter.value.contains(it.value.maxCredits) || !courseCreditFilter.value.contains(it.value.minCredits)) remove() }
+            }
           }
         }
       }
@@ -263,9 +284,13 @@ class MTUCoursesViewModel : ViewModel() {
         for (other in courseOtherFilter) {
           when (other) {
             "Has Seats" -> {
-              filteredCourseList.removeAll(courseList.filter { course ->
-                course.entry.sections.none { section -> section?.availableSeats?.toFloat()!! > 0 }
-              })
+              with(filteredCourseList.iterator()) {
+                forEach {
+                  if (sectionList[it.key]?.none { section -> section.availableSeats.toFloat() > 0 } == true) {
+                    remove()
+                  }
+                }
+              }
             }
           }
         }

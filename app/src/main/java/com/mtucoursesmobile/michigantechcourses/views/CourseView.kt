@@ -4,11 +4,20 @@ import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.outlined.Search
@@ -16,8 +25,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -30,7 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -39,9 +50,10 @@ import com.mtucoursesmobile.michigantechcourses.R
 import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
-import com.mtucoursesmobile.michigantechcourses.components.LoadingAnimation
+import com.mtucoursesmobile.michigantechcourses.components.LoadingCourseList
 import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
 
 
@@ -92,25 +104,43 @@ fun CourseView(
         ),
         actions = {
           if (!searching) {
-            IconButton(onClick = { onSearchExpandedChanged(true) }) {
-              Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = "Search Courses",
-                tint = MaterialTheme.colorScheme.primary,
-              )
+            AnimatedVisibility(
+              visible = (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()),
+              enter = scaleIn(),
+              exit = scaleOut()
+            ) {
+              Row {
+                IconButton(onClick = { onSearchExpandedChanged(true) }) {
+                  Icon(
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = "Search Courses",
+                    tint = MaterialTheme.colorScheme.primary,
+                  )
+                }
+                SemesterPicker(
+                  expanded,
+                  courseViewModel,
+                  context,
+                  semesterText
+                )
+              }
             }
-            SemesterPicker(
-              expanded,
-              courseViewModel,
-              context,
-              semesterText
-            )
           }
 
         },
         title = {
           if (!searching) {
-            Text(text = "Courses for ${semesterText.value}")
+            AnimatedContent(
+              targetState = (courseViewModel.courseList.isEmpty() && courseViewModel.sectionList.isEmpty()),
+              label = "CoursesTitle"
+            ) { targetState ->
+              if (targetState) {
+                Text(text = "Loading Courses...")
+              } else {
+                Text(text = "Courses for ${semesterText.value}")
+              }
+            }
+
           }
           ExpandableSearchView(
             searchDisplay = courseViewModel.courseSearchValue.value,
@@ -127,19 +157,25 @@ fun CourseView(
       )
     },
     floatingActionButton = {
-      ExtendedFloatingActionButton(
-        onClick = {
-          courseViewModel.showFilter.value = true
-        },
-        expanded = expandedFab,
-        icon = {
-          Icon(
-            Icons.Filled.FilterList,
-            "Filter Button"
-          )
-        },
-        text = { Text(text = "Filter") },
-      )
+      AnimatedVisibility(
+        visible = (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()),
+        enter = scaleIn(),
+        exit = scaleOut(),
+      ) {
+        ExtendedFloatingActionButton(
+          onClick = {
+            courseViewModel.showFilter.value = true
+          },
+          expanded = expandedFab,
+          icon = {
+            Icon(
+              Icons.Filled.FilterList,
+              "Filter Button"
+            )
+          },
+          text = { Text(text = "Filter") },
+        )
+      }
     }) { innerPadding ->
     if (courseViewModel.courseNotFound.value) {
       Column(
@@ -157,11 +193,11 @@ fun CourseView(
       }
     } else {
       AnimatedContent(
-        targetState = courseViewModel.courseList.isEmpty(),
-        label = "CourseList"
+        targetState = (courseViewModel.courseList.isEmpty() && courseViewModel.sectionList.isEmpty()),
+        label = "CourseList",
       ) { isEmpty ->
         if (isEmpty) {
-          LoadingAnimation(innerPadding)
+          LoadingCourseList(innerPadding)
         } else {
           LazyCourseList(
             listState = listState,

@@ -2,10 +2,10 @@ package com.mtucoursesmobile.michigantechcourses.api
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
-import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
+import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
+import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
-import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
+import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -13,45 +13,44 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import java.time.Instant
 
-interface RetroFitAPIInstructors {
+interface RetroFitInstructors {
   @GET("instructors")
-  fun getCurrentInstructors(
+  fun getMTUInstructors(
   ): Call<List<MTUInstructor>>
+
 }
 
-fun getInstructors(instructorList: MutableList<MTUInstructor>, context: Context) {
-  Log.d(
-    "DEBUG",
-    "Started Semester Call"
-  )
+fun getMTUInstructors(instructorList: MutableMap<Number, MTUInstructor>, context: Context) {
   val okHttpClient = OkHttpClient.Builder()
     .build()
 
-  val retrofit = Retrofit.Builder()
+  val retroFit = Retrofit.Builder()
     .baseUrl("https://api.michigantechcourses.com/").client(okHttpClient)
     .addConverterFactory(GsonConverterFactory.create()).build()
-  val retrofitAPI = retrofit.create(RetroFitAPIInstructors::class.java)
 
-  val semesterCall: Call<List<MTUInstructor>> = retrofitAPI.getCurrentInstructors()
+  val retrofitAPI = retroFit.create(RetroFitInstructors::class.java)
 
-  semesterCall!!.enqueue(object : Callback<List<MTUInstructor>?> {
+  val instructorCall: Call<List<MTUInstructor>> = retrofitAPI.getMTUInstructors()
+
+  instructorCall!!.enqueue(object : Callback<List<MTUInstructor>?> {
     override fun onResponse(
       call: Call<List<MTUInstructor>?>, response: Response<List<MTUInstructor>?>
     ) {
       if (response.isSuccessful) {
         val instructorData: List<MTUInstructor> = response.body()!!
         instructorList.clear()
-        instructorList.addAll(instructorData)
+        instructorList.putAll(instructorData.associateBy { it.id })
       }
     }
 
     override fun onFailure(call: Call<List<MTUInstructor>?>, t: Throwable) {
-      Toast.makeText(
-        context,
-        "API not available, check Network Connection",
-        Toast.LENGTH_LONG
-      ).show()
+      Log.d(
+        "DEBUG",
+        t.cause.toString()
+      )
     }
+
   })
 }

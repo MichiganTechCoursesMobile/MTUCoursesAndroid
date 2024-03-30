@@ -14,6 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mtucoursesmobile.michigantechcourses.api.getMTUCourses
+import com.mtucoursesmobile.michigantechcourses.api.getMTUSections
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCoursesEntry
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
@@ -48,7 +50,7 @@ class MainActivity : ComponentActivity() {
 //            "mtucourses-db"
 //          ).addTypeConverter(MTUCoursesConverter()).build()
 //        }
-        val courses = coursesViewModel.courseList.toMutableStateList()
+        val courses = coursesViewModel.courseList.toList().toMutableStateList()
         LaunchedEffect(Unit) {
           coursesViewModel.initialCourselist(
             context

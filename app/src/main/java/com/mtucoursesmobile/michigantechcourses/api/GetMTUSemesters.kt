@@ -1,7 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.api
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
@@ -19,7 +18,7 @@ interface RetroFitAPISemesters {
   ): Call<List<MTUSemesters>>
 }
 
-fun getSemesters(semesterList: MutableList<CurrentSemester>, context: Context) {
+fun getMTUSemesters(semesterList: MutableList<CurrentSemester>, context: Context) {
   val okHttpClient = OkHttpClient.Builder()
     .build()
 
