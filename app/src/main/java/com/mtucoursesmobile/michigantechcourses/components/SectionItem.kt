@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
+import android.icu.text.SimpleDateFormat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -7,6 +8,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideIn
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddCircleOutline
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -43,6 +46,8 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
+import java.lang.StringBuilder
+import java.util.Locale
 
 @Composable
 fun SectionItem(section: MTUSections, instructors: Map<Number, MTUInstructor>) {
@@ -75,10 +80,64 @@ fun SectionItem(section: MTUSections, instructors: Map<Number, MTUInstructor>) {
       Row(
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Text(
-          text = "Section Time Here",
-          Modifier.weight(7f)
-        )
+        val dow = StringBuilder()
+        if (section.time.rrules.isEmpty() || section.time.rrules[0].config.byDayOfWeek.isEmpty()) {
+          dow.append("¯\\_(ツ)_/¯")
+        } else {
+          for (day in section.time.rrules[0].config.byDayOfWeek) {
+            if (day == "TH") {
+              dow.append("R")
+            } else {
+              dow.append(
+                day.substring(
+                  0,
+                  day.length - 1
+                )
+              )
+            }
+          }
+        }
+        val tod = StringBuilder()
+        if (section.time.rrules.isEmpty()) {
+          tod.append("??:??")
+        } else {
+          val tempStartTime =
+            "${section.time.rrules[0].config.start.hour}:${section.time.rrules[0].config.start.minute}"
+          val tempEndTime =
+            "${section.time.rrules[0].config.end.hour}:${section.time.rrules[0].config.end.minute}"
+          tod.append(
+            SimpleDateFormat(
+              "H:mma",
+              Locale.ENGLISH
+            ).format(
+              SimpleDateFormat(
+                "HH:mm",
+                Locale.ENGLISH
+              ).parse(tempStartTime)
+            ).toString()
+          )
+          tod.append("-")
+          tod.append(
+            SimpleDateFormat(
+              "H:mma",
+              Locale.ENGLISH
+            ).format(
+              SimpleDateFormat(
+                "HH:mm",
+                Locale.ENGLISH
+              ).parse(tempEndTime)
+            ).toString()
+          )
+        }
+
+        Box(modifier = Modifier.weight(7f)) {
+          Row() {
+            Badge(Modifier.padding(end = 4.dp)) { Text(text = dow.toString()) }
+            Badge() { Text(text = tod.toString()) }
+          }
+
+        }
+
         Row(
           verticalAlignment = Alignment.CenterVertically
         ) {
