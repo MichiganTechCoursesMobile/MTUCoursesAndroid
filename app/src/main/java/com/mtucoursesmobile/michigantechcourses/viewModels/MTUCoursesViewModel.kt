@@ -111,6 +111,7 @@ class MTUCoursesViewModel : ViewModel() {
         context
       )
     }
+
   }
 
   fun initialCourselist(context: Context) {

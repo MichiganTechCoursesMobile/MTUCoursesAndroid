@@ -1,9 +1,11 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
@@ -105,7 +107,7 @@ fun CourseView(
         actions = {
           if (!searching) {
             AnimatedVisibility(
-              visible = (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()),
+              visible = (courseViewModel.instructorList.isNotEmpty()),
               enter = scaleIn(),
               exit = scaleOut()
             ) {
@@ -130,9 +132,9 @@ fun CourseView(
         },
         title = {
           if (!searching) {
-            AnimatedContent(
+            Crossfade(
               targetState = (courseViewModel.courseList.isEmpty() && courseViewModel.sectionList.isEmpty()),
-              label = "CoursesTitle"
+              label = "CourseViewTitle",
             ) { targetState ->
               if (targetState) {
                 Text(text = "Loading Courses...")
@@ -158,7 +160,7 @@ fun CourseView(
     },
     floatingActionButton = {
       AnimatedVisibility(
-        visible = (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()),
+        visible = (courseViewModel.instructorList.isNotEmpty()),
         enter = scaleIn(),
         exit = scaleOut(),
       ) {
