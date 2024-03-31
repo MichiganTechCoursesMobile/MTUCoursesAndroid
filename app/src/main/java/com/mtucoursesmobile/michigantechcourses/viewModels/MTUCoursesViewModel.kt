@@ -110,7 +110,8 @@ class MTUCoursesViewModel : ViewModel() {
       getMTUBuildings(buildingList)
       getMTUInstructors(
         instructorList,
-        context
+        context,
+        lastUpdatedSince
       )
       getMTUSemesters(
         semesterList,
@@ -155,6 +156,7 @@ class MTUCoursesViewModel : ViewModel() {
       updateMTUCourses(
         courseList,
         sectionList,
+        instructorList,
         currentSemester.semester,
         currentSemester.year,
         lastUpdatedSince,

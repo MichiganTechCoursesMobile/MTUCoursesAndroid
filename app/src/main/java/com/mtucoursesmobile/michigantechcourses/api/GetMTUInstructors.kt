@@ -2,6 +2,7 @@ package com.mtucoursesmobile.michigantechcourses.api
 
 import android.content.Context
 import android.util.Log
+import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -10,6 +11,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import java.time.Instant
 
 interface RetroFitInstructors {
   @GET("instructors")
@@ -18,7 +20,10 @@ interface RetroFitInstructors {
 
 }
 
-fun getMTUInstructors(instructorList: MutableMap<Number, MTUInstructor>, context: Context) {
+fun getMTUInstructors(
+  instructorList: MutableMap<Number, MTUInstructor>, context: Context,
+  lastUpdatedSince: MutableList<LastUpdatedSince>
+) {
   val okHttpClient = OkHttpClient.Builder()
     .build()
 
@@ -38,6 +43,15 @@ fun getMTUInstructors(instructorList: MutableMap<Number, MTUInstructor>, context
         val instructorData: List<MTUInstructor> = response.body()!!
         instructorList.clear()
         instructorList.putAll(instructorData.associateBy { it.id })
+        lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.type == "course" })
+        lastUpdatedSince.add(
+          LastUpdatedSince(
+            "all",
+            "all",
+            "instructor",
+            Instant.now().toString()
+          )
+        )
       }
     }
 

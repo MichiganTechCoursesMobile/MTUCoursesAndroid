@@ -39,6 +39,11 @@ interface RetroFitUpdate {
     @Query("semester") semester: String, @Query("year") year: String,
     @Query("updatedSince") lastUpdated: String
   ): Call<List<MTUSections>>
+
+  @GET("instructors")
+  fun getUpdatedMTUInstructors(
+    @Query("updatedSince") lastUpdated: String
+  ): Call<List<MTUInstructor>>
 }
 
 @OptIn(
@@ -47,6 +52,7 @@ interface RetroFitUpdate {
 fun updateMTUCourses(
   courseList: MutableMap<String, MTUCourses>,
   sectionList: MutableMap<String, MutableList<MTUSections>>,
+  instructorList: MutableMap<Number, MTUInstructor>,
   semester: String, year: String,
   lastUpdatedSince: MutableList<LastUpdatedSince>,
   loading: PullToRefreshState?,
@@ -59,9 +65,14 @@ fun updateMTUCourses(
     lastUpdatedCourses = Instant.now().toString()
   }
   var lastUpdatedSections =
-    lastUpdatedSince.find { entry -> entry.type == "course" && entry.semester == semester && entry.year == year }?.time
+    lastUpdatedSince.find { entry -> entry.type == "section" && entry.semester == semester && entry.year == year }?.time
   if (lastUpdatedSections == null) {
     lastUpdatedSections = Instant.now().toString()
+  }
+  var lastUpdatedInstructors =
+    lastUpdatedSince.find { entry -> entry.type == "instructor" }?.time
+  if (lastUpdatedInstructors == null) {
+    lastUpdatedInstructors = Instant.now().toString()
   }
   val okHttpClient = OkHttpClient.Builder()
     .build()
@@ -84,8 +95,8 @@ fun updateMTUCourses(
     lastUpdatedSections
   )
 
-  val courseNotUpdated = false
-  val sectionsNotUpdated = false
+  val instructorUpdateCall: Call<List<MTUInstructor>> =
+    retrofitAPI.getUpdatedMTUInstructors(lastUpdatedInstructors)
 
   courseUpdateCall!!.enqueue(object : Callback<List<MTUCourses>?> {
     override fun onResponse(
@@ -95,6 +106,15 @@ fun updateMTUCourses(
         val updatedCourseData: List<MTUCourses> = response.body()!!
         if (currentSemester.semester == semester && currentSemester.year == year) {
           courseList.putAll(updatedCourseData.associateBy { it.id })
+          lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "course" })
+          lastUpdatedSince.add(
+            LastUpdatedSince(
+              semester,
+              year,
+              "course",
+              Instant.now().toString()
+            )
+          )
         }
         return
       }
@@ -130,6 +150,15 @@ fun updateMTUCourses(
           sectionList.putAll(updatedSectionData.groupBy { it.courseId }.mapValuesTo(
             HashMap()
           ) { it -> it.value.map { it }.toMutableList() })
+          lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "section" })
+          lastUpdatedSince.add(
+            LastUpdatedSince(
+              semester,
+              year,
+              "section",
+              Instant.now().toString()
+            )
+          )
           loading?.endRefresh()
         }
         return
@@ -144,5 +173,34 @@ fun updateMTUCourses(
       return
     }
 
+  })
+
+  instructorUpdateCall!!.enqueue(object : Callback<List<MTUInstructor>?> {
+    override fun onResponse(
+      call: Call<List<MTUInstructor>?>, response: Response<List<MTUInstructor>?>
+    ) {
+      if (response.isSuccessful) {
+        val updatedInstructorData: List<MTUInstructor> = response.body()!!
+        instructorList.putAll(updatedInstructorData.associateBy { it.id })
+        lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.type == "instructor" })
+        lastUpdatedSince.add(
+          LastUpdatedSince(
+            "all",
+            "all",
+            "instructor",
+            Instant.now().toString()
+          )
+        )
+        return
+      }
+    }
+
+    override fun onFailure(call: Call<List<MTUInstructor>?>, t: Throwable) {
+      Log.d(
+        "DEBUG",
+        t.cause.toString()
+      )
+      return
+    }
   })
 }
