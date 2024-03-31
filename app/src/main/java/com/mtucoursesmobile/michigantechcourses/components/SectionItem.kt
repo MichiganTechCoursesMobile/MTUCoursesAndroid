@@ -9,8 +9,8 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideIn
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,12 +22,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.outlined.AddCircleOutline
+import androidx.compose.material.icons.outlined.AreaChart
+import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ChipColors
 import androidx.compose.material3.ElevatedAssistChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,8 +54,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
-import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -61,7 +61,6 @@ import coil.size.Size
 import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
-import java.lang.StringBuilder
 import java.util.Locale
 
 @Composable
@@ -116,16 +115,14 @@ fun SectionItem(
         }
         val tod = StringBuilder()
         if (section.time.rrules.isNotEmpty()) {
-          val tempStartTime =
-            SimpleDateFormat(
-              "HH:mm",
-              Locale.ENGLISH
-            ).parse("${section.time.rrules[0].config.start.hour}:${section.time.rrules[0].config.start.minute}")
-          val tempEndTime =
-            SimpleDateFormat(
-              "HH:mm",
-              Locale.ENGLISH
-            ).parse("${section.time.rrules[0].config.end.hour}:${section.time.rrules[0].config.end.minute}")
+          val tempStartTime = SimpleDateFormat(
+            "HH:mm",
+            Locale.ENGLISH
+          ).parse("${section.time.rrules[0].config.start.hour}:${section.time.rrules[0].config.start.minute}")
+          val tempEndTime = SimpleDateFormat(
+            "HH:mm",
+            Locale.ENGLISH
+          ).parse("${section.time.rrules[0].config.end.hour}:${section.time.rrules[0].config.end.minute}")
           tod.append(
             SimpleDateFormat(
               "H:mma",
@@ -159,10 +156,9 @@ fun SectionItem(
           Text(
             text = section.section
           )
-          IconButton(
-            modifier = Modifier
-              .padding(start = 8.dp)
-              .rotate(rotationState),
+          IconButton(modifier = Modifier
+            .padding(start = 8.dp)
+            .rotate(rotationState),
             onClick = {
               /* TODO */
             }) {
@@ -174,8 +170,7 @@ fun SectionItem(
         }
 
       }
-      AnimatedVisibility(
-        visible = expandedState,
+      AnimatedVisibility(visible = expandedState,
         enter = slideIn(
           tween(
             300,
@@ -186,8 +181,7 @@ fun SectionItem(
             0,
             -50
           )
-        }
-      ) {
+        }) {
         Column {
           Column {
             Text(
@@ -207,49 +201,92 @@ fun SectionItem(
             )
             if (instructors.isNotEmpty()) {
               for (instructor in instructors) {
+                val exposed = remember { mutableStateOf(false) }
                 val instructorNames = instructor.value.fullName.split(" ").toList()
                 Row(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                  if (instructor.value.thumbnailURL == null) {
-                    PlaceHolderAvatar(
-                      id = instructor.key.toString(),
-                      firstName = instructorNames.first(),
-                      lastName = instructorNames.last(),
-                      modifier = Modifier.padding(end = 8.dp)
-                    )
-                  } else {
-                    val painter = rememberAsyncImagePainter(
-                      model = ImageRequest.Builder(LocalContext.current)
-                        .data(instructor.value.thumbnailURL)
-                        .size(Size.ORIGINAL).build()
-                    )
-                    if (painter.state is AsyncImagePainter.State.Success) {
-                      Image(
-                        modifier = Modifier
-                          .padding(end = 8.dp)
-                          .size(40.dp)
-                          .clip(shape = CircleShape),
-                        painter = painter,
-                        contentDescription = instructor.value.fullName
+                  Box(
+                    modifier = Modifier
+                      .clip(RoundedCornerShape(10.dp))
+                      .clickable(enabled = !instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0),
+                        onClick = { exposed.value = !exposed.value })
+                  ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                      if (instructor.value.thumbnailURL == null) {
+                        PlaceHolderAvatar(
+                          id = instructor.key.toString(),
+                          firstName = instructorNames.first(),
+                          lastName = instructorNames.last(),
+                          modifier = Modifier.padding(end = 8.dp)
+                        )
+                      } else {
+                        val painter = rememberAsyncImagePainter(
+                          model = ImageRequest.Builder(LocalContext.current)
+                            .data(instructor.value.thumbnailURL).size(Size.ORIGINAL).build()
+                        )
+                        if (painter.state is AsyncImagePainter.State.Success) {
+                          Image(
+                            modifier = Modifier
+                              .padding(end = 8.dp)
+                              .size(40.dp)
+                              .clip(shape = CircleShape),
+                            painter = painter,
+                            contentDescription = instructor.value.fullName
+                          )
+                        } else {
+                          PlaceHolderAvatar(
+                            id = instructor.key.toString(),
+                            firstName = instructorNames.first(),
+                            lastName = instructorNames.last(),
+                            modifier = Modifier.padding(end = 8.dp)
+                          )
+                        }
+                      }
+                      Text(
+                        modifier = Modifier.padding(end = 2.dp),
+                        text = instructor.value.fullName,
+                        fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                       )
-                    } else {
-                      PlaceHolderAvatar(
-                        id = instructor.key.toString(),
-                        firstName = instructorNames.first(),
-                        lastName = instructorNames.last(),
-                        modifier = Modifier.padding(end = 8.dp)
-                      )
+                      AnimatedVisibility(visible = exposed.value) {
+                        Icon(
+                          imageVector = Icons.AutoMirrored.Filled.ArrowLeft,
+                          contentDescription = "Hide instructor info",
+                          Modifier.padding(end = 2.dp)
+                        )
+                      }
                     }
                   }
-                  Text(
-                    modifier = Modifier,
-                    text = instructor.value.fullName,
-                    fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                  )
+                  AnimatedVisibility(visible = exposed.value) {
+                    Row {
+                      Card(Modifier.padding(end = 8.dp)) {
+                        Row {
+                          Icon(
+                            imageVector = Icons.Outlined.AreaChart,
+                            contentDescription = "Average Rating"
+                          )
+                          Text(text = ": ${(instructor.value.averageRating.toDouble() * 100)}%")
+                        }
+
+
+                      }
+                      Card {
+                        Row {
+                          Icon(
+                            imageVector = Icons.Outlined.Speed,
+                            contentDescription = "Average Rating"
+                          )
+                          Text(text = ": ${(instructor.value.averageDifficultyRating.toDouble() * 100)}%")
+                        }
+
+                      }
+                    }
+
+                  }
+
                 }
               }
             } else {
@@ -283,7 +320,7 @@ fun SectionItem(
               modifier = Modifier.padding(end = 4.dp),
               colors = SuggestionChipDefaults.suggestionChipColors(labelColor = if (section.availableSeats.toInt() <= 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
             )
-            if (section.buildingName != null) {
+            if (section.buildingName != null && section.locationType == "PHYSICAL") {
               val mContext = LocalContext.current
               val intent = Intent(
                 Intent.ACTION_VIEW,
@@ -294,6 +331,12 @@ fun SectionItem(
                   mContext.startActivity(intent)
                 },
                 label = { Text(text = "${buildings[section.buildingName]?.shortName} ${section.room}") },
+                modifier = Modifier.padding(end = 4.dp)
+              )
+            } else if (section.locationType == "ONLINE") {
+              SuggestionChip(
+                onClick = { },
+                label = { Text(text = "Online") },
                 modifier = Modifier.padding(end = 4.dp)
               )
             } else {

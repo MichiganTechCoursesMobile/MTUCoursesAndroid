@@ -17,7 +17,7 @@ data class MTUSections(
   var deletedAt: String?,
   var room: String?,
   var buildingName: String?,
-  var localType: String,
+  var locationType: String,
   var instructors: List<SectionInstructors>
 )
 

@@ -86,20 +86,25 @@ fun FilterModal(
             FilterChip(
               selected = courseViewModel.sortingMode.value.first == type.key,
               onClick = {
-                if (courseViewModel.sortingMode.value.first == type.key) {
-                  if (courseViewModel.sortingMode.value.second == "ascending") {
-                    courseViewModel.sortingMode.value = Pair(
-                      type.key,
-                      "descending"
-                    )
+                scope.launch {
+                  listState.animateScrollToItem(0)
+                }
+                scope.launch {
+                  if (courseViewModel.sortingMode.value.first == type.key) {
+                    if (courseViewModel.sortingMode.value.second == "ascending") {
+                      courseViewModel.sortingMode.value = Pair(
+                        type.key,
+                        "descending"
+                      )
+                    } else {
+                      courseViewModel.sortingMode.value = Pair(
+                        type.key,
+                        "ascending"
+                      )
+                    }
                   } else {
-                    courseViewModel.sortingMode.value = Pair(
-                      type.key,
-                      "ascending"
-                    )
+                    courseViewModel.sortingMode.value = type.toPair()
                   }
-                } else {
-                  courseViewModel.sortingMode.value = type.toPair()
                 }
               },
               label = { Text(text = type.key) },
