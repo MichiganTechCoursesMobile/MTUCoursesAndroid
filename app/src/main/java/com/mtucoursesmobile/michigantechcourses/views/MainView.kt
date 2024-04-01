@@ -176,7 +176,7 @@ fun MainView(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
           }
         }) {
-        BasketView()
+        BasketView(courseViewModel)
       }
       composable("Settings",
         enterTransition = {
