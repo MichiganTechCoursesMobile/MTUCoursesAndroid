@@ -36,7 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,9 +64,9 @@ import java.util.Locale
 
 @Composable
 fun SectionItem(
-  section: MTUSections, instructors: Map<Number, MTUInstructor>, buildings: Map<String, MTUBuilding>
+  section: MTUSections, instructors: Map<Number, MTUInstructor>, buildings: Map<String, MTUBuilding>, alreadyExpanded: Boolean
 ) {
-  var expandedState by remember { mutableStateOf(false) }
+  var expandedState by remember { mutableStateOf(alreadyExpanded) }
   val rotationState by animateFloatAsState(
     targetValue = if (expandedState) 180f else 0f,
     label = "Expand"
@@ -91,7 +90,7 @@ fun SectionItem(
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(12.dp)
+        .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
       Row(
         verticalAlignment = Alignment.CenterVertically
