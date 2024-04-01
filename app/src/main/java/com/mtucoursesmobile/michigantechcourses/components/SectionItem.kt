@@ -3,6 +3,7 @@ package com.mtucoursesmobile.michigantechcourses.components
 import android.content.Intent
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.AreaChart
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
@@ -64,7 +66,10 @@ import java.util.Locale
 
 @Composable
 fun SectionItem(
-  section: MTUSections, instructors: Map<Number, MTUInstructor>, buildings: Map<String, MTUBuilding>, alreadyExpanded: Boolean
+  section: MTUSections,
+  instructors: Map<Number, MTUInstructor>,
+  buildings: Map<String, MTUBuilding>,
+  alreadyExpanded: Boolean
 ) {
   var expandedState by remember { mutableStateOf(alreadyExpanded) }
   val rotationState by animateFloatAsState(
@@ -90,7 +95,7 @@ fun SectionItem(
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 8.dp, vertical = 4.dp)
+        .padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
       Row(
         verticalAlignment = Alignment.CenterVertically
@@ -202,15 +207,25 @@ fun SectionItem(
               for (instructor in instructors) {
                 val exposed = remember { mutableStateOf(false) }
                 val instructorNames = instructor.value.fullName.split(" ").toList()
+                val showInstructorInfo = !instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0)
                 Row(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.padding(bottom = 8.dp)
                 ) {
                   Box(
-                    modifier = Modifier
-                      .clip(RoundedCornerShape(10.dp))
-                      .clickable(enabled = !instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0),
-                        onClick = { exposed.value = !exposed.value })
+                    /*
+                    * Having this if statement allows users to click the
+                    * instructor and close the card if they have no info
+                    * */
+                    modifier = if (showInstructorInfo) {
+                      Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable(enabled = true,
+                          onClick = { exposed.value = !exposed.value })
+                    } else {
+                      Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                    }
                   ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                       if (instructor.value.thumbnailURL == null) {
@@ -250,13 +265,26 @@ fun SectionItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                       )
-                      AnimatedVisibility(visible = exposed.value) {
-                        Icon(
-                          imageVector = Icons.AutoMirrored.Filled.ArrowLeft,
-                          contentDescription = "Hide instructor info",
-                          Modifier.padding(end = 2.dp)
-                        )
+                      if (showInstructorInfo) {
+                        AnimatedContent(targetState = exposed.value,
+                          label = "Hide/Show Instructor Stats"
+                        ) { targetState ->
+                          if (targetState) {
+                            Icon(
+                              imageVector = Icons.AutoMirrored.Filled.ArrowLeft,
+                              contentDescription = "Hide instructor info",
+                              Modifier.padding(end = 2.dp)
+                            )
+                          } else {
+                            Icon(
+                              imageVector = Icons.Outlined.Info,
+                              contentDescription = "View Instructor info",
+                              Modifier.padding(horizontal = 2.dp)
+                            )
+                          }
+                        }
                       }
+
                     }
                   }
                   AnimatedVisibility(visible = exposed.value) {

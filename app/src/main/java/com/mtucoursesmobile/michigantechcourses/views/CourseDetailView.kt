@@ -177,14 +177,14 @@ fun CourseDetailView(
           val sections = courseViewModel.sectionList[courseId]
           if (sections != null) {
             itemsIndexed(items = sections.filter { section -> section.deletedAt == null },
-              key = { _, item -> item.id }) { _, item ->
+              key = { _, item -> item.id }) { index, item ->
               val sectionInstructor =
                 courseViewModel.instructorList.filter { instructor -> item.instructors.contains(SectionInstructors(instructor.key)) }
               SectionItem(
                 section = item,
                 sectionInstructor,
                 courseViewModel.buildingList,
-                sections.size <= 4
+                index == 0 && sections.size <= 4
               )
             }
           }
