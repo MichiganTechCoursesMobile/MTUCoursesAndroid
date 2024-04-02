@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
             context
           )
           scope.launch {
-            basketViewModel.getBaskets(
+            basketViewModel.getSemesterBaskets(
               coursesViewModel.currentSemester,
               db
             )

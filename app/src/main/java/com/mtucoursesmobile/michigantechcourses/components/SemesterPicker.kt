@@ -61,7 +61,7 @@ fun SemesterPicker(
                 i,
                 context
               )
-              basketViewModel.getBaskets(
+              basketViewModel.getSemesterBaskets(
                 courseViewModel.currentSemester,
                 db
               )
@@ -89,7 +89,7 @@ fun SemesterPicker(
                 i,
                 context
               )
-              basketViewModel.getBaskets(
+              basketViewModel.getSemesterBaskets(
                 courseViewModel.currentSemester,
                 db
               )

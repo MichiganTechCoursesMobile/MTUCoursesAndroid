@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
@@ -21,10 +20,10 @@ import java.util.UUID
 
 class BasketViewModel : ViewModel() {
   val basketList = mutableStateListOf<CourseBasket>()
-  var currentBasketItems = mutableStateMapOf<String, MTUSections>()
   var currentBasketIndex by mutableIntStateOf(0)
+  var currentBasketItems = mutableStateMapOf<String, MTUSections>()
 
-  fun getBaskets(semester: CurrentSemester, db: BasketDB) {
+  fun getSemesterBaskets(semester: CurrentSemester, db: BasketDB) {
     val dao = db.basketDao()
     CoroutineScope(Dispatchers.IO).launch {
       var baskets = dao.getSemesterBaskets(
@@ -33,7 +32,8 @@ class BasketViewModel : ViewModel() {
           semester.year
         )
       )
-      if (baskets == null) {
+      // No baskets for semester exist. Create a new one
+      if (baskets == null || baskets.baskets.isEmpty()) {
         baskets = CourseBasketBundle(
           Pair(
             semester.semester,
@@ -47,24 +47,18 @@ class BasketViewModel : ViewModel() {
             )
           )
         )
+        // Update DB
         viewModelScope.launch {
           updateBaskets(
-            CourseBasketBundle(
-              Pair(
-                semester.semester,
-                semester.year
-              ),
-              baskets.baskets,
-            ),
-            db
+            semester,
+            db,
+            baskets.baskets
           )
         }
       }
       basketList.clear()
       basketList.addAll(baskets.baskets)
-      currentBasketItems.clear()
-      currentBasketItems.putAll(basketList[0].sections)
-      currentBasketIndex = 0
+      setCurrentBasket(0)
     }
 
   }
@@ -74,14 +68,9 @@ class BasketViewModel : ViewModel() {
     basketList[currentBasketIndex].sections[section.id] = section
     viewModelScope.launch {
       updateBaskets(
-        CourseBasketBundle(
-          Pair(
-            semester.semester,
-            semester.year
-          ),
-          basketList
-        ),
-        db
+        semester,
+        db,
+        basketList
       )
     }
   }
@@ -91,22 +80,17 @@ class BasketViewModel : ViewModel() {
     basketList[currentBasketIndex].sections.remove(section.id)
     viewModelScope.launch {
       updateBaskets(
-        CourseBasketBundle(
-          Pair(
-            semester.semester,
-            semester.year
-          ),
-          basketList
-        ),
-        db
+        semester,
+        db,
+        basketList
       )
     }
   }
 
-  fun setBasket(index: Int) {
-    currentBasketItems.clear()
-    currentBasketItems.putAll(basketList[index].sections)
+  fun setCurrentBasket(index: Int) {
     currentBasketIndex = index
+    currentBasketItems.clear()
+    currentBasketItems.putAll(basketList[currentBasketIndex].sections)
   }
 
   fun addBasket(semester: CurrentSemester, name: String, db: BasketDB) {
@@ -119,14 +103,9 @@ class BasketViewModel : ViewModel() {
     )
     viewModelScope.launch {
       updateBaskets(
-        CourseBasketBundle(
-          Pair(
-            semester.semester,
-            semester.year
-          ),
-          basketList
-        ),
-        db
+        semester,
+        db,
+        basketList
       )
     }
   }
@@ -135,26 +114,35 @@ class BasketViewModel : ViewModel() {
     basketList.removeAll(basketList.filter { basket -> basket.id == id })
     viewModelScope.launch {
       updateBaskets(
-        CourseBasketBundle(
-          Pair(
-            semester.semester,
-            semester.year
-          ),
-          basketList
-        ),
-        db
+        semester,
+        db,
+        basketList
       )
     }
   }
 
   private fun updateBaskets(
-    basketBundle: CourseBasketBundle, db: BasketDB
+    semester: CurrentSemester, db: BasketDB, baskets: List<CourseBasket>
   ) {
     val dao = db.basketDao()
     CoroutineScope(Dispatchers.IO).launch {
       dao.insertSemesterBaskets(
-        basketBundle
+        CourseBasketBundle(
+          Pair(
+            semester.semester,
+            semester.year
+          ),
+          baskets,
+        )
       )
     }
+  }
+
+  fun refreshBaskets(semester: CurrentSemester, db: BasketDB) {
+    updateBaskets(
+      semester,
+      db,
+      basketList
+    )
   }
 }
