@@ -1,57 +1,69 @@
 package com.mtucoursesmobile.michigantechcourses.localStorage
 
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
+import androidx.room.ProvidedTypeConverter
+import androidx.room.Query
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 
-//@ProvidedTypeConverter
-//class MTUCoursesConverter {
-//  @TypeConverter
-//  fun StringToMTUCourses(string: String?): MTUCourseSectionBundle {
-//    return Gson().fromJson(
-//      string,
-//      object : TypeToken<MTUCourseSectionBundle?>() {}.type
-//    )
-//  }
-//
-//  @TypeConverter
-//  fun MTUCoursesToString(data: MTUCourseSectionBundle): String? {
-//    return Gson().toJson(data)
-//  }
-//}
-//
-//@Database(
-//  entities = [MTUCoursesEntry::class],
-//  version = 1
-//)
-//@TypeConverters(MTUCoursesConverter::class)
-//abstract class AppDatabase : RoomDatabase() {
-//  abstract fun courseDao(): CourseDao
-//}
-//
-//@Entity(
-//  tableName = "mtucourses",
-//  primaryKeys = ["semester", "year", "courseId"]
-//)
-//data class MTUCoursesEntry(
-//  val semester: String,
-//  val year: String,
-//  val courseId: String,
-//  val entry: MTUCourseSectionBundle
-//)
-//
-//@Dao
-//interface CourseDao {
-//  @Insert(onConflict = OnConflictStrategy.REPLACE)
-//  fun insertCourseEntry(data: MTUCoursesEntry)
-//
-//  @Query("SELECT * FROM mtucourses")
-//  fun getAllCourseEntries(): List<MTUCoursesEntry>
-//
-//  @Query("SELECT * FROM mtucourses WHERE semester LIKE :semester AND year LIKE :year")
-//  fun getSemesterEntries(semester: String, year: String): List<MTUCoursesEntry>
-//
-//  @Query("SELECT * FROM mtucourses WHERE semester LIKE :semester AND year LIKE :year AND courseId LIKE :courseId")
-//  fun getSpecificCourse(semester: String, year: String, courseId: String): MTUCoursesEntry
-//
-//
-//  @Query("DELETE FROM mtucourses WHERE semester LIKE :semester AND year LIKE :year AND courseId LIKE :courseId")
-//  fun deleteCourseEntry(semester: String, year: String, courseId: String)
-//}
+
+@ProvidedTypeConverter
+class BasketConverters {
+  @TypeConverter
+  fun fromBasket(value: List<CourseBasket>): String = Gson().toJson(value)
+
+  @TypeConverter
+  fun toBasket(value: String): List<CourseBasket> = Gson().fromJson(
+    value,
+    object : TypeToken<List<CourseBasket>?>() {}.type
+  )
+
+  @TypeConverter
+  fun fromPair(value: Pair<String, String>): String = Gson().toJson(value)
+
+  @TypeConverter
+  fun toPair(value: String): Pair<String, String> = Gson().fromJson(
+    value,
+    object : TypeToken<Pair<String, String>?>() {}.type
+  )
+
+}
+
+@Database(
+  entities = [CourseBasketBundle::class],
+  version = 1
+)
+@TypeConverters(BasketConverters::class)
+abstract class BasketDB : RoomDatabase() {
+  abstract fun basketDao(): BasketDao
+}
+
+@Entity(
+  tableName = "baskets",
+)
+data class CourseBasketBundle(
+  @PrimaryKey
+  val semester: Pair<String, String>,
+  val baskets: List<CourseBasket>
+)
+
+@Dao
+interface BasketDao {
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  fun insertSemesterBaskets(data: CourseBasketBundle)
+
+  @Query("SELECT * FROM baskets WHERE semester LIKE :semester")
+  fun getSemesterBaskets(semester: Pair<String, String>): CourseBasketBundle?
+
+  @Query("DELETE FROM baskets WHERE semester LIKE :semester")
+  fun deleteSemesterBaskets(semester: Pair<String, String>)
+}

@@ -38,6 +38,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
+import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -45,7 +47,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainView(
-  courseViewModel: MTUCoursesViewModel
+  courseViewModel: MTUCoursesViewModel,
+  basketViewModel: BasketViewModel,
+  db: BasketDB
 ) {
   val items = remember {
     listOf(
@@ -158,6 +162,8 @@ fun MainView(
         // Nested NavHost for Courses
         CourseNav(
           courseViewModel,
+          basketViewModel,
+          db,
           listState
         )
       }
@@ -176,7 +182,11 @@ fun MainView(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
           }
         }) {
-        BasketView(courseViewModel)
+        BasketView(
+          courseViewModel,
+          basketViewModel,
+          db
+        )
       }
       composable("Settings",
         enterTransition = {
@@ -195,6 +205,8 @@ fun MainView(
 @Composable
 fun CourseNav(
   courseViewModel: MTUCoursesViewModel,
+  basketViewModel: BasketViewModel,
+  db: BasketDB,
   listState: LazyListState
 ) {
   val courseNavController = rememberNavController()
@@ -212,6 +224,8 @@ fun CourseNav(
       }) {
       CourseView(
         courseViewModel,
+        basketViewModel,
+        db,
         courseNavController,
         listState
       )
@@ -226,8 +240,10 @@ fun CourseNav(
       }) { backStackEntry ->
       CourseDetailView(
         courseViewModel,
+        basketViewModel,
         courseNavController,
-        backStackEntry.arguments?.getString("courseId")
+        backStackEntry.arguments?.getString("courseId"),
+        db
       )
     }
   }

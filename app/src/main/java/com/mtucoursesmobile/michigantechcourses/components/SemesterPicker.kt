@@ -14,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
+import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
+import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import kotlinx.coroutines.launch
 import java.time.Year
@@ -22,6 +24,8 @@ import java.time.Year
 fun SemesterPicker(
   expanded: MutableState<Boolean>,
   courseViewModel: MTUCoursesViewModel,
+  basketViewModel: BasketViewModel,
+  db: BasketDB,
   context: Context,
   semesterText: MutableState<String>
 ) {
@@ -57,6 +61,10 @@ fun SemesterPicker(
                 i,
                 context
               )
+              basketViewModel.getBaskets(
+                courseViewModel.currentSemester,
+                db
+              )
               semesterText.value = "$i ${courseViewModel.currentSemester.year}"
             }
           }
@@ -80,6 +88,10 @@ fun SemesterPicker(
               courseViewModel.updateSemesterYear(
                 i,
                 context
+              )
+              basketViewModel.getBaskets(
+                courseViewModel.currentSemester,
+                db
               )
               semesterText.value = "${
                 courseViewModel.currentSemester.semester.lowercase()

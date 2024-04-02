@@ -44,18 +44,21 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
 import com.mtucoursesmobile.michigantechcourses.components.SectionItem
+import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
+import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import java.text.DecimalFormat
 
 @OptIn(
-  ExperimentalMaterial3Api::class,
-  ExperimentalLayoutApi::class
+  ExperimentalMaterial3Api::class
 )
 @Composable
 fun CourseDetailView(
   courseViewModel: MTUCoursesViewModel,
+  basketViewModel: BasketViewModel,
   navController: NavController,
-  courseId: String?
+  courseId: String?,
+  db: BasketDB
 ) {
   val foundCourse =
     courseViewModel.courseList[courseId]
@@ -181,10 +184,13 @@ fun CourseDetailView(
               val sectionInstructor =
                 courseViewModel.instructorList.filter { instructor -> item.instructors.contains(SectionInstructors(instructor.key)) }
               SectionItem(
+                basketViewModel,
                 section = item,
                 sectionInstructor,
                 courseViewModel.buildingList,
-                index == 0 && sections.size <= 4
+                index == 0 && sections.size <= 4,
+                courseViewModel.currentSemester,
+                db
               )
             }
           }

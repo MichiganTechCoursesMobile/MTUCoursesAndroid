@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.AreaChart
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
@@ -59,19 +60,23 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
+import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
+import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
+import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import java.util.Locale
 
 @Composable
 fun SectionItem(
-  section: MTUSections,
-  instructors: Map<Number, MTUInstructor>,
-  buildings: Map<String, MTUBuilding>,
-  alreadyExpanded: Boolean
+  basketViewModel: BasketViewModel, section: MTUSections, instructors: Map<Number, MTUInstructor>,
+  buildings: Map<String, MTUBuilding>, alreadyExpanded: Boolean, currentSemester: CurrentSemester,
+  db: BasketDB
 ) {
   var expandedState by remember { mutableStateOf(alreadyExpanded) }
+  val currentBasketItems = remember { basketViewModel.currentBasketItems }
+  var basketContainsSection by remember { mutableStateOf(currentBasketItems[section.id] != null) }
   val rotationState by animateFloatAsState(
     targetValue = if (expandedState) 180f else 0f,
     label = "Expand"
@@ -95,7 +100,10 @@ fun SectionItem(
     Column(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 12.dp, vertical = 4.dp)
+        .padding(
+          horizontal = 12.dp,
+          vertical = 4.dp
+        )
     ) {
       Row(
         verticalAlignment = Alignment.CenterVertically
@@ -164,12 +172,41 @@ fun SectionItem(
             .padding(start = 8.dp)
             .rotate(rotationState),
             onClick = {
-              /* TODO */
+              if (!basketContainsSection) {
+                basketViewModel.addToBasket(
+                  section,
+                  currentSemester,
+                  db
+                )
+                basketContainsSection = true
+              } else {
+                basketViewModel.removeFromBasket(
+                  section,
+                  currentSemester,
+                  db
+                )
+                basketContainsSection = false
+              }
+
             }) {
-            Icon(
-              imageVector = Icons.Outlined.AddCircleOutline,
-              contentDescription = "Add to Basket"
-            )
+            AnimatedContent(
+              targetState = basketContainsSection,
+              label = "Add/Remove section from basket"
+            ) {
+              if (!it) {
+                Icon(
+                  imageVector = Icons.Outlined.AddCircleOutline,
+                  contentDescription = "Add to Basket"
+                )
+              } else {
+                Icon(
+                  imageVector = Icons.Outlined.RemoveCircleOutline,
+                  contentDescription = "Remove From Basket"
+                )
+              }
+
+            }
+
           }
         }
 
@@ -207,13 +244,13 @@ fun SectionItem(
               for (instructor in instructors) {
                 val exposed = remember { mutableStateOf(false) }
                 val instructorNames = instructor.value.fullName.split(" ").toList()
-                val showInstructorInfo = !instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0)
+                val showInstructorInfo =
+                  !instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0)
                 Row(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                  Box(
-                    /*
+                  Box(/*
                     * Having this if statement allows users to click the
                     * instructor and close the card if they have no info
                     * */
@@ -223,8 +260,7 @@ fun SectionItem(
                         .clickable(enabled = true,
                           onClick = { exposed.value = !exposed.value })
                     } else {
-                      Modifier
-                        .clip(RoundedCornerShape(10.dp))
+                      Modifier.clip(RoundedCornerShape(10.dp))
                     }
                   ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -266,7 +302,8 @@ fun SectionItem(
                         overflow = TextOverflow.Ellipsis
                       )
                       if (showInstructorInfo) {
-                        AnimatedContent(targetState = exposed.value,
+                        AnimatedContent(
+                          targetState = exposed.value,
                           label = "Hide/Show Instructor Stats"
                         ) { targetState ->
                           if (targetState) {

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PostAdd
@@ -42,7 +44,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
+import com.mtucoursesmobile.michigantechcourses.components.SectionItem
 import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
+import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
+import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 
 @OptIn(
@@ -50,17 +56,17 @@ import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
   ExperimentalFoundationApi::class
 )
 @Composable
-fun BasketView(courseViewModel: MTUCoursesViewModel) {
+fun BasketView(
+  courseViewModel: MTUCoursesViewModel, basketViewModel: BasketViewModel, db: BasketDB
+) {
   val expanded = remember { mutableStateOf(false) }
   val context = LocalContext.current
   val semesterText = remember { mutableStateOf(courseViewModel.currentSemester.readable) }
   val haptics = LocalHapticFeedback.current
-  var state by remember { mutableIntStateOf(0) }
-  val titles = remember {
-    mutableStateListOf(
-      "Basket 1"
-    )
+  val baskets = remember {
+    basketViewModel.basketList
   }
+  val currentBasketItems = remember { basketViewModel.currentBasketItems }
   var showModal by remember { mutableStateOf(false) }
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
@@ -74,6 +80,8 @@ fun BasketView(courseViewModel: MTUCoursesViewModel) {
           SemesterPicker(
             expanded,
             courseViewModel,
+            basketViewModel,
+            db,
             context,
             semesterText
           )
@@ -85,26 +93,28 @@ fun BasketView(courseViewModel: MTUCoursesViewModel) {
       SecondaryScrollableTabRow(
         divider = { },
         modifier = Modifier.fillMaxWidth(),
-        selectedTabIndex = state,
+        selectedTabIndex = basketViewModel.currentBasketIndex,
         indicator = @Composable {
-          FancyIndicator(Modifier.tabIndicatorOffset(it[state]))
+          FancyIndicator(Modifier.tabIndicatorOffset(it[basketViewModel.currentBasketIndex]))
         }) {
-        titles.forEachIndexed { index, title ->
+        baskets.forEachIndexed { index, item ->
           Box(
             modifier = Modifier
               .align(Alignment.CenterHorizontally)
               .padding(10.dp)
               .clip(RoundedCornerShape(2.dp))
-              .combinedClickable(onClick = { state = index },
+              .combinedClickable(onClick = {
+                basketViewModel.setBasket(index)
+              },
                 onLongClick = {
                   haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                  state = index
+                  basketViewModel.setBasket(index)
                   showModal = true
                 }),
             contentAlignment = Alignment.Center
           ) {
             Text(
-              text = title,
+              text = item.name,
               textAlign = TextAlign.Center,
               modifier = Modifier
             )
@@ -114,7 +124,11 @@ fun BasketView(courseViewModel: MTUCoursesViewModel) {
         Box() {
           IconButton(
             onClick = {
-              titles.add("Basket ${titles.size + 1}")
+              basketViewModel.addBasket(
+                courseViewModel.currentSemester,
+                "Basket ${baskets.size + 1}",
+                db
+              )
             }
           ) {
             Icon(
@@ -130,20 +144,39 @@ fun BasketView(courseViewModel: MTUCoursesViewModel) {
         thickness = 1.dp,
         modifier = Modifier.fillMaxWidth()
       )
-      Text(text = titles[state])
+      LazyColumn {
+        itemsIndexed(
+          items = currentBasketItems.toList(),
+          key = { _, section -> section.second.id }) { _, section ->
+          Text(text = section.second.crn)
+          Button(onClick = {
+            basketViewModel.removeFromBasket(
+              section.second,
+              courseViewModel.currentSemester,
+              db
+            )
+          }) {
+          }
+        }
+      }
     }
   }
   if (showModal) {
     ModalBottomSheet(onDismissRequest = { showModal = false }) {
-      val title = titles[state]
-      Text(text = titles[state])
-      if (titles.size > 1) {
+      val title = baskets[basketViewModel.currentBasketIndex].name
+      if (baskets.size > 1) {
         Button(onClick = {
           showModal = false
-          titles.removeAt(state)
-          if (state - 1 >= 0) {
-            state -= 1
+          basketViewModel.removeBasket(
+            courseViewModel.currentSemester,
+            baskets[basketViewModel.currentBasketIndex].id,
+            db
+          )
+          if (basketViewModel.currentBasketIndex - 1 >= 0) {
+            basketViewModel.setBasket(basketViewModel.currentBasketIndex - 1)
           }
+          basketViewModel.setBasket(basketViewModel.currentBasketIndex)
+
         }) {
           Text(text = "Delete $title")
         }
