@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.components
+package com.mtucoursesmobile.michigantechcourses.components.baskets
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

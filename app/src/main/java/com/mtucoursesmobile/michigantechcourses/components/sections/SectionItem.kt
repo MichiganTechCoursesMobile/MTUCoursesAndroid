@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.components
+package com.mtucoursesmobile.michigantechcourses.components.sections
 
 import android.content.Intent
 import android.icu.text.SimpleDateFormat

@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.components
+package com.mtucoursesmobile.michigantechcourses.components.sections
 
 
 import androidx.compose.foundation.Canvas
@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.annotation.ColorInt

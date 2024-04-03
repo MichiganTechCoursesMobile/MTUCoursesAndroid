@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.components
+package com.mtucoursesmobile.michigantechcourses.components.courses
 
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.layout.Arrangement

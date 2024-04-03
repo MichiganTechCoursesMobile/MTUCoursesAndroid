@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
@@ -23,7 +22,10 @@ class BasketViewModel : ViewModel() {
   var currentBasketIndex by mutableIntStateOf(0)
   var currentBasketItems = mutableStateMapOf<String, MTUSections>()
 
-  fun getSemesterBaskets(semester: CurrentSemester, db: BasketDB) {
+  fun getSemesterBaskets(
+    semester: CurrentSemester,
+    db: BasketDB
+  ) {
     val dao = db.basketDao()
     CoroutineScope(Dispatchers.IO).launch {
       var baskets = dao.getSemesterBaskets(
@@ -63,7 +65,11 @@ class BasketViewModel : ViewModel() {
 
   }
 
-  fun addToBasket(section: MTUSections, semester: CurrentSemester, db: BasketDB) {
+  fun addToBasket(
+    section: MTUSections,
+    semester: CurrentSemester,
+    db: BasketDB
+  ) {
     currentBasketItems[section.id] = section
     basketList[currentBasketIndex].sections[section.id] = section
     viewModelScope.launch {
@@ -75,7 +81,11 @@ class BasketViewModel : ViewModel() {
     }
   }
 
-  fun removeFromBasket(section: MTUSections, semester: CurrentSemester, db: BasketDB) {
+  fun removeFromBasket(
+    section: MTUSections,
+    semester: CurrentSemester,
+    db: BasketDB
+  ) {
     currentBasketItems.remove(section.id)
     basketList[currentBasketIndex].sections.remove(section.id)
     viewModelScope.launch {
@@ -93,7 +103,11 @@ class BasketViewModel : ViewModel() {
     currentBasketItems.putAll(basketList[currentBasketIndex].sections)
   }
 
-  fun addBasket(semester: CurrentSemester, name: String, db: BasketDB) {
+  fun addBasket(
+    semester: CurrentSemester,
+    name: String,
+    db: BasketDB
+  ) {
     basketList.add(
       CourseBasket(
         UUID.randomUUID().toString(),
@@ -110,7 +124,11 @@ class BasketViewModel : ViewModel() {
     }
   }
 
-  fun removeBasket(semester: CurrentSemester, id: String, db: BasketDB) {
+  fun removeBasket(
+    semester: CurrentSemester,
+    id: String,
+    db: BasketDB
+  ) {
     basketList.removeAll(basketList.filter { basket -> basket.id == id })
     viewModelScope.launch {
       updateBaskets(
@@ -122,7 +140,9 @@ class BasketViewModel : ViewModel() {
   }
 
   private fun updateBaskets(
-    semester: CurrentSemester, db: BasketDB, baskets: List<CourseBasket>
+    semester: CurrentSemester,
+    db: BasketDB,
+    baskets: List<CourseBasket>
   ) {
     val dao = db.basketDao()
     CoroutineScope(Dispatchers.IO).launch {
@@ -138,7 +158,30 @@ class BasketViewModel : ViewModel() {
     }
   }
 
-  fun refreshBaskets(semester: CurrentSemester, db: BasketDB) {
+  fun duplicateBasket(
+    semester: CurrentSemester,
+    db: BasketDB,
+    index: Int
+  ) {
+    viewModelScope.launch {
+      val copiedSections = mutableMapOf<String, MTUSections>()
+      copiedSections.putAll(basketList[index].sections)
+      basketList.add(
+        CourseBasket(
+          UUID.randomUUID().toString(),
+          "${basketList[currentBasketIndex].name} (Copy)",
+          copiedSections
+        )
+      )
+      updateBaskets(semester, db, basketList)
+    }
+
+  }
+
+  fun refreshBaskets(
+    semester: CurrentSemester,
+    db: BasketDB
+  ) {
     updateBaskets(
       semester,
       db,

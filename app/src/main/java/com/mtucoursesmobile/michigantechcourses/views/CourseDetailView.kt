@@ -1,11 +1,11 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,7 +43,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
-import com.mtucoursesmobile.michigantechcourses.components.SectionItem
+import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimation
+import com.mtucoursesmobile.michigantechcourses.components.sections.SectionItem
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
@@ -173,30 +174,42 @@ fun CourseDetailView(
             bottom = 4.dp
           )
         )
-        LazyColumn(
-          modifier = Modifier.fillMaxSize(),
-          horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-          val sections = courseViewModel.sectionList[courseId]
-          if (sections != null) {
-            itemsIndexed(items = sections.filter { section -> section.deletedAt == null },
-              key = { _, item -> item.id }) { index, item ->
-              val sectionInstructor =
-                courseViewModel.instructorList.filter { instructor -> item.instructors.contains(SectionInstructors(instructor.key)) }
-              SectionItem(
-                basketViewModel,
-                section = item,
-                sectionInstructor,
-                courseViewModel.buildingList,
-                index == 0 && sections.size <= 4,
-                courseViewModel.currentSemester,
-                db
-              )
+        AnimatedContent(
+          targetState = courseViewModel.sectionList.isEmpty(),
+          label = "Sections"
+        ) { state ->
+          if (state) {
+            LoadingSpinnerAnimation(innerPadding = innerPadding)
+          } else {
+            LazyColumn(
+              modifier = Modifier.fillMaxSize(),
+              horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+              val sections = courseViewModel.sectionList[courseId]
+              if (sections != null) {
+                itemsIndexed(items = sections.filter { section -> section.deletedAt == null },
+                  key = { _, item -> item.id }) { index, item ->
+                  val sectionInstructor =
+                    courseViewModel.instructorList.filter { instructor ->
+                      item.instructors.contains(
+                        SectionInstructors(instructor.key)
+                      )
+                    }
+                  SectionItem(
+                    basketViewModel,
+                    section = item,
+                    sectionInstructor,
+                    courseViewModel.buildingList,
+                    index == 0 && sections.size <= 4,
+                    courseViewModel.currentSemester,
+                    db
+                  )
+                }
+              }
             }
           }
         }
       }
-
     }
   }
 }

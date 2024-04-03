@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.components
+package com.mtucoursesmobile.michigantechcourses.components.baskets
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text

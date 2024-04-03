@@ -9,7 +9,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
@@ -39,9 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mtucoursesmobile.michigantechcourses.R
-import com.mtucoursesmobile.michigantechcourses.components.ExpandableSearchView
-import com.mtucoursesmobile.michigantechcourses.components.FilterModal
-import com.mtucoursesmobile.michigantechcourses.components.LazyCourseList
+import com.mtucoursesmobile.michigantechcourses.components.courses.ExpandableSearchView
+import com.mtucoursesmobile.michigantechcourses.components.courses.FilterModal
+import com.mtucoursesmobile.michigantechcourses.components.courses.LazyCourseList
 import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimation
 import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
