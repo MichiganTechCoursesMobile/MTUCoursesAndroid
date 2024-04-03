@@ -185,7 +185,9 @@ fun MainView(
         BasketView(
           courseViewModel,
           basketViewModel,
-          db
+          db,
+          listState,
+          navController
         )
       }
       composable("Settings",

@@ -125,7 +125,7 @@ fun LazyCourseList(
         },
         key = { _, item -> item.first }
       )
-      { _, item ->
+      { index, item ->
         if (item.first == "404") {
           Column(
             modifier = Modifier
