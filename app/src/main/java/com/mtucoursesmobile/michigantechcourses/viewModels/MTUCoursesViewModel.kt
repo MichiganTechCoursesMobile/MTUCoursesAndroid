@@ -32,7 +32,7 @@ class MTUCoursesViewModel : ViewModel() {
       "2024",
       "FALL"
     )
-  
+
   val courseList = mutableStateMapOf<String, MTUCourses>()
   val sectionList = mutableStateMapOf<String, MutableList<MTUSections>>()
   val instructorList = mutableStateMapOf<Number, MTUInstructor>()
