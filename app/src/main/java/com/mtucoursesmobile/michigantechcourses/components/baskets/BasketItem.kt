@@ -36,6 +36,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
@@ -44,6 +46,21 @@ import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+fun navToCourse(
+  courseNavController: NavController,
+  courseId: String
+) {
+  courseNavController.navigate("courseDetail/${courseId}") {
+
+    popUpTo(courseNavController.graph.findStartDestination().id) {
+      saveState = true
+    }
+    // Restore state when reselecting a previously selected item
+    restoreState = true
+
+  }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasketItem(
@@ -51,7 +68,9 @@ fun BasketItem(
   course: MTUCourses?,
   basketViewModel: BasketViewModel,
   currentSemester: CurrentSemester,
-  db: BasketDB
+  db: BasketDB,
+  navController: NavController,
+  courseNavController: NavController
 ) {
   val scope = rememberCoroutineScope()
   val dismissThreshold = 0.50f
@@ -59,10 +78,16 @@ fun BasketItem(
   val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = {
     var swipped = false
     var delete = false
+    var view = false
     if (it == SwipeToDismissBoxValue.EndToStart) {
       if (currentFraction.floatValue >= dismissThreshold && currentFraction.floatValue < 1.0f) {
         swipped = true
         delete = true
+      }
+    } else if (it == SwipeToDismissBoxValue.StartToEnd) {
+      if (currentFraction.floatValue >= dismissThreshold && currentFraction.floatValue < 1.0f) {
+        swipped = true
+        view = true
       }
     }
     if (delete) {
@@ -73,6 +98,19 @@ fun BasketItem(
           currentSemester,
           db
         )
+      }
+    }
+    if (view) {
+      scope.launch {
+        courseNavController.navigate("courseList")
+        navController.navigate("Courses") {
+          popUpTo(navController.graph.findStartDestination().id) {
+            saveState = true
+          }
+          // Restore state when reselecting a previously selected item
+          restoreState = true
+        }
+        navToCourse(courseNavController, course!!.id)
       }
     }
     swipped
@@ -119,8 +157,7 @@ fun BasketItem(
         }
         currentFraction.floatValue = dismissState.progress
       }
-    },
-    enableDismissFromStartToEnd = false
+    }
   ) {
     ListItem(
       overlineContent = {

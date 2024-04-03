@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -80,6 +81,7 @@ fun MainView(
   val scope = rememberCoroutineScope()
   val listState = rememberLazyListState()
   val navController = rememberNavController()
+  val courseNavController = rememberNavController()
   LaunchedEffect(Unit) {
     while (true) {
       if (!courseViewModel.courseNotFound.value && courseViewModel.courseList.isNotEmpty()) {
@@ -164,7 +166,8 @@ fun MainView(
           courseViewModel,
           basketViewModel,
           db,
-          listState
+          listState,
+          courseNavController
         )
       }
       composable("Basket",
@@ -187,7 +190,8 @@ fun MainView(
           basketViewModel,
           db,
           listState,
-          navController
+          navController,
+          courseNavController
         )
       }
       composable("Settings",
@@ -209,9 +213,9 @@ fun CourseNav(
   courseViewModel: MTUCoursesViewModel,
   basketViewModel: BasketViewModel,
   db: BasketDB,
-  listState: LazyListState
+  listState: LazyListState,
+  courseNavController: NavHostController
 ) {
-  val courseNavController = rememberNavController()
   NavHost(
     navController = courseNavController,
     startDestination = "courseList",

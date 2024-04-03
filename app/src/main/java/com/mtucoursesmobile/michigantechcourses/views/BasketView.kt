@@ -40,7 +40,8 @@ fun BasketView(
   basketViewModel: BasketViewModel,
   db: BasketDB,
   listState: LazyListState,
-  navController: NavController
+  navController: NavController,
+  courseNavController: NavController
 ) {
   val expanded = remember { mutableStateOf(false) }
   val context = LocalContext.current
@@ -84,7 +85,9 @@ fun BasketView(
               course = course,
               basketViewModel = basketViewModel,
               currentSemester = currentSemester,
-              db = db
+              db = db,
+              navController,
+              courseNavController
             )
           }
 
