@@ -107,7 +107,11 @@ fun MainView(
             onClick = {
               // Scroll Back to top (No need to run rest of code)
               if (navController.currentBackStackEntry?.destination?.route.toString() == "Courses" && item.first == "Courses") {
-                scope.launch { listState.animateScrollToItem(0) }
+                if (courseNavController.currentDestination?.route != "courseList") {
+                  courseNavController.navigate("courseList")
+                } else {
+                  scope.launch { listState.animateScrollToItem(0) }
+                }
                 return@NavigationBarItem
               }
               scope.launch {
