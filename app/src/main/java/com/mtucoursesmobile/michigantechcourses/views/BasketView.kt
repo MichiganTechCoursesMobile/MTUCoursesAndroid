@@ -16,6 +16,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -49,6 +51,7 @@ fun BasketView(
   val semesterBaskets = remember { basketViewModel.basketList }
   val currentBasketItems = remember { basketViewModel.currentBasketItems }
   val currentSemester = remember { courseViewModel.currentSemester }
+  val snackbarHostState = remember { SnackbarHostState() }
   Scaffold(contentWindowInsets = WindowInsets(0.dp), topBar = {
     TopAppBar(title = { Text(text = "Baskets for ${semesterText.value}") },
       colors = TopAppBarDefaults.topAppBarColors(
@@ -72,11 +75,12 @@ fun BasketView(
           expanded, courseViewModel, basketViewModel, db, context, semesterText
         )
       })
-  }) { innerPadding ->
+  }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
     Column(Modifier.padding(innerPadding)) {
       BasketTabs(basketViewModel = basketViewModel, courseViewModel = courseViewModel, db = db)
       LazyColumn {
-        itemsIndexed(items = currentBasketItems.toList(),
+        itemsIndexed(
+          items = currentBasketItems.toList(),
           key = { _, section -> section.second.id }) { _, section ->
           val course = courseViewModel.courseList[section.second.courseId]
           Box(modifier = Modifier.animateItemPlacement()) {
@@ -87,7 +91,8 @@ fun BasketView(
               currentSemester = currentSemester,
               db = db,
               navController,
-              courseNavController
+              courseNavController,
+              snackbarHostState
             )
           }
 

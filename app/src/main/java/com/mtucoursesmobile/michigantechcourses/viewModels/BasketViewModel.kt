@@ -1,5 +1,8 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -84,7 +87,8 @@ class BasketViewModel : ViewModel() {
   fun removeFromBasket(
     section: MTUSections,
     semester: CurrentSemester,
-    db: BasketDB
+    db: BasketDB,
+    snackbarHostState: SnackbarHostState?
   ) {
     currentBasketItems.remove(section.id)
     basketList[currentBasketIndex].sections.remove(section.id)
@@ -94,6 +98,24 @@ class BasketViewModel : ViewModel() {
         db,
         basketList
       )
+    }
+    if (snackbarHostState != null) {
+      viewModelScope.launch {
+        val result = snackbarHostState
+          .showSnackbar(
+            message = "Section deleted from Basket",
+            actionLabel = "Undo",
+            duration = SnackbarDuration.Short
+          )
+        when (result) {
+          SnackbarResult.ActionPerformed -> {
+            addToBasket(section, semester, db)
+          }
+          SnackbarResult.Dismissed -> {
+            /* Nothing happens */
+          }
+        }
+      }
     }
   }
 
@@ -175,7 +197,6 @@ class BasketViewModel : ViewModel() {
       )
       updateBaskets(semester, db, basketList)
     }
-
   }
 
   fun refreshBaskets(

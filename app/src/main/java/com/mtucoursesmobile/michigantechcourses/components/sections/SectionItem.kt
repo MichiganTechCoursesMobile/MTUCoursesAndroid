@@ -183,7 +183,8 @@ fun SectionItem(
                 basketViewModel.removeFromBasket(
                   section,
                   currentSemester,
-                  db
+                  db,
+                  null
                 )
                 basketContainsSection = false
               }

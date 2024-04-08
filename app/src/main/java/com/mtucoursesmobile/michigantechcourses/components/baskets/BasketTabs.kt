@@ -144,7 +144,7 @@ fun BasketTabs(basketViewModel: BasketViewModel, courseViewModel: MTUCoursesView
   }
   when {
     showDeleteDialog.value -> {
-      DeleteCourseDialog(
+      DeleteBasketDialog(
         showDialog = showDeleteDialog,
         currentBasketName = semesterBaskets[basketViewModel.currentBasketIndex].name,
         basketViewModel = basketViewModel,

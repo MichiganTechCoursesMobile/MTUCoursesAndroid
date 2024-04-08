@@ -10,7 +10,7 @@ import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 
 @Composable
-fun DeleteCourseDialog(
+fun DeleteBasketDialog(
   showDialog: MutableState<Boolean>, currentBasketName: String, basketViewModel: BasketViewModel,
   semester: CurrentSemester, currentBasketId: String, db: BasketDB
 ) {

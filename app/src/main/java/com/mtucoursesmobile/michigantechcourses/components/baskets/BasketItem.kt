@@ -18,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -70,7 +71,8 @@ fun BasketItem(
   currentSemester: CurrentSemester,
   db: BasketDB,
   navController: NavController,
-  courseNavController: NavController
+  courseNavController: NavController,
+  snackbarHostState: SnackbarHostState
 ) {
   val scope = rememberCoroutineScope()
   val dismissThreshold = 0.50f
@@ -96,7 +98,8 @@ fun BasketItem(
         basketViewModel.removeFromBasket(
           section,
           currentSemester,
-          db
+          db,
+          snackbarHostState
         )
       }
     }
@@ -151,7 +154,8 @@ fun BasketItem(
             Icon(
               icon,
               contentDescription = "Localized description",
-              modifier = Modifier.scale(scale)
+              modifier = Modifier.scale(scale),
+              tint = if(icon != Icons.Outlined.RemoveRedEye) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimaryContainer
             )
           }
         }
