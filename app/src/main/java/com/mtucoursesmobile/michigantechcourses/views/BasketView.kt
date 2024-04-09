@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
 import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketItem
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketTabs
@@ -35,7 +36,10 @@ import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(
+  ExperimentalMaterial3Api::class,
+  ExperimentalFoundationApi::class
+)
 @Composable
 fun BasketView(
   courseViewModel: MTUCoursesViewModel,
@@ -52,37 +56,56 @@ fun BasketView(
   val currentBasketItems = remember { basketViewModel.currentBasketItems }
   val currentSemester = remember { courseViewModel.currentSemester }
   val snackbarHostState = remember { SnackbarHostState() }
-  Scaffold(contentWindowInsets = WindowInsets(0.dp), topBar = {
-    TopAppBar(title = { Text(text = "Baskets for ${semesterText.value}") },
-      colors = TopAppBarDefaults.topAppBarColors(
-        titleContentColor = MaterialTheme.colorScheme.primary
-      ),
-      actions = {
-        IconButton(onClick = {
-          Toast.makeText(
+  Scaffold(
+    contentWindowInsets = WindowInsets(0.dp),
+    topBar = {
+      TopAppBar(title = { Text(text = "Baskets for ${semesterText.value}") },
+        colors = TopAppBarDefaults.topAppBarColors(
+          titleContentColor = MaterialTheme.colorScheme.primary
+        ),
+        actions = {
+          IconButton(onClick = {
+            Toast.makeText(
+              context,
+              "To Share ${semesterBaskets[basketViewModel.currentBasketIndex].name}",
+              Toast.LENGTH_SHORT
+            ).show()
+          }) {
+            Icon(
+              imageVector = Icons.Outlined.Share,
+              contentDescription = "Share current Basket",
+              tint = MaterialTheme.colorScheme.primary
+            )
+          }
+          SemesterPicker(
+            expanded,
+            courseViewModel,
+            basketViewModel,
+            db,
             context,
-            "To Share ${semesterBaskets[basketViewModel.currentBasketIndex].name}",
-            Toast.LENGTH_SHORT
-          ).show()
-        }) {
-          Icon(
-            imageVector = Icons.Outlined.Share,
-            contentDescription = "Share current Basket",
-            tint = MaterialTheme.colorScheme.primary
+            semesterText,
+            courseNavController
           )
-        }
-        SemesterPicker(
-          expanded, courseViewModel, basketViewModel, db, context, semesterText
-        )
-      })
-  }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
+        })
+    },
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
     Column(Modifier.padding(innerPadding)) {
-      BasketTabs(basketViewModel = basketViewModel, courseViewModel = courseViewModel, db = db)
+      BasketTabs(
+        basketViewModel = basketViewModel,
+        courseViewModel = courseViewModel,
+        db = db
+      )
       LazyColumn {
         itemsIndexed(
           items = currentBasketItems.toList(),
           key = { _, section -> section.second.id }) { _, section ->
           val course = courseViewModel.courseList[section.second.courseId]
+          val sectionInstructor =
+            courseViewModel.instructorList.filter { instructor ->
+              section.second.instructors.contains(
+                SectionInstructors(instructor.key)
+              )
+            }
           Box(modifier = Modifier.animateItemPlacement()) {
             BasketItem(
               section = section.second,
@@ -92,6 +115,8 @@ fun BasketView(
               db = db,
               navController,
               courseNavController,
+              sectionInstructor,
+              courseViewModel.buildingList,
               snackbarHostState
             )
           }

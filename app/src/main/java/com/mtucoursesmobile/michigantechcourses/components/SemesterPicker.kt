@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
@@ -27,7 +28,8 @@ fun SemesterPicker(
   basketViewModel: BasketViewModel,
   db: BasketDB,
   context: Context,
-  semesterText: MutableState<String>
+  semesterText: MutableState<String>,
+  courseNavController: NavController? = null
 ) {
   val scope = rememberCoroutineScope()
   val semesterTypes = listOf(
@@ -57,6 +59,7 @@ fun SemesterPicker(
           if (courseViewModel.currentSemester.semester.lowercase() != i.lowercase()) {
             expanded.value = false
             scope.launch {
+              courseNavController?.navigate("courseList")
               courseViewModel.updateSemesterPeriod(
                 i,
                 context

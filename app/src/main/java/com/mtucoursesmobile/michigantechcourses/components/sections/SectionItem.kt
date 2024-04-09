@@ -65,6 +65,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
+import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import java.util.Locale
 
@@ -108,54 +109,12 @@ fun SectionItem(
       Row(
         verticalAlignment = Alignment.CenterVertically
       ) {
-        val dow = StringBuilder()
-        if (section.time.rrules.isEmpty() || section.time.rrules[0].config.byDayOfWeek.isEmpty()) {
-          dow.append("¯\\_(ツ)_/¯")
-        } else {
-          for (day in section.time.rrules[0].config.byDayOfWeek) {
-            if (day == "TH") {
-              dow.append("R")
-            } else {
-              dow.append(
-                day.substring(
-                  0,
-                  day.length - 1
-                )
-              )
-            }
-          }
-        }
-        val tod = StringBuilder()
-        if (section.time.rrules.isNotEmpty()) {
-          val tempStartTime = SimpleDateFormat(
-            "HH:mm",
-            Locale.ENGLISH
-          ).parse("${section.time.rrules[0].config.start.hour}:${section.time.rrules[0].config.start.minute}")
-          val tempEndTime = SimpleDateFormat(
-            "HH:mm",
-            Locale.ENGLISH
-          ).parse("${section.time.rrules[0].config.end.hour}:${section.time.rrules[0].config.end.minute}")
-          tod.append(
-            SimpleDateFormat(
-              "H:mma",
-              Locale.ENGLISH
-            ).format(tempStartTime).toString()
-          )
-          tod.append(" - ")
-          tod.append(
-            SimpleDateFormat(
-              "H:mma",
-              Locale.ENGLISH
-            ).format(tempEndTime).toString()
-          )
-        }
-
         Box(modifier = Modifier.weight(7f)) {
           ElevatedAssistChip(
             onClick = {
               expandedState = !expandedState
             },
-            label = { Text(text = "$dow $tod") },
+            label = { Text(text = dateTimeFormatter(section)) },
             colors = AssistChipDefaults.elevatedAssistChipColors(
               containerColor = MaterialTheme.colorScheme.primaryContainer,
               labelColor = MaterialTheme.colorScheme.onPrimaryContainer

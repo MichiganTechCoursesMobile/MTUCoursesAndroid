@@ -211,6 +211,8 @@ fun CourseDetailView(
         }
       }
     }
+  } else {
+    navController.popBackStack()
   }
 }
 
