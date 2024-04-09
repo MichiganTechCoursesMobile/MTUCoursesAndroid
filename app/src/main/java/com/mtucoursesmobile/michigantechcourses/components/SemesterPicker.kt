@@ -1,6 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
 import android.content.Context
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.DateRange
@@ -88,6 +89,7 @@ fun SemesterPicker(
           if (courseViewModel.currentSemester.year != i.toString()) {
             expanded.value = false
             scope.launch {
+              courseNavController?.navigate("courseList")
               courseViewModel.updateSemesterYear(
                 i,
                 context

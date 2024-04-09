@@ -2,38 +2,29 @@ package com.mtucoursesmobile.michigantechcourses.components.baskets
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowLeft
-import androidx.compose.material.icons.outlined.AreaChart
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RemoveRedEye
-import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
-import androidx.compose.material3.ElevatedAssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -49,7 +40,6 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -60,12 +50,8 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import coil.compose.AsyncImagePainter
@@ -116,101 +102,101 @@ fun BasketItem(
   val scope = rememberCoroutineScope()
   val dismissThreshold = 0.50f
   val currentFraction = remember { mutableFloatStateOf(0f) }
-  val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = {
-    var swipped = false
-    var delete = false
-    var view = false
-    if (it == SwipeToDismissBoxValue.EndToStart) {
-      if (currentFraction.floatValue >= dismissThreshold && currentFraction.floatValue < 1.0f) {
-        swipped = true
-        delete = true
-      }
-    } else if (it == SwipeToDismissBoxValue.StartToEnd) {
-      if (currentFraction.floatValue >= dismissThreshold && currentFraction.floatValue < 1.0f) {
-        swipped = true
-        view = true
-      }
-    }
-    if (delete) {
-      scope.launch {
-        delay(250)
-        basketViewModel.removeFromBasket(
-          section,
-          currentSemester,
-          db,
-          snackbarHostState
-        )
-      }
-    }
-    if (view) {
-      scope.launch {
-        courseNavController.navigate("courseList")
-        navController.navigate("Courses") {
-          popUpTo(navController.graph.findStartDestination().id) {
-            saveState = true
-          }
-          // Restore state when reselecting a previously selected item
-          restoreState = true
-        }
-        navToCourse(
-          courseNavController,
-          course!!.id
-        )
-      }
-    }
-    swipped
-
-  })
-  SwipeToDismissBox(
-    state = dismissState,
-    backgroundContent = {
-      val color by animateColorAsState(
-        when (dismissState.targetValue) {
-          SwipeToDismissBoxValue.Settled -> MaterialTheme.colorScheme.background
-          SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
-          SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
-        }
-      )
-      val alignment = when (dismissState.targetValue) {
-        SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
-        SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
-        SwipeToDismissBoxValue.Settled -> Alignment.Center
-      }
-      val icon = when (dismissState.targetValue) {
-        SwipeToDismissBoxValue.StartToEnd -> Icons.Outlined.RemoveRedEye
-        SwipeToDismissBoxValue.EndToStart -> Icons.Outlined.Delete
-        SwipeToDismissBoxValue.Settled -> Icons.Outlined.ArrowDropDown
-      }
-      val scale by animateFloatAsState(
-        if (dismissThreshold == currentFraction.floatValue) 0.75f else 1f
-      )
-      Box(
-        Modifier
-          .fillMaxSize()
-          .padding(vertical = 8.dp)
-          .background(color)
-          .padding(horizontal = 20.dp),
-        contentAlignment = alignment
-      ) {
-        Column {
-          AnimatedVisibility(visible = icon != Icons.Outlined.ArrowDropDown) {
-            Icon(
-              icon,
-              contentDescription = "Localized description",
-              modifier = Modifier.scale(scale),
-              tint = if (icon != Icons.Outlined.RemoveRedEye) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimaryContainer
-            )
-          }
-        }
-        currentFraction.floatValue = dismissState.progress
-      }
-    }
+  AnimatedVisibility(
+    visible = course != null,
+    enter = slideInVertically(),
+    exit = slideOutVertically()
   ) {
-    AnimatedVisibility(
-      visible = course != null,
-      enter = slideInVertically(),
-      exit = slideOutVertically()
+    val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = {
+      var swipped = false
+      var delete = false
+      var view = false
+      if (it == SwipeToDismissBoxValue.EndToStart) {
+        if (currentFraction.floatValue >= dismissThreshold && currentFraction.floatValue < 1.0f) {
+          swipped = true
+          delete = true
+        }
+      } else if (it == SwipeToDismissBoxValue.StartToEnd) {
+        if (currentFraction.floatValue >= dismissThreshold && currentFraction.floatValue < 1.0f) {
+          swipped = true
+          view = true
+        }
+      }
+      if (delete) {
+        scope.launch {
+          delay(250)
+          basketViewModel.removeFromBasket(
+            section,
+            currentSemester,
+            db,
+            snackbarHostState
+          )
+        }
+      }
+      if (view) {
+        scope.launch {
+          courseNavController.navigate("courseList")
+          navController.navigate("Courses") {
+            popUpTo(navController.graph.findStartDestination().id) {
+              saveState = true
+            }
+            // Restore state when reselecting a previously selected item
+            restoreState = true
+          }
+          navToCourse(
+            courseNavController,
+            course!!.id
+          )
+        }
+      }
+      swipped
+    })
+    SwipeToDismissBox(
+      state = dismissState,
+      backgroundContent = {
+        val color by animateColorAsState(
+          when (dismissState.targetValue) {
+            SwipeToDismissBoxValue.Settled -> MaterialTheme.colorScheme.background
+            SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
+            SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
+          }
+        )
+        val alignment = when (dismissState.targetValue) {
+          SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+          SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+          SwipeToDismissBoxValue.Settled -> Alignment.Center
+        }
+        val icon = when (dismissState.targetValue) {
+          SwipeToDismissBoxValue.StartToEnd -> Icons.Outlined.RemoveRedEye
+          SwipeToDismissBoxValue.EndToStart -> Icons.Outlined.Delete
+          SwipeToDismissBoxValue.Settled -> Icons.Outlined.ArrowDropDown
+        }
+        val scale by animateFloatAsState(
+          if (dismissThreshold == currentFraction.floatValue) 0.75f else 1f
+        )
+        Box(
+          Modifier
+            .fillMaxSize()
+            .padding(vertical = 8.dp)
+            .background(color)
+            .padding(horizontal = 20.dp),
+          contentAlignment = alignment
+        ) {
+          Column {
+            AnimatedVisibility(visible = icon != Icons.Outlined.ArrowDropDown) {
+              Icon(
+                icon,
+                contentDescription = "Localized description",
+                modifier = Modifier.scale(scale),
+                tint = if (icon != Icons.Outlined.RemoveRedEye) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimaryContainer
+              )
+            }
+          }
+          currentFraction.floatValue = dismissState.progress
+        }
+      }
     ) {
+
       ListItem(
         overlineContent = {
           Row {
@@ -226,7 +212,7 @@ fun BasketItem(
                         firstName = instructorNames.first(),
                         lastName = instructorNames.last(),
                         modifier = Modifier.padding(end = 8.dp),
-                        size = 25.dp,
+                        size = 30.dp,
                         textStyle = MaterialTheme.typography.bodySmall
                       )
                     } else {
@@ -238,7 +224,7 @@ fun BasketItem(
                         Image(
                           modifier = Modifier
                             .padding(end = 8.dp)
-                            .size(25.dp)
+                            .size(30.dp)
                             .clip(shape = CircleShape),
                           painter = painter,
                           contentDescription = instructor.fullName
@@ -249,7 +235,7 @@ fun BasketItem(
                           firstName = instructorNames.first(),
                           lastName = instructorNames.last(),
                           modifier = Modifier.padding(end = 8.dp),
-                          size = 25.dp
+                          size = 30.dp
                         )
                       }
                     }
@@ -279,21 +265,30 @@ fun BasketItem(
               contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
               containerColor = MaterialTheme.colorScheme.primaryContainer
             ) {
-              Text(text = dateTimeFormatter(section))
+              Text(
+                text = dateTimeFormatter(section),
+                style = MaterialTheme.typography.labelMedium
+              )
             }
           }
         },
         headlineContent = {
           Text(
             text = "${course?.subject}${course?.crse} - ${course?.title}",
-            modifier = Modifier.padding(top = 4.dp),
+            modifier = Modifier
+              .padding(top = 4.dp)
+              .offset(y = 2.dp),
             style = MaterialTheme.typography.titleSmall
           )
         },
         supportingContent = {
           val scrollState = rememberScrollState()
           val clipboardManager: ClipboardManager = LocalClipboardManager.current
-          Row(modifier = Modifier.horizontalScroll(scrollState)) {
+          Row(
+            modifier = Modifier
+              .horizontalScroll(scrollState)
+              .offset(y = 6.dp)
+          ) {
             SuggestionChip(
               onClick = { /*TODO*/ },
               label = {
@@ -301,7 +296,8 @@ fun BasketItem(
                   text = "${section.availableSeats}/${section.totalSeats}",
                 )
               },
-              modifier = Modifier.padding(end = 4.dp),
+              modifier = Modifier
+                .padding(end = 4.dp),
               colors = SuggestionChipDefaults.suggestionChipColors(labelColor = if (section.availableSeats.toInt() <= 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
             )
             if (section.buildingName != null && section.locationType == "PHYSICAL") {
@@ -350,7 +346,7 @@ fun BasketItem(
         ),
         modifier = Modifier
           .padding(horizontal = 10.dp)
-          .padding(vertical = 8.dp)
+          .padding(vertical = 6.dp)
           .clip(RoundedCornerShape(12.dp))
       )
     }
