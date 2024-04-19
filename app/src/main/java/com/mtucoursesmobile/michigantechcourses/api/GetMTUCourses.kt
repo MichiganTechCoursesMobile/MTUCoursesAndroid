@@ -24,15 +24,18 @@ interface RetroFitCourses {
   )
   @GET("courses")
   fun getMTUCourses(
-    @Query("semester") semester: String, @Query("year") year: String
+    @Query("semester") semester: String,
+    @Query("year") year: String
   ): Call<List<MTUCourses>>
-
 }
 
 @OptIn(DelicateCoroutinesApi::class)
 fun getMTUCourses(
-  courseList: MutableMap<String, MTUCourses>, courseNotFound: MutableState<Boolean>,
-  semester: String, year: String, lastUpdatedSince: MutableList<LastUpdatedSince>,
+  courseList: MutableMap<String, MTUCourses>,
+  courseNotFound: MutableState<Boolean>,
+  semester: String,
+  year: String,
+  lastUpdatedSince: MutableList<LastUpdatedSince>,
   currentSemester: CurrentSemester
 ) {
   val okHttpClient = OkHttpClient.Builder()
@@ -48,11 +51,11 @@ fun getMTUCourses(
     semester,
     year
   )
-  courseList.clear()
 
   courseCall!!.enqueue(object : Callback<List<MTUCourses>?> {
     override fun onResponse(
-      call: Call<List<MTUCourses>?>, response: Response<List<MTUCourses>?>
+      call: Call<List<MTUCourses>?>,
+      response: Response<List<MTUCourses>?>
     ) {
       if (response.isSuccessful) {
         val timeGot = Instant.now().toString()
@@ -62,6 +65,7 @@ fun getMTUCourses(
             courseNotFound.value = true
             return
           }
+          courseList.clear()
           courseList.putAll(courseData.associateBy { it.id })
           lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.semester == semester && entry.year == year && entry.type == "course" })
           lastUpdatedSince.add(
@@ -77,7 +81,10 @@ fun getMTUCourses(
       }
     }
 
-    override fun onFailure(call: Call<List<MTUCourses>?>, t: Throwable) {
+    override fun onFailure(
+      call: Call<List<MTUCourses>?>,
+      t: Throwable
+    ) {
       Log.d(
         "DEBUG",
         t.cause.toString()

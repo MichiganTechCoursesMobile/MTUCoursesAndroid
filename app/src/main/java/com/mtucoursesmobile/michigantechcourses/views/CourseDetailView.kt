@@ -63,85 +63,66 @@ fun CourseDetailView(
 ) {
   val foundCourse =
     courseViewModel.courseList[courseId]
-  if (foundCourse != null) {
-    Scaffold(
-      contentWindowInsets = WindowInsets(0.dp),
-      topBar = {
-        TopAppBar(title = { Text(text = foundCourse.title) },
-          colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.primary
-          ),
-          navigationIcon = {
-            IconButton(onClick = {
-              navController.popBackStack()
-            }) {
-              Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.primary
-              )
-            }
-          })
-      }) { innerPadding ->
-      Column(
-        Modifier
-          .padding(innerPadding)
-          .padding(horizontal = 8.dp)
-      ) {
-        var description = "¯\\_(ツ)_/¯"
-        if (foundCourse.description != null) {
-          description = foundCourse.description
-        }
-        val rowScrollState = rememberScrollState()
-        Row(
-          Modifier
-            .padding(start = 6.dp)
-            .horizontalScroll(rowScrollState)
-            .offset(y = (-4).dp)
-        ) {
-          SuggestionChip(
-            label = { Text(text = "${foundCourse.subject}${foundCourse.crse}") },
-            onClick = { },
-            modifier = Modifier.padding(
-              end = 4.dp
-            )
-          )
-          if (foundCourse.offered.isNotEmpty()) {
-            val offeredSem = StringBuilder()
-            for (i in foundCourse.offered) {
-              offeredSem.append("${i.lowercase().replaceFirstChar(Char::titlecase)}, ")
-            }
-            SuggestionChip(
-              label = {
-                Text(
-                  text = offeredSem.toString().substring(
-                    0,
-                    offeredSem.length - 2
-                  )
-                )
-              },
-              onClick = { },
-              modifier = Modifier.padding(
-                end = 4.dp
-              )
+  if (foundCourse == null) {
+    navController.popBackStack()
+    return
+  }
+
+  Scaffold(
+    contentWindowInsets = WindowInsets(0.dp),
+    topBar = {
+      TopAppBar(title = { Text(text = foundCourse.title) },
+        colors = TopAppBarDefaults.topAppBarColors(
+          containerColor = MaterialTheme.colorScheme.background,
+          titleContentColor = MaterialTheme.colorScheme.primary
+        ),
+        navigationIcon = {
+          IconButton(onClick = {
+            navController.popBackStack()
+          }) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+              contentDescription = "Back",
+              tint = MaterialTheme.colorScheme.primary
             )
           }
-
+        })
+    }) { innerPadding ->
+    Column(
+      Modifier
+        .padding(innerPadding)
+        .padding(horizontal = 8.dp)
+    ) {
+      var description = "¯\\_(ツ)_/¯"
+      if (foundCourse.description != null) {
+        description = foundCourse.description
+      }
+      val rowScrollState = rememberScrollState()
+      Row(
+        Modifier
+          .padding(start = 6.dp)
+          .horizontalScroll(rowScrollState)
+          .offset(y = (-4).dp)
+      ) {
+        SuggestionChip(
+          label = { Text(text = "${foundCourse.subject}${foundCourse.crse}") },
+          onClick = { },
+          modifier = Modifier.padding(
+            end = 4.dp
+          )
+        )
+        if (foundCourse.offered.isNotEmpty()) {
+          val offeredSem = StringBuilder()
+          for (i in foundCourse.offered) {
+            offeredSem.append("${i.lowercase().replaceFirstChar(Char::titlecase)}, ")
+          }
           SuggestionChip(
             label = {
               Text(
-                text = "${
-                  if (foundCourse.maxCredits == foundCourse.minCredits) DecimalFormat(
-                    "0.#"
-                  ).format(foundCourse.maxCredits) else {
-                    "${DecimalFormat("0.#").format(foundCourse.minCredits)} - ${
-                      DecimalFormat(
-                        "0.#"
-                      ).format(foundCourse.maxCredits)
-                    }"
-                  }
-                } Credit${if (foundCourse.maxCredits > 1) "s" else ""}"
+                text = offeredSem.toString().substring(
+                  0,
+                  offeredSem.length - 2
+                )
               )
             },
             onClick = { },
@@ -150,69 +131,89 @@ fun CourseDetailView(
             )
           )
         }
-        Text(
-          text = "Course Description:",
-          fontSize = MaterialTheme.typography.titleLarge.fontSize,
-          fontWeight = FontWeight.Bold,
-          modifier = Modifier.padding(start = 4.dp)
-        )
-        ExpandableCard(
-          description = description
-        )
 
-        HorizontalDivider(
-          Modifier
-            .padding(vertical = 8.dp)
-            .padding(top = 4.dp)
-        )
-        Text(
-          text = "Course Sections:",
-          fontSize = MaterialTheme.typography.titleLarge.fontSize,
-          fontWeight = FontWeight.Bold,
+        SuggestionChip(
+          label = {
+            Text(
+              text = "${
+                if (foundCourse.maxCredits == foundCourse.minCredits) DecimalFormat(
+                  "0.#"
+                ).format(foundCourse.maxCredits) else {
+                  "${DecimalFormat("0.#").format(foundCourse.minCredits)} - ${
+                    DecimalFormat(
+                      "0.#"
+                    ).format(foundCourse.maxCredits)
+                  }"
+                }
+              } Credit${if (foundCourse.maxCredits > 1) "s" else ""}"
+            )
+          },
+          onClick = { },
           modifier = Modifier.padding(
-            start = 4.dp,
-            bottom = 4.dp
+            end = 4.dp
           )
         )
-        AnimatedContent(
-          targetState = courseViewModel.sectionList.isEmpty(),
-          label = "Sections"
-        ) { state ->
-          if (state) {
-            LoadingSpinnerAnimation(innerPadding = innerPadding)
-          } else {
-            LazyColumn(
-              modifier = Modifier.fillMaxSize(),
-              horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-              val sections = courseViewModel.sectionList[courseId]
-              if (sections != null) {
-                itemsIndexed(items = sections.filter { section -> section.deletedAt == null },
-                  key = { _, item -> item.id }) { index, item ->
-                  val sectionInstructor =
-                    courseViewModel.instructorList.filter { instructor ->
-                      item.instructors.contains(
-                        SectionInstructors(instructor.key)
-                      )
-                    }
-                  SectionItem(
-                    basketViewModel,
-                    section = item,
-                    sectionInstructor,
-                    courseViewModel.buildingList,
-                    index == 0 && sections.size <= 4,
-                    courseViewModel.currentSemester,
-                    db
-                  )
-                }
+      }
+      Text(
+        text = "Course Description:",
+        fontSize = MaterialTheme.typography.titleLarge.fontSize,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(start = 4.dp)
+      )
+      ExpandableCard(
+        description = description
+      )
+
+      HorizontalDivider(
+        Modifier
+          .padding(vertical = 8.dp)
+          .padding(top = 4.dp)
+      )
+      Text(
+        text = "Course Sections:",
+        fontSize = MaterialTheme.typography.titleLarge.fontSize,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(
+          start = 4.dp,
+          bottom = 4.dp
+        )
+      )
+      AnimatedContent(
+        targetState = courseViewModel.sectionList.isEmpty(),
+        label = "Sections"
+      ) { state ->
+        if (state) {
+          LoadingSpinnerAnimation(innerPadding = innerPadding)
+        } else {
+          LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+          ) {
+            val sections = courseViewModel.sectionList[courseId]
+            if (sections != null) {
+              itemsIndexed(items = sections.filter { section -> section.deletedAt == null },
+                key = { _, item -> item.id }) { index, item ->
+                val sectionInstructor =
+                  courseViewModel.instructorList.filter { instructor ->
+                    item.instructors.contains(
+                      SectionInstructors(instructor.key)
+                    )
+                  }
+                SectionItem(
+                  basketViewModel,
+                  section = item,
+                  sectionInstructor,
+                  courseViewModel.buildingList,
+                  index == 0 && sections.size <= 4,
+                  courseViewModel.currentSemester,
+                  db
+                )
               }
             }
           }
         }
       }
     }
-  } else {
-    navController.popBackStack()
   }
 }
 

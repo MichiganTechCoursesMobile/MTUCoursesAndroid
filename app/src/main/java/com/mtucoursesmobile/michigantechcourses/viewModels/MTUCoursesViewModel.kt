@@ -9,11 +9,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mtucoursesmobile.michigantechcourses.api.getMTUBuildings
+import com.mtucoursesmobile.michigantechcourses.api.getMTUCourseDropRates
 import com.mtucoursesmobile.michigantechcourses.api.getMTUCourses
 import com.mtucoursesmobile.michigantechcourses.api.getMTUInstructors
 import com.mtucoursesmobile.michigantechcourses.api.getMTUSections
 import com.mtucoursesmobile.michigantechcourses.api.getMTUSemesters
 import com.mtucoursesmobile.michigantechcourses.api.updateMTUCourses
+import com.mtucoursesmobile.michigantechcourses.classes.CourseFailDrop
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
@@ -37,6 +39,7 @@ class MTUCoursesViewModel : ViewModel() {
   val sectionList = mutableStateMapOf<String, MutableList<MTUSections>>()
   val instructorList = mutableStateMapOf<Number, MTUInstructor>()
   val buildingList = mutableStateMapOf<String, MTUBuilding>()
+  val failList = mutableStateMapOf<String, List<CourseFailDrop>>()
 
   private val semesterList = mutableStateListOf<CurrentSemester>()
   val courseNotFound = mutableStateOf(false)
@@ -116,6 +119,8 @@ class MTUCoursesViewModel : ViewModel() {
         semesterList,
         context
       )
+      getMTUCourseDropRates(failList)
+
       var targetSemester = "FALL"
       var targetYear = Year.now().value.toString()
       if (Calendar.getInstance().get(Calendar.MONTH) + 1 > 8) {
