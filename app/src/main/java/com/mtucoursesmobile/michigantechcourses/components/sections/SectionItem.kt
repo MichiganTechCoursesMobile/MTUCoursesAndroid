@@ -3,6 +3,7 @@ package com.mtucoursesmobile.michigantechcourses.components.sections
 import android.content.Intent
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -75,6 +76,7 @@ fun SectionItem(
   buildings: Map<String, MTUBuilding>, alreadyExpanded: Boolean, currentSemester: CurrentSemester,
   db: BasketDB
 ) {
+  var context = LocalContext.current
   var expandedState by remember { mutableStateOf(alreadyExpanded) }
   val currentBasketItems = remember { basketViewModel.currentBasketItems }
   var basketContainsSection by remember { mutableStateOf(currentBasketItems[section.id] != null) }
@@ -286,7 +288,16 @@ fun SectionItem(
                   }
                   AnimatedVisibility(visible = exposed.value) {
                     Row {
-                      Card(Modifier.padding(end = 8.dp)) {
+                      Card(
+                        modifier = Modifier.padding(end = 8.dp),
+                        onClick = {
+                          Toast.makeText(
+                            context,
+                            "Average Professor Rating is ${(instructor.value.averageRating.toDouble() * 100)}%",
+                            Toast.LENGTH_SHORT
+                          ).show()
+                        }
+                      ) {
                         Row {
                           Icon(
                             imageVector = Icons.Outlined.AreaChart,
@@ -297,11 +308,17 @@ fun SectionItem(
 
 
                       }
-                      Card {
+                      Card(onClick = {
+                        Toast.makeText(
+                          context,
+                          "Average Professor Difficulty is ${(instructor.value.averageDifficultyRating.toDouble() * 100)}%",
+                          Toast.LENGTH_SHORT
+                        ).show()
+                      }) {
                         Row {
                           Icon(
                             imageVector = Icons.Outlined.Speed,
-                            contentDescription = "Average Rating"
+                            contentDescription = "Average Difficulty"
                           )
                           Text(text = ": ${(instructor.value.averageDifficultyRating.toDouble() * 100)}%")
                         }
