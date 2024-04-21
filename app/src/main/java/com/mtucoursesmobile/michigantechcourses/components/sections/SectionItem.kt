@@ -76,7 +76,7 @@ fun SectionItem(
   buildings: Map<String, MTUBuilding>, alreadyExpanded: Boolean, currentSemester: CurrentSemester,
   db: BasketDB
 ) {
-  var context = LocalContext.current
+  val context = LocalContext.current
   var expandedState by remember { mutableStateOf(alreadyExpanded) }
   val currentBasketItems = remember { basketViewModel.currentBasketItems }
   var basketContainsSection by remember { mutableStateOf(currentBasketItems[section.id] != null) }

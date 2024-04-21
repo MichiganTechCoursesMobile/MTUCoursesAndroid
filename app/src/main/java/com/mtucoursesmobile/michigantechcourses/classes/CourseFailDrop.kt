@@ -2,8 +2,8 @@ package com.mtucoursesmobile.michigantechcourses.classes
 
 data class CourseFailDrop(
   val semester: String,
-  val year: Number,
-  val dropped: Number,
-  val failed: Number,
-  val total: Number
+  val year: Int,
+  val dropped: Float,
+  val failed: Float,
+  val total: Float
 )
