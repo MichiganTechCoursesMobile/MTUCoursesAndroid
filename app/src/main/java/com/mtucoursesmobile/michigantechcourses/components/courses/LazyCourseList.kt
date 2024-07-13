@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,10 +14,13 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -28,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,32 +43,40 @@ fun LazyCourseList(
 ) {
   val context = LocalContext.current
   val courses = remember { courseViewModel.filteredCourseList }
+  val isRefreshing = remember { mutableStateOf(false) }
   val refreshState = rememberPullToRefreshState()
   val scope = rememberCoroutineScope()
-  val scaleFraction =
-    if (refreshState.isRefreshing) 1f else LinearOutSlowInEasing.transform(refreshState.progress)
-      .coerceIn(
-        0f,
-        1f
-      )
-  if (refreshState.isRefreshing) {
-    LaunchedEffect(true) {
+  val onRefresh: () -> Unit = {
+    isRefreshing.value = true
+    scope.launch {
       courseViewModel.updateSemester(
         context,
-        refreshState
+        isRefreshing
       )
     }
   }
+  val scaleFactor = {
+    if (isRefreshing.value) 1f
+    else LinearOutSlowInEasing.transform(refreshState.distanceFraction).coerceIn(
+      0f,
+      1f
+    )
+  }
+
   Box(
     modifier = Modifier
       .fillMaxSize()
-      .padding(innerPadding)
-      .nestedScroll(refreshState.nestedScrollConnection)
+      .padding(innerPadding),
   ) {
     LazyColumn(
       state = listState,
       modifier = Modifier
-        .fillMaxSize(),
+        .fillMaxSize()
+        .pullToRefresh(
+          isRefreshing = isRefreshing.value,
+          state = refreshState,
+          onRefresh = onRefresh
+        ),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       itemsIndexed(
@@ -146,15 +159,29 @@ fun LazyCourseList(
         }
       }
     }
-    PullToRefreshContainer(
-      state = refreshState,
-      modifier = Modifier
+    Box(
+      Modifier
         .align(Alignment.TopCenter)
-        .graphicsLayer(
-          scaleFraction,
-          scaleFraction
-        )
+        .graphicsLayer {
+          scaleX = scaleFactor()
+          scaleY = scaleFactor()
+        }
         .offset(y = 6.dp)
-    )
+    ) {
+      PullToRefreshDefaults.Indicator(
+        state = refreshState,
+        isRefreshing = isRefreshing.value
+      )
+    }
+//    PullToRefreshContainer(
+//      state = refreshState,
+//      modifier = Modifier
+//        .align(Alignment.TopCenter)
+//        .graphicsLayer(
+//          scaleFraction,
+//          scaleFraction
+//        )
+//        .offset(y = 6.dp)
+//    )
   }
 }

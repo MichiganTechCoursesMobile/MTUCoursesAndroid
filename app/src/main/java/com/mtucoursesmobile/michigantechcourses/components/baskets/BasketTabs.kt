@@ -37,9 +37,14 @@ import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(
+  ExperimentalFoundationApi::class,
+  ExperimentalMaterial3Api::class
+)
 @Composable
-fun BasketTabs(basketViewModel: BasketViewModel, courseViewModel: MTUCoursesViewModel, db: BasketDB) {
+fun BasketTabs(
+  basketViewModel: BasketViewModel, courseViewModel: MTUCoursesViewModel, db: BasketDB
+) {
   val haptics = LocalHapticFeedback.current
   val semesterBaskets = remember { basketViewModel.basketList }
   val currentSemester = remember { courseViewModel.currentSemester }
@@ -49,11 +54,7 @@ fun BasketTabs(basketViewModel: BasketViewModel, courseViewModel: MTUCoursesView
     divider = { /* Remove default divider */ },
     modifier = Modifier.fillMaxWidth(),
     selectedTabIndex = basketViewModel.currentBasketIndex,
-    indicator = @Composable {
-      TabRowDefaults.SecondaryIndicator(
-        Modifier.tabIndicatorOffset(it[basketViewModel.currentBasketIndex])
-      )
-    }) {
+  ) {
     semesterBaskets.forEachIndexed { index, item ->
       var expandedDropdown by remember { mutableStateOf(false) }
       Box(
@@ -94,7 +95,11 @@ fun BasketTabs(basketViewModel: BasketViewModel, courseViewModel: MTUCoursesView
             DropdownMenuItem(
               text = { Text(text = "Duplicate") },
               onClick = {
-                basketViewModel.duplicateBasket(currentSemester, db, index)
+                basketViewModel.duplicateBasket(
+                  currentSemester,
+                  db,
+                  index
+                )
                 expandedDropdown = false
               },
               leadingIcon = {
