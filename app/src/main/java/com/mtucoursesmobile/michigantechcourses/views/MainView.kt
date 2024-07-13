@@ -10,11 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBasket
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ShoppingBasket
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -62,17 +62,17 @@ fun MainView(
         )
       ),
       Pair(
-        "Basket",
+        "Baskets",
         Pair(
           Icons.Outlined.ShoppingBasket,
           Icons.Filled.ShoppingBasket
         )
       ),
       Pair(
-        "Settings",
+        "Calendar",
         Pair(
-          Icons.Outlined.Settings,
-          Icons.Filled.Settings
+          Icons.Outlined.CalendarMonth,
+          Icons.Filled.CalendarMonth
         )
       )
     )
@@ -174,16 +174,16 @@ fun MainView(
           courseNavController
         )
       }
-      composable("Basket",
+      composable("Baskets",
         enterTransition = {
-          if (this.initialState.destination.route.toString() == "Settings") {
+          if (this.initialState.destination.route.toString() == "Calendar") {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
           } else {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
           }
         },
         exitTransition = {
-          if (this.targetState.destination.route.toString() == "Settings") {
+          if (this.targetState.destination.route.toString() == "Calendar") {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
           } else {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
@@ -198,14 +198,14 @@ fun MainView(
           courseNavController
         )
       }
-      composable("Settings",
+      composable("Calendar",
         enterTransition = {
           slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
           slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }) {
-        SettingsView()
+        CalendarView()
       }
     }
   }

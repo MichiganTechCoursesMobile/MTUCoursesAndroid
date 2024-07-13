@@ -57,6 +57,8 @@ dependencies {
   val room_version = "2.6.1"
   val nav_version = "2.7.7"
 
+  implementation("com.kizitonwose.calendar:compose:2.6.0-beta02")
+
   implementation(libs.androidx.navigation.compose)
 
   implementation(libs.androidx.room.runtime)
