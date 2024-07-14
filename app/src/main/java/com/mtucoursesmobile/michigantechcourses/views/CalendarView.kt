@@ -3,6 +3,7 @@ package com.mtucoursesmobile.michigantechcourses.views
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -109,6 +110,7 @@ fun CalendarView() {
 
 private val dateFormatter = DateTimeFormatter.ofPattern("dd")
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun Day(date: LocalDate, isSelected: Boolean, onClick: (LocalDate) -> Unit) {
   Box(
@@ -146,7 +148,10 @@ private fun Day(date: LocalDate, isSelected: Boolean, onClick: (LocalDate) -> Un
     Box(modifier = Modifier.align(Alignment.BottomCenter)) {
       AnimatedContent(
         targetState = isSelected,
-        label = "selectedDateSlider"
+        label = "selectedDateSlider",
+        transitionSpec = {
+          fadeIn() togetherWith fadeOut()
+        }
       ) { selected ->
         if (selected) {
           Box(
