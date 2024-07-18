@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mtucoursesmobile.michigantechcourses.classes.CalendarEntries
 import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
@@ -22,6 +23,8 @@ import java.util.UUID
 
 class BasketViewModel : ViewModel() {
   val basketList = mutableStateListOf<CourseBasket>()
+  val calendarEntries =
+    mutableStateMapOf<String, Map<String, CalendarEntries>>() // basketID, day, calendar entries
   var currentBasketIndex by mutableIntStateOf(0)
   var currentBasketItems = mutableStateMapOf<String, MTUSections>()
 
@@ -82,6 +85,15 @@ class BasketViewModel : ViewModel() {
         basketList
       )
     }
+
+    /*TODO: Add section to calendar (Sorted by day and time)*/
+
+//    for (day in section.time.rrules[0].config.byDayOfWeek) {
+//      if (day == "TH") {
+//
+//      }
+//    }
+
   }
 
   fun removeFromBasket(
@@ -109,8 +121,13 @@ class BasketViewModel : ViewModel() {
           )
         when (result) {
           SnackbarResult.ActionPerformed -> {
-            addToBasket(section, semester, db)
+            addToBasket(
+              section,
+              semester,
+              db
+            )
           }
+
           SnackbarResult.Dismissed -> {
             /* Nothing happens */
           }
@@ -152,6 +169,7 @@ class BasketViewModel : ViewModel() {
     db: BasketDB
   ) {
     basketList.removeAll(basketList.filter { basket -> basket.id == id })
+    calendarEntries.remove(id)
     viewModelScope.launch {
       updateBaskets(
         semester,
@@ -195,7 +213,11 @@ class BasketViewModel : ViewModel() {
           copiedSections
         )
       )
-      updateBaskets(semester, db, basketList)
+      updateBaskets(
+        semester,
+        db,
+        basketList
+      )
     }
   }
 

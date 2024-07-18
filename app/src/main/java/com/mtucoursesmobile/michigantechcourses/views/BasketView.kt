@@ -106,7 +106,12 @@ fun BasketView(
                 SectionInstructors(instructor.key)
               )
             }
-          Box(modifier = Modifier.animateItemPlacement()) {
+          Box(
+            modifier = Modifier.animateItem(
+              fadeInSpec = null,
+              fadeOutSpec = null
+            )
+          ) {
             BasketItem(
               section = section.second,
               course = course,

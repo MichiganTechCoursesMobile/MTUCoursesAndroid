@@ -3,6 +3,7 @@ package com.mtucoursesmobile.michigantechcourses.views
 import android.util.Log
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
@@ -61,7 +63,6 @@ fun CalendarView() {
     endDate = currentDate.plusWeeks(16),
     firstVisibleWeekDate = currentDate
   )
-  val scrollState = rememberScrollState()
   val visibleWeek = rememberFirstVisibleWeekAfterScroll(state)
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
@@ -87,18 +88,8 @@ fun CalendarView() {
               .align(Alignment.BottomCenter)
           )
         }
-//        val listState = rememberLazyListState()
-//        LaunchedEffect(listState.isScrollInProgress) {
-//          scrollState.scrollTo(listState.firstVisibleItemIndex)
-//        }
-        val items = (1..15).toList()
+        val items = (1..17).toList()
         LazyColumn(
-//          state = listState.apply {
-//            scrollState.value
-//            LaunchedEffect(scrollState.value) {
-//              scrollToItem(scrollState.value)
-//            }
-//          },
           modifier = Modifier
             .width(50.dp),
           userScrollEnabled = false
@@ -111,14 +102,13 @@ fun CalendarView() {
                 .background(Color.Transparent),
               contentAlignment = Alignment.TopEnd
             ) {
-              if (index < 6) {
-                Text(text = "${index + 6} am")
-              } else if (index == 6) {
-                Text(text = "${index + 6} pm")
+              if (items[index] < 7) {
+                Text(text = "${items[index] + 5} am")
+              } else if (items[index] == 7) {
+                Text(text = "${items[index] + 5} pm")
               } else {
-                Text(text = "${index - 6} pm")
+                Text(text = "${items[index] - 7} am")
               }
-
             }
           }
         }
@@ -127,8 +117,7 @@ fun CalendarView() {
         state = state,
         dayContent = { day ->
           Day(
-            day.date,
-            scrollState
+            day.date
           )
         }
       )
@@ -139,8 +128,7 @@ fun CalendarView() {
 private val dateFormatter = DateTimeFormatter.ofPattern("dd")
 
 @Composable
-private fun Day(date: LocalDate, scrollState: ScrollState) {
-  val listState = rememberLazyListState()
+private fun Day(date: LocalDate) {
   Box(
     modifier = Modifier
       .fillMaxWidth()
@@ -184,18 +172,11 @@ private fun Day(date: LocalDate, scrollState: ScrollState) {
             .align(Alignment.BottomCenter)
         )
       }
-      val items = (1..15).toList()
+      val items = (1..17).toList()
       LazyColumn(
-//        state = listState.apply {
-//          scrollState.value
-//          LaunchedEffect(scrollState.value) {
-//            animateScrollToItem(scrollState.value)
-//          }
-//        },
         modifier = Modifier
           .fillMaxWidth(),
         userScrollEnabled = false
-
       ) {
         items(items.size) { index ->
           Box(
@@ -218,9 +199,7 @@ private fun Day(date: LocalDate, scrollState: ScrollState) {
                         "Clicked"
                       )
                     }
-                  ) {
-
-                  }
+                  ) {}
                 }
               }
             }
