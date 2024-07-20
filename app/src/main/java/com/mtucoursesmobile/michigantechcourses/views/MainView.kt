@@ -205,7 +205,7 @@ fun MainView(
         exitTransition = {
           slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }) {
-        CalendarView()
+        CalendarView(basketViewModel)
       }
     }
   }

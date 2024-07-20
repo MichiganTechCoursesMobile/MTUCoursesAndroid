@@ -138,7 +138,7 @@ fun LazyCourseList(
         },
         key = { _, item -> item.first }
       )
-      { index, item ->
+      { _, item ->
         if (item.first == "404") {
           Column(
             modifier = Modifier
@@ -173,15 +173,5 @@ fun LazyCourseList(
         isRefreshing = isRefreshing.value
       )
     }
-//    PullToRefreshContainer(
-//      state = refreshState,
-//      modifier = Modifier
-//        .align(Alignment.TopCenter)
-//        .graphicsLayer(
-//          scaleFraction,
-//          scaleFraction
-//        )
-//        .offset(y = 6.dp)
-//    )
   }
 }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +45,8 @@ import com.kizitonwose.calendar.compose.weekcalendar.WeekCalendarState
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
 import com.kizitonwose.calendar.core.Week
 import com.kizitonwose.calendar.core.yearMonth
+import com.mtucoursesmobile.michigantechcourses.classes.CalendarEntry
+import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import kotlinx.coroutines.flow.filter
 import java.time.LocalDate
 import java.time.Month
@@ -56,7 +59,9 @@ import java.util.Locale
   ExperimentalMaterial3Api::class
 )
 @Composable
-fun CalendarView() {
+fun CalendarView(basketViewModel: BasketViewModel) {
+  val currentCalendar =
+    remember { basketViewModel.calendarEntries[basketViewModel.basketList[basketViewModel.currentBasketIndex].id] }
   val currentDate = remember { LocalDate.now() }
   val state = rememberWeekCalendarState(
     startDate = currentDate,
@@ -88,13 +93,15 @@ fun CalendarView() {
               .align(Alignment.BottomCenter)
           )
         }
-        val items = (1..17).toList()
+        val items = (7..22).toList()
         LazyColumn(
           modifier = Modifier
             .width(50.dp),
           userScrollEnabled = false
         ) {
-          items(items.size) { index ->
+          itemsIndexed(
+            items,
+            key = { index, _ -> index }) { _, time ->
             Box(
               modifier = Modifier
                 .fillMaxWidth()
@@ -102,12 +109,12 @@ fun CalendarView() {
                 .background(Color.Transparent),
               contentAlignment = Alignment.TopEnd
             ) {
-              if (items[index] < 7) {
-                Text(text = "${items[index] + 5} am")
-              } else if (items[index] == 7) {
-                Text(text = "${items[index] + 5} pm")
+              if (time < 12) {
+                Text(text = "$time am")
+              } else if (time == 12) {
+                Text(text = "$time pm")
               } else {
-                Text(text = "${items[index] - 7} am")
+                Text(text = "${time - 12} pm")
               }
             }
           }
@@ -116,8 +123,18 @@ fun CalendarView() {
       WeekCalendar(
         state = state,
         dayContent = { day ->
+          var currentDayOfWeek = ""
+          when (day.date.dayOfWeek.toString()) {
+            "MONDAY" -> currentDayOfWeek = "MO"
+            "TUESDAY" -> currentDayOfWeek = "TU"
+            "WEDNESDAY" -> currentDayOfWeek = "WE"
+            "THURSDAY" -> currentDayOfWeek = "TH"
+            "FRIDAY" -> currentDayOfWeek = "FR"
+          }
+          val dayEntries = currentCalendar?.get(currentDayOfWeek)
           Day(
-            day.date
+            day.date,
+            dayEntries
           )
         }
       )
@@ -128,7 +145,7 @@ fun CalendarView() {
 private val dateFormatter = DateTimeFormatter.ofPattern("dd")
 
 @Composable
-private fun Day(date: LocalDate) {
+private fun Day(date: LocalDate, dayEntries: MutableMap<Int, MutableList<CalendarEntry>>?) {
   Box(
     modifier = Modifier
       .fillMaxWidth()
@@ -172,26 +189,32 @@ private fun Day(date: LocalDate) {
             .align(Alignment.BottomCenter)
         )
       }
-      val items = (1..17).toList()
+      val items = (7..22).toList()
       LazyColumn(
         modifier = Modifier
           .fillMaxWidth(),
         userScrollEnabled = false
       ) {
-        items(items.size) { index ->
+        itemsIndexed(
+          items,
+          key = { index, _ -> index }) { _, time ->
           Box(
             modifier = Modifier
               .fillMaxWidth()
               .fillParentMaxHeight((1.toFloat() / items.size.toFloat()))
           ) {
-            if (date == LocalDate.now()) {
-              if (index == 10 || index == 11) {
+            if (dayEntries != null) {
+              Log.d(
+                "CalendarStuff",
+                "dayEntries is not null"
+              )
+              if (dayEntries[time] != null) {
                 Box() {
                   Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                     modifier = Modifier
                       .fillMaxWidth()
-                      .fillMaxHeight(0.5f)
+                      .fillMaxHeight()
                       .align(Alignment.TopCenter),
                     onClick = {
                       Log.d(
@@ -202,6 +225,11 @@ private fun Day(date: LocalDate) {
                   ) {}
                 }
               }
+            } else {
+              Log.d(
+                "CalendarStuff",
+                "dayEntries is null"
+              )
             }
           }
         }
