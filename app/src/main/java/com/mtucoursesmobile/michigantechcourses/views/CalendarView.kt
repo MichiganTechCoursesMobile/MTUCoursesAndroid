@@ -204,11 +204,7 @@ private fun Day(date: LocalDate, dayEntries: MutableMap<Int, MutableList<Calenda
               .fillParentMaxHeight((1.toFloat() / items.size.toFloat()))
           ) {
             if (dayEntries != null) {
-              Log.d(
-                "CalendarStuff",
-                "dayEntries is not null"
-              )
-              if (dayEntries[time] != null) {
+              if (dayEntries[time]?.isNotEmpty() == true) {
                 Box() {
                   Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -225,11 +221,6 @@ private fun Day(date: LocalDate, dayEntries: MutableMap<Int, MutableList<Calenda
                   ) {}
                 }
               }
-            } else {
-              Log.d(
-                "CalendarStuff",
-                "dayEntries is null"
-              )
             }
           }
         }
