@@ -94,7 +94,7 @@ fun CourseView(
       TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
           containerColor = if (expandedFab) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer,
-          titleContentColor = MaterialTheme.colorScheme.primary
+          titleContentColor = if (expandedFab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer
         ),
         actions = {
           if (!searching) {
@@ -115,17 +115,18 @@ fun CourseView(
                 Icon(
                   imageVector = Icons.Outlined.Search,
                   contentDescription = "Search Courses",
-                  tint = MaterialTheme.colorScheme.primary,
+                  tint = if (expandedFab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
                 )
               }
             }
             SemesterPicker(
-              expanded,
-              courseViewModel,
-              basketViewModel,
-              db,
-              context,
-              semesterText
+              expanded = expanded,
+              courseViewModel = courseViewModel,
+              basketViewModel = basketViewModel,
+              db = db,
+              context = context,
+              semesterText = semesterText,
+              expandedFab = expandedFab
             )
           }
 

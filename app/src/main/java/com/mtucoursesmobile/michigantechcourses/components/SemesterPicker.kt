@@ -30,7 +30,8 @@ fun SemesterPicker(
   db: BasketDB,
   context: Context,
   semesterText: MutableState<String>,
-  courseNavController: NavController? = null
+  courseNavController: NavController? = null,
+  expandedFab: Boolean? = true
 ) {
   val scope = rememberCoroutineScope()
   val semesterTypes = listOf(
@@ -47,7 +48,7 @@ fun SemesterPicker(
     Icon(
       imageVector = Icons.Outlined.DateRange,
       contentDescription = "Change Semester",
-      tint = MaterialTheme.colorScheme.primary,
+      tint = if (expandedFab!!) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
     )
   }
   DropdownMenu(

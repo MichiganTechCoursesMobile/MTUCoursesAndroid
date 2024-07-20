@@ -89,16 +89,17 @@ fun CalendarView(basketViewModel: BasketViewModel, courseViewModel: MTUCoursesVi
     endDate = initialDate.value.plusWeeks(20),
     firstVisibleWeekDate = initialDate.value
   )
-  Log.d(
-    "DEBUGCAL",
-    currentCalendar.toString()
-  )
   if (currentCalendar.isNullOrEmpty()) {
-    initialDate.value = LocalDate.of(
-      courseViewModel.currentSemester.year.toInt(),
-      1,
-      1
-    )
+    if (courseViewModel.currentSemester.year.toInt() != LocalDate.now().year) {
+      initialDate.value = LocalDate.of(
+        courseViewModel.currentSemester.year.toInt(),
+        1,
+        1
+      )
+    } else {
+      initialDate.value = LocalDate.now()
+    }
+
   }
   val visibleWeek = rememberFirstVisibleWeekAfterScroll(state)
   Scaffold(
@@ -279,18 +280,24 @@ private fun Day(
             ) {
               if (dayEntries != null) {
                 if (dayEntries[time]?.isNotEmpty() == true) {
+                  var classCount = 0
                   for (entry in dayEntries[time]!!) {
                     val startDate = LocalDate.of(
                       entry.startYear,
                       entry.startMonth,
                       entry.startDay
                     )
+                    val endDate = LocalDate.of(
+                      entry.endYear,
+                      entry.endMonth,
+                      entry.endDay
+                    )
 
                     if (startDate < initialDate.value) {
                       initialDate.value = startDate
                     }
 
-                    if (date >= startDate) {
+                    if (date >= startDate && date <= endDate) {
                       val classLength = (calculateClassLength(
                         entry.startHour,
                         entry.startMinute,
@@ -309,7 +316,19 @@ private fun Day(
                             )
                           ),
                           modifier = Modifier
-                            .fillParentMaxWidth((1.toFloat() / dayEntries[time]!!.size.toFloat()))
+                            .fillParentMaxWidth((1.toFloat() / dayEntries[time]!!.filter {
+                              val indivStartDate = LocalDate.of(
+                                it.startYear,
+                                it.startMonth,
+                                it.startDay
+                              )
+                              val indivEndDate = LocalDate.of(
+                                it.endYear,
+                                it.endMonth,
+                                it.endDay
+                              )
+                              indivStartDate <= date && indivEndDate >= date
+                            }.size.toFloat()))
                             .requiredHeight(cardHeight)
                             .offset(y = if (classLength > 1f) (cardHeight - boxHeight) / 2 else 0.dp)
                             .offset(y = entry.startMinute / 60f * boxHeight),
