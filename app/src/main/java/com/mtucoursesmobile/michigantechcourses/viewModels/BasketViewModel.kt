@@ -15,6 +15,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
+import com.mtucoursesmobile.michigantechcourses.localStorage.CalendarBundle
 import com.mtucoursesmobile.michigantechcourses.localStorage.CourseBasketBundle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +37,12 @@ class BasketViewModel : ViewModel() {
     val dao = db.basketDao()
     CoroutineScope(Dispatchers.IO).launch {
       var baskets = dao.getSemesterBaskets(
+        Pair(
+          semester.semester,
+          semester.year
+        )
+      )
+      val calendars = dao.getCalendars(
         Pair(
           semester.semester,
           semester.year
@@ -65,11 +72,14 @@ class BasketViewModel : ViewModel() {
           )
         }
       }
+      calendarEntries.clear()
+      calendars?.let {
+        calendarEntries.putAll(it.calendars)
+      }
       basketList.clear()
       basketList.addAll(baskets.baskets)
       setCurrentBasket(0)
     }
-
   }
 
   fun addToBasket(
@@ -230,6 +240,15 @@ class BasketViewModel : ViewModel() {
             semester.year
           ),
           baskets,
+        )
+      )
+      dao.insertCalendars(
+        CalendarBundle(
+          Pair(
+            semester.semester,
+            semester.year
+          ),
+          calendarEntries
         )
       )
     }
