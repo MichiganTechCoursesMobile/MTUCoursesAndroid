@@ -1,6 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
 import android.util.Log
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,9 +10,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,23 +34,40 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.DrawModifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
+import androidx.compose.ui.zIndex
 import com.kizitonwose.calendar.compose.WeekCalendar
 import com.kizitonwose.calendar.compose.weekcalendar.WeekCalendarState
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
 import com.kizitonwose.calendar.core.Week
 import com.kizitonwose.calendar.core.yearMonth
 import com.mtucoursesmobile.michigantechcourses.classes.CalendarEntry
+import com.mtucoursesmobile.michigantechcourses.utils.toHslColor
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import kotlinx.coroutines.flow.filter
 import java.time.LocalDate
 import java.time.Month
@@ -59,15 +80,26 @@ import java.util.Locale
   ExperimentalMaterial3Api::class
 )
 @Composable
-fun CalendarView(basketViewModel: BasketViewModel) {
+fun CalendarView(basketViewModel: BasketViewModel, courseViewModel: MTUCoursesViewModel) {
   val currentCalendar =
     remember { basketViewModel.calendarEntries[basketViewModel.basketList[basketViewModel.currentBasketIndex].id] }
-  val currentDate = remember { LocalDate.now() }
+  val initialDate = remember { mutableStateOf(LocalDate.now().plusYears(50)) }
   val state = rememberWeekCalendarState(
-    startDate = currentDate,
-    endDate = currentDate.plusWeeks(16),
-    firstVisibleWeekDate = currentDate
+    startDate = initialDate.value,
+    endDate = initialDate.value.plusWeeks(20),
+    firstVisibleWeekDate = initialDate.value
   )
+  Log.d(
+    "DEBUGCAL",
+    currentCalendar.toString()
+  )
+  if (currentCalendar.isNullOrEmpty()) {
+    initialDate.value = LocalDate.of(
+      courseViewModel.currentSemester.year.toInt(),
+      1,
+      1
+    )
+  }
   val visibleWeek = rememberFirstVisibleWeekAfterScroll(state)
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
@@ -102,11 +134,25 @@ fun CalendarView(basketViewModel: BasketViewModel) {
           itemsIndexed(
             items,
             key = { index, _ -> index }) { _, time ->
+            val borderColor = MaterialTheme.colorScheme.outline
+            Canvas(
+              modifier = Modifier
+                .fillMaxSize()
+                .zIndex(1f)
+            ) {
+              val strokeWidth = 0.15.dp.toPx()
+
+              drawRect(
+                color = borderColor,
+                style = Stroke(strokeWidth)
+              )
+            }
             Box(
               modifier = Modifier
                 .fillMaxWidth()
                 .fillParentMaxHeight(1.toFloat() / items.size.toFloat())
-                .background(Color.Transparent),
+                .background(Color.Transparent)
+                .zIndex(2f),
               contentAlignment = Alignment.TopEnd
             ) {
               if (time < 12) {
@@ -123,18 +169,16 @@ fun CalendarView(basketViewModel: BasketViewModel) {
       WeekCalendar(
         state = state,
         dayContent = { day ->
-          var currentDayOfWeek = ""
-          when (day.date.dayOfWeek.toString()) {
-            "MONDAY" -> currentDayOfWeek = "MO"
-            "TUESDAY" -> currentDayOfWeek = "TU"
-            "WEDNESDAY" -> currentDayOfWeek = "WE"
-            "THURSDAY" -> currentDayOfWeek = "TH"
-            "FRIDAY" -> currentDayOfWeek = "FR"
-          }
+          val currentDayOfWeek = day.date.dayOfWeek.toString().substring(
+            0,
+            2
+          )
           val dayEntries = currentCalendar?.get(currentDayOfWeek)
           Day(
             day.date,
-            dayEntries
+            dayEntries,
+            courseViewModel,
+            initialDate
           )
         }
       )
@@ -145,7 +189,10 @@ fun CalendarView(basketViewModel: BasketViewModel) {
 private val dateFormatter = DateTimeFormatter.ofPattern("dd")
 
 @Composable
-private fun Day(date: LocalDate, dayEntries: MutableMap<Int, MutableList<CalendarEntry>>?) {
+private fun Day(
+  date: LocalDate, dayEntries: MutableMap<Int, MutableList<CalendarEntry>>?,
+  courseViewModel: MTUCoursesViewModel, initialDate: MutableState<LocalDate>
+) {
   Box(
     modifier = Modifier
       .fillMaxWidth()
@@ -189,6 +236,8 @@ private fun Day(date: LocalDate, dayEntries: MutableMap<Int, MutableList<Calenda
             .align(Alignment.BottomCenter)
         )
       }
+
+
       val items = (7..22).toList()
       LazyColumn(
         modifier = Modifier
@@ -198,27 +247,83 @@ private fun Day(date: LocalDate, dayEntries: MutableMap<Int, MutableList<Calenda
         itemsIndexed(
           items,
           key = { index, _ -> index }) { _, time ->
+          val borderColor = MaterialTheme.colorScheme.outline
+          Canvas(
+            modifier = Modifier
+              .fillMaxSize()
+              .zIndex(1f)
+          ) {
+            val strokeWidth = 0.15.dp.toPx()
+            drawRect(
+              color = borderColor,
+              style = Stroke(strokeWidth)
+            )
+          }
+
+          var boxHeight by remember { mutableStateOf(0.dp) }
+          val localDensity = LocalDensity.current
           Box(
             modifier = Modifier
               .fillMaxWidth()
-              .fillParentMaxHeight((1.toFloat() / items.size.toFloat()))
+              .fillParentMaxHeight(1 / items.size.toFloat())
+              .onSizeChanged {
+                with(localDensity) {
+                  boxHeight = it.height.toDp()
+                }
+              }
+              .zIndex(2f)
           ) {
-            if (dayEntries != null) {
-              if (dayEntries[time]?.isNotEmpty() == true) {
-                Box() {
-                  Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .fillMaxHeight()
-                      .align(Alignment.TopCenter),
-                    onClick = {
-                      Log.d(
-                        "DEBUG",
-                        "Clicked"
-                      )
+            Row(
+              Modifier
+                .fillMaxSize()
+            ) {
+              if (dayEntries != null) {
+                if (dayEntries[time]?.isNotEmpty() == true) {
+                  for (entry in dayEntries[time]!!) {
+                    val startDate = LocalDate.of(
+                      entry.startYear,
+                      entry.startMonth,
+                      entry.startDay
+                    )
+
+                    if (startDate < initialDate.value) {
+                      initialDate.value = startDate
                     }
-                  ) {}
+
+                    if (date >= startDate) {
+                      val classLength = (calculateClassLength(
+                        entry.startHour,
+                        entry.startMinute,
+                        entry.endHour,
+                        entry.endMinute
+                      ).toFloat() / 60.toFloat())
+                      Box {
+                        val cardHeight = (boxHeight * classLength)
+                        Card(
+                          colors = CardDefaults.cardColors(
+                            containerColor = Color(
+                              "${courseViewModel.courseList[entry.section.courseId]?.title}${entry.section.id}".toHslColor(
+                                saturation = 0.6f,
+                                lightness = 0.6f
+                              )
+                            )
+                          ),
+                          modifier = Modifier
+                            .fillParentMaxWidth((1.toFloat() / dayEntries[time]!!.size.toFloat()))
+                            .requiredHeight(cardHeight)
+                            .offset(y = if (classLength > 1f) (cardHeight - boxHeight) / 2 else 0.dp)
+                            .offset(y = entry.startMinute / 60f * boxHeight),
+                          onClick = {
+                            Log.d(
+                              "DEBUG",
+                              "Clicked"
+                            )
+                          },
+                          elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+                        ) {}
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -270,3 +375,26 @@ fun Month.displayText(short: Boolean = true): String {
     Locale.ENGLISH
   )
 }
+
+fun calculateClassLength(startHour: Int, startMinute: Int, endHour: Int, endMinute: Int): Int {
+  return (endHour * 60 + endMinute) - (startHour * 60 + startMinute)
+}
+
+fun Modifier.drawBorderBehind(
+  strokeWidth: Dp,
+  color: Color
+): Modifier = this.then(
+  object : DrawModifier {
+    override fun ContentDrawScope.draw() {
+      // Draw the content first (including clipped parts)
+      drawContent()
+
+      // Then draw the border on top of everything
+      val strokeWidthPx = strokeWidth.toPx()
+      drawRect(
+        color = color,
+        style = Stroke(strokeWidthPx)
+      )
+    }
+  }
+)

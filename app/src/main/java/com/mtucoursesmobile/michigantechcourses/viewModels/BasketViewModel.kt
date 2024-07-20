@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
+import android.util.Log
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -14,6 +15,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.CalendarEntry
 import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
+import com.mtucoursesmobile.michigantechcourses.classes.SectionTimeRRulesConfig
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.localStorage.CalendarBundle
 import com.mtucoursesmobile.michigantechcourses.localStorage.CourseBasketBundle
@@ -100,36 +102,20 @@ class BasketViewModel : ViewModel() {
     // Cleans up all the calender BS for later and adds it to the CalenderEntries
     viewModelScope.launch {
       val currentBasketID = basketList[currentBasketIndex].id
-      for (day in section.time.rrules[0].config.byDayOfWeek) {
-        val startHour = section.time.rrules[0].config.start.hour.toInt()
-        val endHour = section.time.rrules[0].config.end.hour.toInt()
-        val startMinute = section.time.rrules[0].config.start.minute.toInt()
-        val endMinute = section.time.rrules[0].config.end.minute.toInt()
-        val startDate = LocalDate.of(
-          section.time.rrules[0].config.start.year.toInt(),
-          section.time.rrules[0].config.start.month.toInt(),
-          section.time.rrules[0].config.start.day.toInt()
-        )
-        val endDate = LocalDate.of(
-          section.time.rrules[0].config.end.year.toInt(),
-          section.time.rrules[0].config.end.month.toInt(),
-          section.time.rrules[0].config.end.day.toInt()
-        )
-        calendarEntries
-          .getOrPut(currentBasketID) { mutableMapOf() }
-          .getOrPut(day) { mutableMapOf() }
-          .getOrPut(startHour) { mutableListOf() }.add(
-            CalendarEntry(
-              day,
-              startHour,
-              endHour,
-              startMinute,
-              endMinute,
-              startDate,
-              endDate,
-              section
+      if (section.time.rrules.isNotEmpty()) {
+        for (day in section.time.rrules[0].config.byDayOfWeek) {
+          val startHour = section.time.rrules[0].config.start.hour.toInt()
+          calendarEntries
+            .getOrPut(currentBasketID) { mutableMapOf() }
+            .getOrPut(day) { mutableMapOf() }
+            .getOrPut(startHour) { mutableListOf() }.add(
+              convertCalendarEntry(
+                day,
+                section.time.rrules[0].config,
+                section
+              )
             )
-          )
+        }
       }
     }
   }
@@ -145,10 +131,18 @@ class BasketViewModel : ViewModel() {
 
     // Remove from CalendarEntries
     val currentBasketID = basketList[currentBasketIndex].id
-    for (day in section.time.rrules[0].config.byDayOfWeek) {
-      val startHour = section.time.rrules[0].config.start.hour.toInt()
-      calendarEntries[currentBasketID]?.get(day)?.get(startHour)?.removeAll {
-        it.section.id == section.id
+    if (section.time.rrules.isNotEmpty()) {
+      for (day in section.time.rrules[0].config.byDayOfWeek) {
+        val startHour = section.time.rrules[0].config.start.hour.toInt()
+        calendarEntries[currentBasketID]?.get(day)?.get(startHour)?.removeAll {
+          it.section.id == section.id
+        }
+        if (calendarEntries[currentBasketID]?.get(day)?.get(startHour)?.isEmpty() == true) {
+          calendarEntries[currentBasketID]?.get(day)?.remove(startHour)
+        }
+        if (calendarEntries[currentBasketID]?.get(day)?.isEmpty() == true) {
+          calendarEntries[currentBasketID]?.remove(day)
+        }
       }
     }
     viewModelScope.launch {
@@ -290,6 +284,26 @@ class BasketViewModel : ViewModel() {
       semester,
       db,
       basketList
+    )
+  }
+
+  // Converts sectionTimeRules into a CalendarEntry for easier access in CalendarView
+  private fun convertCalendarEntry(
+    day: String, sectionTime: SectionTimeRRulesConfig, section: MTUSections
+  ): CalendarEntry {
+    return CalendarEntry(
+      day,
+      sectionTime.start.hour.toInt(),
+      sectionTime.end.hour.toInt(),
+      sectionTime.start.minute.toInt(),
+      sectionTime.end.minute.toInt(),
+      sectionTime.start.day.toInt(),
+      sectionTime.start.month.toInt(),
+      sectionTime.start.year.toInt(),
+      sectionTime.end.day.toInt(),
+      sectionTime.end.month.toInt(),
+      sectionTime.end.year.toInt(),
+      section
     )
   }
 }

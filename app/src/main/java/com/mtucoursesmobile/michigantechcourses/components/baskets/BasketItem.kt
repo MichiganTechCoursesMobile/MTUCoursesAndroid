@@ -258,6 +258,25 @@ fun BasketItem(
                     }
                   }
                 }
+              } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  PlaceHolderAvatar(
+                    id = "¯\\_(ツ)_/¯",
+                    firstName = "?",
+                    lastName = "",
+                    modifier = Modifier.padding(end = 8.dp),
+                    size = 30.dp
+                  )
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                      modifier = Modifier.padding(end = 2.dp),
+                      text = "¯\\_(ツ)_/¯",
+                      fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis
+                    )
+                  }
+                }
               }
             }
             Badge(
