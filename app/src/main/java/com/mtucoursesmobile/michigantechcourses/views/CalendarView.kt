@@ -23,9 +23,16 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.ShoppingBasket
+import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,6 +44,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -51,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
@@ -65,10 +74,14 @@ import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
 import com.kizitonwose.calendar.core.Week
 import com.kizitonwose.calendar.core.yearMonth
 import com.mtucoursesmobile.michigantechcourses.classes.CalendarEntry
+import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
+import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.utils.toHslColor
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
@@ -80,38 +93,47 @@ import java.util.Locale
   ExperimentalMaterial3Api::class
 )
 @Composable
-fun CalendarView(basketViewModel: BasketViewModel, courseViewModel: MTUCoursesViewModel) {
-  val currentCalendar =
-    remember { basketViewModel.calendarEntries[basketViewModel.basketList[basketViewModel.currentBasketIndex].id] }
+fun CalendarView(
+  basketViewModel: BasketViewModel, courseViewModel: MTUCoursesViewModel, db: BasketDB
+) {
   val initialDate = remember { mutableStateOf(LocalDate.now().plusYears(50)) }
   val state = rememberWeekCalendarState(
     startDate = initialDate.value,
     endDate = initialDate.value.plusWeeks(20),
     firstVisibleWeekDate = initialDate.value
   )
-  if (currentCalendar.isNullOrEmpty()) {
-    if (courseViewModel.currentSemester.year.toInt() != LocalDate.now().year) {
-      initialDate.value = LocalDate.of(
-        courseViewModel.currentSemester.year.toInt(),
-        1,
-        1
-      )
-    } else {
-      initialDate.value = LocalDate.now()
-    }
-
-  }
+  val context = LocalContext.current
   val visibleWeek = rememberFirstVisibleWeekAfterScroll(state)
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
     topBar = {
       TopAppBar(
         title = {
-          Text(text = "Calendar " + getWeekPageTitle(visibleWeek))
+          Text(text = getWeekPageTitle(visibleWeek))
         },
         colors = TopAppBarDefaults.topAppBarColors(
           titleContentColor = MaterialTheme.colorScheme.primary
-        )
+        ),
+        actions = {
+          SemesterPicker(
+            expanded = remember { mutableStateOf(false) },
+            courseViewModel = courseViewModel,
+            basketViewModel = basketViewModel,
+            db = db,
+            context = context,
+            semesterText = remember { mutableStateOf("") }
+          )
+          IconButton(onClick = { /*TODO*/ }) {
+            Icon(
+              imageVector = Icons.Outlined.ShoppingBasket,
+              contentDescription = "Choose Basket"
+            )
+          }
+          /*TODO: Add Basket picker*/
+//          Button(onClick = {
+//            basketViewModel.setCurrentBasket(1)
+//          }) {}
+        }
       )
     }
   ) { innerPadding ->
@@ -174,10 +196,20 @@ fun CalendarView(basketViewModel: BasketViewModel, courseViewModel: MTUCoursesVi
             0,
             2
           )
-          val dayEntries = currentCalendar?.get(currentDayOfWeek)
+          if (courseViewModel.currentSemester.year.toInt() != LocalDate.now().year) {
+            initialDate.value = LocalDate.of(
+              courseViewModel.currentSemester.year.toInt(),
+              1,
+              1
+            )
+          } else if (basketViewModel.calendarEntries[basketViewModel.basketList[basketViewModel.currentBasketIndex].id].isNullOrEmpty()) {
+            initialDate.value = LocalDate.now()
+          } else {
+            initialDate.value = LocalDate.now().plusYears(50)
+          }
           Day(
             day.date,
-            dayEntries,
+            basketViewModel.calendarEntries[basketViewModel.basketList[basketViewModel.currentBasketIndex].id]?.get(currentDayOfWeek),
             courseViewModel,
             initialDate
           )
@@ -280,7 +312,6 @@ private fun Day(
             ) {
               if (dayEntries != null) {
                 if (dayEntries[time]?.isNotEmpty() == true) {
-                  var classCount = 0
                   for (entry in dayEntries[time]!!) {
                     val startDate = LocalDate.of(
                       entry.startYear,
@@ -306,40 +337,56 @@ private fun Day(
                       ).toFloat() / 60.toFloat())
                       Box {
                         val cardHeight = (boxHeight * classLength)
-                        Card(
-                          colors = CardDefaults.cardColors(
-                            containerColor = Color(
-                              "${courseViewModel.courseList[entry.section.courseId]?.title}${entry.section.id}".toHslColor(
-                                saturation = 0.6f,
-                                lightness = 0.6f
+                        if (courseViewModel.courseList[entry.section.courseId] != null) {
+                          Card(
+                            colors = CardDefaults.cardColors(
+                              containerColor = Color(
+                                "${courseViewModel.courseList[entry.section.courseId]?.title}${entry.section.id}".toHslColor(
+                                  saturation = 0.6f,
+                                  lightness = 0.6f
+                                )
                               )
+                            ),
+                            modifier = Modifier
+                              .fillParentMaxWidth((1.toFloat() / dayEntries[time]!!.filter {
+                                val indivStartDate = LocalDate.of(
+                                  it.startYear,
+                                  it.startMonth,
+                                  it.startDay
+                                )
+                                val indivEndDate = LocalDate.of(
+                                  it.endYear,
+                                  it.endMonth,
+                                  it.endDay
+                                )
+                                indivStartDate <= date && indivEndDate >= date
+                              }.size.toFloat()))
+                              .requiredHeight(cardHeight)
+                              .offset(y = if (classLength > 1f) (cardHeight - boxHeight) / 2 else 0.dp)
+                              .offset(y = entry.startMinute / 60f * boxHeight),
+                            onClick = {
+                              Log.d(
+                                "DEBUG",
+                                "Clicked"
+                              )
+                            },
+                            elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
+                          ) {
+
+                            Text(
+                              text = "${courseViewModel.courseList[entry.section.courseId]?.subject} ${courseViewModel.courseList[entry.section.courseId]?.crse}",
+                              fontSize = 8.sp,
+                              modifier = Modifier.padding(
+                                start = 4.dp,
+                                top = 4.dp
+                              ),
+                              lineHeight = 12.sp,
+                              color = MaterialTheme.colorScheme.inverseOnSurface,
+                              fontWeight = FontWeight.Bold
                             )
-                          ),
-                          modifier = Modifier
-                            .fillParentMaxWidth((1.toFloat() / dayEntries[time]!!.filter {
-                              val indivStartDate = LocalDate.of(
-                                it.startYear,
-                                it.startMonth,
-                                it.startDay
-                              )
-                              val indivEndDate = LocalDate.of(
-                                it.endYear,
-                                it.endMonth,
-                                it.endDay
-                              )
-                              indivStartDate <= date && indivEndDate >= date
-                            }.size.toFloat()))
-                            .requiredHeight(cardHeight)
-                            .offset(y = if (classLength > 1f) (cardHeight - boxHeight) / 2 else 0.dp)
-                            .offset(y = entry.startMinute / 60f * boxHeight),
-                          onClick = {
-                            Log.d(
-                              "DEBUG",
-                              "Clicked"
-                            )
-                          },
-                          elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
-                        ) {}
+                          }
+                        }
+
                       }
                     }
                   }

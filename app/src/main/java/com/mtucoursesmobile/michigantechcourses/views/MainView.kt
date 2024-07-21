@@ -120,7 +120,7 @@ fun MainView(
                   popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                   }
-                  // Restore state when reselecting a previously selected item
+                  // Restore state when reelecting a previously selected item
                   restoreState = true
 
                 }
@@ -207,7 +207,8 @@ fun MainView(
         }) {
         CalendarView(
           basketViewModel,
-          courseViewModel
+          courseViewModel,
+          db
         )
       }
     }

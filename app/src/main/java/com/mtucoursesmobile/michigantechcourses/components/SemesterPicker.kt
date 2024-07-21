@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Year
 

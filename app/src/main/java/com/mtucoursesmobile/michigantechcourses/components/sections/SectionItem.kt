@@ -17,7 +17,9 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -27,9 +29,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.AreaChart
+import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
+import androidx.compose.material.icons.outlined.Sick
 import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -55,6 +62,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
@@ -210,7 +218,9 @@ fun SectionItem(
                   !instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0)
                 Row(
                   verticalAlignment = Alignment.CenterVertically,
-                  modifier = Modifier.padding(bottom = 8.dp)
+                  modifier = Modifier.padding(
+                    bottom = 8.dp
+                  )
                 ) {
                   Box(/*
                     * Having this if statement allows users to click the
@@ -288,46 +298,43 @@ fun SectionItem(
                   }
                   AnimatedVisibility(visible = exposed.value) {
                     Row {
-                      Card(
-                        modifier = Modifier.padding(end = 8.dp),
+                      SuggestionChip(
                         onClick = {
                           Toast.makeText(
                             context,
                             "Average Professor Rating is ${(instructor.value.averageRating.toDouble() * 100)}%",
                             Toast.LENGTH_SHORT
                           ).show()
-                        }
-                      ) {
-                        Row {
+                        },
+                        label = { Text(text = ": ${(instructor.value.averageRating.toDouble() * 100)}%") },
+                        icon = {
                           Icon(
-                            imageVector = Icons.Outlined.AreaChart,
+                            imageVector = Icons.Outlined.EmojiEvents,
                             contentDescription = "Average Rating"
                           )
-                          Text(text = ": ${(instructor.value.averageRating.toDouble() * 100)}%")
-                        }
-
-
-                      }
-                      Card(onClick = {
-                        Toast.makeText(
-                          context,
-                          "Average Professor Difficulty is ${(instructor.value.averageDifficultyRating.toDouble() * 100)}%",
-                          Toast.LENGTH_SHORT
-                        ).show()
-                      }) {
-                        Row {
+                        },
+                        modifier = Modifier.height(32.dp)
+                      )
+                      Spacer(modifier = Modifier.size(4.dp))
+                      SuggestionChip(
+                        onClick = {
+                          Toast.makeText(
+                            context,
+                            "Average Professor Difficulty is ${(instructor.value.averageDifficultyRating.toDouble() * 100)}%",
+                            Toast.LENGTH_SHORT
+                          ).show()
+                        },
+                        label = { Text(text = ": ${(instructor.value.averageDifficultyRating.toDouble() * 100)}%") },
+                        icon = {
                           Icon(
                             imageVector = Icons.Outlined.Speed,
                             contentDescription = "Average Difficulty"
                           )
-                          Text(text = ": ${(instructor.value.averageDifficultyRating.toDouble() * 100)}%")
-                        }
-
-                      }
+                        },
+                        modifier = Modifier.height(32.dp)
+                      )
                     }
-
                   }
-
                 }
               }
             } else {
