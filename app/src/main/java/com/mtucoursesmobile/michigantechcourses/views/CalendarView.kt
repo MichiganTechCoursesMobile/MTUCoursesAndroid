@@ -97,6 +97,8 @@ fun CalendarView(
   basketViewModel: BasketViewModel, courseViewModel: MTUCoursesViewModel, db: BasketDB
 ) {
   val initialDate = remember { mutableStateOf(LocalDate.now().plusYears(50)) }
+  val today = remember { mutableStateOf(LocalDate.now()) }
+  val leSemester = remember { mutableStateOf(courseViewModel.currentSemester.readable) }
   val state = rememberWeekCalendarState(
     startDate = initialDate.value,
     endDate = initialDate.value.plusWeeks(20),
@@ -196,22 +198,22 @@ fun CalendarView(
             0,
             2
           )
-          if (courseViewModel.currentSemester.year.toInt() != LocalDate.now().year) {
+          if (courseViewModel.currentSemester.year.toInt() != today.value.year) {
             initialDate.value = LocalDate.of(
               courseViewModel.currentSemester.year.toInt(),
               1,
               1
             )
           } else if (basketViewModel.calendarEntries[basketViewModel.basketList[basketViewModel.currentBasketIndex].id].isNullOrEmpty()) {
-            initialDate.value = LocalDate.now()
-          } else {
-            initialDate.value = LocalDate.now().plusYears(50)
+            initialDate.value = today.value
           }
           Day(
             day.date,
             basketViewModel.calendarEntries[basketViewModel.basketList[basketViewModel.currentBasketIndex].id]?.get(currentDayOfWeek),
             courseViewModel,
-            initialDate
+            initialDate,
+            leSemester,
+            state
           )
         }
       )
@@ -224,7 +226,8 @@ private val dateFormatter = DateTimeFormatter.ofPattern("dd")
 @Composable
 private fun Day(
   date: LocalDate, dayEntries: MutableMap<Int, MutableList<CalendarEntry>>?,
-  courseViewModel: MTUCoursesViewModel, initialDate: MutableState<LocalDate>
+  courseViewModel: MTUCoursesViewModel, initialDate: MutableState<LocalDate>,
+  leSemester: MutableState<String>, calendarState: WeekCalendarState
 ) {
   Box(
     modifier = Modifier
@@ -323,8 +326,11 @@ private fun Day(
                       entry.endMonth,
                       entry.endDay
                     )
-
-                    if (startDate < initialDate.value) {
+                    if (courseViewModel.currentSemester.readable != leSemester.value && courseViewModel.courseList[entry.section.courseId]?.id == entry.section.courseId) {
+                      initialDate.value = startDate
+                      leSemester.value = courseViewModel.currentSemester.readable
+                    }
+                    if (startDate < initialDate.value && courseViewModel.courseList[entry.section.courseId]?.id == entry.section.courseId) {
                       initialDate.value = startDate
                     }
 
