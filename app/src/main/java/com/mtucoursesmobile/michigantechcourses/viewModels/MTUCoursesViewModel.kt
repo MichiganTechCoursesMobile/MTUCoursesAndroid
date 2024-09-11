@@ -2,7 +2,6 @@ package com.mtucoursesmobile.michigantechcourses.viewModels
 
 import android.content.Context
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -29,12 +28,7 @@ import java.time.Year
 import java.util.Calendar
 
 class MTUCoursesViewModel : ViewModel() {
-  var currentSemester =
-    CurrentSemester(
-      "Fall 2024",
-      "2024",
-      "FALL"
-    )
+  var currentSemester = initialSemester()
 
   val courseList = mutableStateMapOf<String, MTUCourses>()
   val sectionList = mutableStateMapOf<String, MutableList<MTUSections>>()
@@ -53,6 +47,22 @@ class MTUCoursesViewModel : ViewModel() {
   private val courseOtherFilter = mutableStateListOf<String>()
 
   private val lastUpdatedSince = mutableListOf<LastUpdatedSince>()
+
+  private fun initialSemester(): CurrentSemester {
+    var targetSemester = "FALL"
+    var targetYear = Year.now().value.toString()
+    if (Calendar.getInstance().get(Calendar.MONTH) + 1 > 8) {
+      targetSemester = "SPRING"
+      targetYear = (Year.now().value + 1).toString()
+    }
+     return CurrentSemester(
+      "${
+        targetSemester.lowercase().replaceFirstChar(Char::titlecase)
+      } $targetYear",
+      targetYear,
+      targetSemester
+    )
+  }
 
   @OptIn(ExperimentalMaterial3Api::class)
   fun updateSemesterYear(year: Number, context: Context) {
@@ -122,19 +132,7 @@ class MTUCoursesViewModel : ViewModel() {
       )
       getMTUCourseDropRates(failList)
 
-      var targetSemester = "FALL"
-      var targetYear = Year.now().value.toString()
-      if (Calendar.getInstance().get(Calendar.MONTH) + 1 > 8) {
-        targetSemester = "SPRING"
-        targetYear = (Year.now().value + 1).toString()
-      }
-      currentSemester = CurrentSemester(
-        "${
-          targetSemester.lowercase().replaceFirstChar(Char::titlecase)
-        } $targetYear",
-        targetYear,
-        targetSemester
-      )
+      currentSemester = initialSemester()
       getMTUCourses(
         courseList,
         courseNotFound,
