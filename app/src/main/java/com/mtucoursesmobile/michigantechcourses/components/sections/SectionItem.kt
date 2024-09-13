@@ -1,9 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.components.sections
 
 import android.content.Intent
-import android.icu.text.SimpleDateFormat
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -17,26 +15,16 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.outlined.AddCircleOutline
-import androidx.compose.material.icons.outlined.AreaChart
-import androidx.compose.material.icons.outlined.EmojiEvents
-import androidx.compose.material.icons.outlined.Error
-import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
-import androidx.compose.material.icons.outlined.Sick
-import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -62,7 +50,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
@@ -76,7 +63,6 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
-import java.util.Locale
 
 @Composable
 fun SectionItem(
@@ -214,6 +200,8 @@ fun SectionItem(
               for (instructor in instructors) {
                 val exposed = remember { mutableStateOf(false) }
                 val instructorNames = instructor.value.fullName.split(" ").toList()
+                val showAdditionalInstructorInfo = remember {mutableStateOf(false)}
+                var painter: AsyncImagePainter? = null
                 val showInstructorInfo =
                   !instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0)
                 Row(
@@ -230,7 +218,7 @@ fun SectionItem(
                       Modifier
                         .clip(RoundedCornerShape(10.dp))
                         .clickable(enabled = true,
-                          onClick = { exposed.value = !exposed.value })
+                          onClick = { showAdditionalInstructorInfo.value = true })
                     } else {
                       Modifier.clip(RoundedCornerShape(10.dp))
                     }
@@ -244,17 +232,17 @@ fun SectionItem(
                           modifier = Modifier.padding(end = 8.dp)
                         )
                       } else {
-                        val painter = rememberAsyncImagePainter(
+                        painter = rememberAsyncImagePainter(
                           model = ImageRequest.Builder(LocalContext.current)
                             .data(instructor.value.thumbnailURL).size(Size.ORIGINAL).build()
                         )
-                        if (painter.state is AsyncImagePainter.State.Success) {
+                        if (painter?.state is AsyncImagePainter.State.Success) {
                           Image(
                             modifier = Modifier
                               .padding(end = 8.dp)
                               .size(40.dp)
                               .clip(shape = CircleShape),
-                            painter = painter,
+                            painter = painter!!,
                             contentDescription = instructor.value.fullName
                           )
                         } else {
@@ -274,66 +262,18 @@ fun SectionItem(
                         overflow = TextOverflow.Ellipsis
                       )
                       if (showInstructorInfo) {
-                        AnimatedContent(
-                          targetState = exposed.value,
-                          label = "Hide/Show Instructor Stats"
-                        ) { targetState ->
-                          if (targetState) {
-                            Icon(
-                              imageVector = Icons.AutoMirrored.Filled.ArrowLeft,
-                              contentDescription = "Hide instructor info",
-                              Modifier.padding(end = 2.dp)
-                            )
-                          } else {
-                            Icon(
-                              imageVector = Icons.Outlined.Info,
-                              contentDescription = "View Instructor info",
-                              Modifier.padding(horizontal = 2.dp)
-                            )
-                          }
-                        }
+                        Icon(
+                          imageVector = Icons.Outlined.Info,
+                          contentDescription = "View Instructor info",
+                          Modifier.padding(horizontal = 2.dp)
+                        )
                       }
-
                     }
                   }
-                  AnimatedVisibility(visible = exposed.value) {
-                    Row {
-                      SuggestionChip(
-                        onClick = {
-                          Toast.makeText(
-                            context,
-                            "Average Professor Rating is ${(instructor.value.averageRating.toDouble() * 100)}%",
-                            Toast.LENGTH_SHORT
-                          ).show()
-                        },
-                        label = { Text(text = ": ${(instructor.value.averageRating.toDouble() * 100)}%") },
-                        icon = {
-                          Icon(
-                            imageVector = Icons.Outlined.EmojiEvents,
-                            contentDescription = "Average Rating"
-                          )
-                        },
-                        modifier = Modifier.height(32.dp)
-                      )
-                      Spacer(modifier = Modifier.size(4.dp))
-                      SuggestionChip(
-                        onClick = {
-                          Toast.makeText(
-                            context,
-                            "Average Professor Difficulty is ${(instructor.value.averageDifficultyRating.toDouble() * 100)}%",
-                            Toast.LENGTH_SHORT
-                          ).show()
-                        },
-                        label = { Text(text = ": ${(instructor.value.averageDifficultyRating.toDouble() * 100)}%") },
-                        icon = {
-                          Icon(
-                            imageVector = Icons.Outlined.Speed,
-                            contentDescription = "Average Difficulty"
-                          )
-                        },
-                        modifier = Modifier.height(32.dp)
-                      )
-                    }
+                }
+                when {
+                  showAdditionalInstructorInfo.value -> {
+                    InstructorInfoDialog(showAdditionalInstructorInfo, instructor.value, painter)
                   }
                 }
               }
