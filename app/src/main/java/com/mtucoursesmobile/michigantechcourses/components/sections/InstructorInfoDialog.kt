@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Paint.Style
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -319,9 +320,17 @@ fun Context.sendMail(to: String) {
     intent.setData(Uri.parse("mailto:$to"))
     startActivity(intent)
   } catch (e: ActivityNotFoundException) {
-    // TODO: Handle case where no email app is available
+    Toast.makeText(
+      this,
+      "No email clients found",
+      Toast.LENGTH_LONG
+    ).show()
   } catch (t: Throwable) {
-    // TODO: Handle potential other type of exceptions
+    Toast.makeText(
+      this,
+      "Something went wrong",
+      Toast.LENGTH_LONG
+    ).show()
   }
 }
 
@@ -337,6 +346,10 @@ fun Context.dial(phone: String) {
     )
     startActivity(intent)
   } catch (t: Throwable) {
-    // TODO: Handle potential exceptions
+    Toast.makeText(
+      this,
+      "Something went wrong",
+      Toast.LENGTH_LONG
+    ).show()
   }
 }
