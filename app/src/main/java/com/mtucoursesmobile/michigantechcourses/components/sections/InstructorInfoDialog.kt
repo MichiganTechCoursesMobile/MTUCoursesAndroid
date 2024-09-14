@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,11 +30,15 @@ import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImagePainter
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InstructorInfoDialog(showInfoDialog: MutableState<Boolean>, instructor: MTUInstructor, painter: AsyncImagePainter? = null) {
+fun InstructorInfoDialog(
+  showInfoDialog: MutableState<Boolean>, instructor: MTUInstructor,
+  painter: AsyncImagePainter? = null
+) {
   val instructorNames = instructor.fullName.split(" ").toList()
   val context = LocalContext.current
-  Dialog(onDismissRequest = {showInfoDialog.value = false}) {
+  Dialog(onDismissRequest = { showInfoDialog.value = false }) {
     Card(
       modifier = Modifier
         .fillMaxWidth()
@@ -40,9 +47,11 @@ fun InstructorInfoDialog(showInfoDialog: MutableState<Boolean>, instructor: MTUI
       shape = RoundedCornerShape(16.dp)
     ) {
       Column {
-        Row (modifier = Modifier
-          .padding(16.dp),
-          verticalAlignment = Alignment.CenterVertically){
+        Row(
+          modifier = Modifier
+            .padding(16.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
           if (painter?.state is AsyncImagePainter.State.Success) {
             Image(
               modifier = Modifier
@@ -74,7 +83,7 @@ fun InstructorInfoDialog(showInfoDialog: MutableState<Boolean>, instructor: MTUI
           OutlinedButton(onClick = {
             context.sendMail(to = instructor.email!!)
           }) {
-            Row (verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
               Text("Send Email")
             }
           }
@@ -89,7 +98,10 @@ fun Context.sendMail(to: String) {
     val intent = Intent(Intent.ACTION_MAIN).apply {
       addCategory(Intent.CATEGORY_APP_EMAIL)
       addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      putExtra(Intent.EXTRA_EMAIL, arrayOf(to))
+      putExtra(
+        Intent.EXTRA_EMAIL,
+        arrayOf(to)
+      )
     }
     startActivity(intent)
   } catch (e: ActivityNotFoundException) {

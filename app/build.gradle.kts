@@ -70,7 +70,7 @@ dependencies {
   // optional - Kotlin Extensions and Coroutines support for Room
   implementation(libs.androidx.room.ktx)
   implementation(libs.kotlinx.coroutines.android)
-  implementation("androidx.compose.material3:material3:1.3.0-beta04")
+  implementation("androidx.compose.material3:material3:1.3.0")
   implementation(libs.compose.shimmer)
   implementation(libs.androidx.activity)
   implementation(libs.ui)
