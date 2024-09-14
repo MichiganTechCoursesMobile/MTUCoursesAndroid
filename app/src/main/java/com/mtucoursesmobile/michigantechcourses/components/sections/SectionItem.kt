@@ -198,9 +198,8 @@ fun SectionItem(
             )
             if (instructors.isNotEmpty()) {
               for (instructor in instructors) {
-                val exposed = remember { mutableStateOf(false) }
                 val instructorNames = instructor.value.fullName.split(" ").toList()
-                val showAdditionalInstructorInfo = remember {mutableStateOf(false)}
+                val showAdditionalInstructorInfo = remember { mutableStateOf(false) }
                 var painter: AsyncImagePainter? = null
                 val showInstructorInfo =
                   !instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0)
@@ -273,7 +272,11 @@ fun SectionItem(
                 }
                 when {
                   showAdditionalInstructorInfo.value -> {
-                    InstructorInfoDialog(showAdditionalInstructorInfo, instructor.value, painter)
+                    InstructorInfoDialog(
+                      showAdditionalInstructorInfo,
+                      instructor.value,
+                      painter
+                    )
                   }
                 }
               }

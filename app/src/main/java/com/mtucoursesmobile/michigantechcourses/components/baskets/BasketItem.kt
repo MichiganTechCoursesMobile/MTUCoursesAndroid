@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +26,6 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.RemoveRedEye
 import androidx.compose.material3.Badge
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -40,6 +40,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -63,6 +64,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
+import com.mtucoursesmobile.michigantechcourses.components.sections.InstructorInfoDialog
 import com.mtucoursesmobile.michigantechcourses.components.sections.PlaceHolderAvatar
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
@@ -85,7 +87,6 @@ fun navToCourse(
   }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasketItem(
   section: MTUSections,
@@ -204,57 +205,84 @@ fun BasketItem(
               if (instructors.isNotEmpty()) {
                 val instructor = instructors[instructors.keys.first()]
                 if (instructor != null) {
+                  val showAdditionalInstructorInfo = remember { mutableStateOf(false) }
+                  val showInstructorInfo =
+                    !instructor.rmpId.isNullOrBlank() && (instructor.averageRating.toDouble() != 0.0) && (instructor.averageDifficultyRating.toDouble() != 0.0)
+                  var painter: AsyncImagePainter? = null
                   val instructorNames = instructor.fullName.split(" ").toList()
-                  Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (instructor.thumbnailURL == null) {
-                      PlaceHolderAvatar(
-                        id = instructor.id.toString(),
-                        firstName = instructorNames.first(),
-                        lastName = instructorNames.last(),
-                        modifier = Modifier.padding(end = 8.dp),
-                        size = 30.dp,
-                        textStyle = MaterialTheme.typography.bodySmall
-                      )
+                  Box(/*
+                    * Having this if statement allows users to click the
+                    * instructor and close the card if they have no info
+                    * */
+                    modifier = if (showInstructorInfo) {
+                      Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable(enabled = true,
+                          onClick = { showAdditionalInstructorInfo.value = true })
                     } else {
-                      val painter = rememberAsyncImagePainter(
-                        model = ImageRequest.Builder(LocalContext.current)
-                          .data(instructor.thumbnailURL).size(Size.ORIGINAL).build()
-                      )
-                      if (painter.state is AsyncImagePainter.State.Success) {
-                        Image(
-                          modifier = Modifier
-                            .padding(end = 8.dp)
-                            .size(30.dp)
-                            .clip(shape = CircleShape),
-                          painter = painter,
-                          contentDescription = instructor.fullName
-                        )
-                      } else {
+                      Modifier.clip(RoundedCornerShape(10.dp))
+                    }
+                  ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                      if (instructor.thumbnailURL == null) {
                         PlaceHolderAvatar(
-                          id = instructor.toString(),
+                          id = instructor.id.toString(),
                           firstName = instructorNames.first(),
                           lastName = instructorNames.last(),
                           modifier = Modifier.padding(end = 8.dp),
-                          size = 30.dp
+                          size = 30.dp,
+                          textStyle = MaterialTheme.typography.bodySmall
                         )
-                      }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                      Text(
-                        modifier = Modifier.padding(end = 2.dp),
-                        text = instructor.fullName,
-                        fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                      )
-                      if (instructors.size > 1) {
-                        Badge(
-                          containerColor = MaterialTheme.colorScheme.primaryContainer,
-                          contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ) {
-                          Text(text = "+${instructors.size - 1}")
+                      } else {
+                        painter = rememberAsyncImagePainter(
+                          model = ImageRequest.Builder(LocalContext.current)
+                            .data(instructor.thumbnailURL).size(Size.ORIGINAL).build()
+                        )
+                        if (painter?.state is AsyncImagePainter.State.Success) {
+                          Image(
+                            modifier = Modifier
+                              .padding(end = 8.dp)
+                              .size(30.dp)
+                              .clip(shape = CircleShape),
+                            painter = painter!!,
+                            contentDescription = instructor.fullName
+                          )
+                        } else {
+                          PlaceHolderAvatar(
+                            id = instructor.toString(),
+                            firstName = instructorNames.first(),
+                            lastName = instructorNames.last(),
+                            modifier = Modifier.padding(end = 8.dp),
+                            size = 30.dp
+                          )
                         }
                       }
+                      Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                          modifier = Modifier.padding(end = 2.dp),
+                          text = instructor.fullName,
+                          fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                          maxLines = 1,
+                          overflow = TextOverflow.Ellipsis
+                        )
+                        if (instructors.size > 1) {
+                          Badge(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                          ) {
+                            Text(text = "+${instructors.size - 1}")
+                          }
+                        }
+                      }
+                    }
+                  }
+                  when {
+                    showAdditionalInstructorInfo.value -> {
+                      InstructorInfoDialog(
+                        showAdditionalInstructorInfo,
+                        instructor,
+                        painter
+                      )
                     }
                   }
                 }
