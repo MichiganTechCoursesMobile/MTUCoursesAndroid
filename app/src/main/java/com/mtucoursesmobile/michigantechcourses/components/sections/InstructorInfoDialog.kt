@@ -10,6 +10,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,6 +61,7 @@ import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImagePainter
 import com.mtucoursesmobile.michigantechcourses.R
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,12 +110,16 @@ fun InstructorInfoDialog(
             Text(
               text = instructor.fullName,
               fontWeight = FontWeight.Bold,
-              fontSize = MaterialTheme.typography.titleMedium.fontSize
+              style = MaterialTheme.typography.titleLarge,
+              textAlign = TextAlign.Center,
+              modifier = Modifier.padding(horizontal = 4.dp)
             )
-            Text(
-              text = instructor.departments[0],
-              fontSize = MaterialTheme.typography.bodySmall.fontSize
-            )
+            if (instructor.departments.isNotEmpty()) {
+              Text(
+                text = instructor.departments[0],
+                style = MaterialTheme.typography.titleSmall
+              )
+            }
           }
         }
         HorizontalDivider()
@@ -127,15 +133,14 @@ fun InstructorInfoDialog(
             Column(
               modifier = Modifier
                 .padding(4.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+              verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
               Text(
                 "Contact info",
-                fontSize = MaterialTheme.typography.titleSmall.fontSize,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                   .padding(horizontal = 6.dp)
-                  .padding(bottom = 4.dp)
               )
               if (instructor.email != null) {
                 ElevatedCard(
@@ -156,14 +161,14 @@ fun InstructorInfoDialog(
                       modifier = Modifier
                         .padding(
                           start = 4.dp,
-                          end = 8.dp
+                          end = 8.dp,
                         )
-                        .size(18.dp)
+                        .size(24.dp)
                     )
                     Text(
                       instructor.email!!,
                       textAlign = TextAlign.Start,
-                      style = MaterialTheme.typography.labelMedium,
+                      style = MaterialTheme.typography.labelLarge,
                       modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
@@ -193,12 +198,12 @@ fun InstructorInfoDialog(
                           start = 4.dp,
                           end = 8.dp
                         )
-                        .size(18.dp)
+                        .size(24.dp)
                     )
                     Text(
                       instructor.phone!!,
                       textAlign = TextAlign.Start,
-                      style = MaterialTheme.typography.labelMedium,
+                      style = MaterialTheme.typography.labelLarge,
                       modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
@@ -210,6 +215,8 @@ fun InstructorInfoDialog(
 
             }
           }
+        } else {
+          Spacer(modifier = Modifier.height(12.dp))
         }
         Row(modifier = Modifier.padding(horizontal = 8.dp)) {
           OutlinedCard(
@@ -237,7 +244,13 @@ fun InstructorInfoDialog(
                 modifier = Modifier.fillMaxWidth()
               )
               Text(
-                "${(instructor.averageDifficultyRating.toDouble() * 100)}%",
+                "${
+                  String.format(
+                    Locale.getDefault(),
+                    "%.2f",
+                    (instructor.averageDifficultyRating.toDouble() * 100)
+                  )
+                }%",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
               )
@@ -268,7 +281,13 @@ fun InstructorInfoDialog(
                 modifier = Modifier.fillMaxWidth()
               )
               Text(
-                "${(instructor.averageRating.toDouble() * 100)}%",
+                "${
+                  String.format(
+                    Locale.getDefault(),
+                    "%.2f",
+                    (instructor.averageRating.toDouble() * 100)
+                  )
+                }%",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
               )
@@ -296,14 +315,8 @@ fun InstructorInfoDialog(
 
 fun Context.sendMail(to: String) {
   try {
-    val intent = Intent(Intent.ACTION_MAIN).apply {
-      addCategory(Intent.CATEGORY_APP_EMAIL)
-      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      putExtra(
-        Intent.EXTRA_EMAIL,
-        arrayOf(to)
-      )
-    }
+    val intent = Intent(Intent.ACTION_SENDTO)
+    intent.setData(Uri.parse("mailto:$to"))
     startActivity(intent)
   } catch (e: ActivityNotFoundException) {
     // TODO: Handle case where no email app is available
