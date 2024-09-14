@@ -6,12 +6,12 @@ plugins {
 
 android {
   namespace = "com.mtucoursesmobile.michigantechcourses"
-  compileSdk = 34
+  compileSdk = 35
 
   defaultConfig {
     applicationId = "com.mtucoursesmobile.michigantechcourses"
     minSdk = 29
-    targetSdk = 34
+    targetSdk = 35
     versionCode = 2
     versionName = "alpha-1.0b"
 
