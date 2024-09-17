@@ -36,6 +36,7 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,15 +68,13 @@ import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 @Composable
 fun SectionItem(
   basketViewModel: BasketViewModel, section: MTUSections, instructors: Map<Number, MTUInstructor>,
-  buildings: Map<String, MTUBuilding>, alreadyExpanded: Boolean, currentSemester: CurrentSemester,
-  db: BasketDB
+  buildings: Map<String, MTUBuilding>, currentSemester: CurrentSemester,
+  db: BasketDB, expandedState: MutableState<Boolean>
 ) {
-  val context = LocalContext.current
-  var expandedState by remember { mutableStateOf(alreadyExpanded) }
   val currentBasketItems = remember { basketViewModel.currentBasketItems }
   var basketContainsSection by remember { mutableStateOf(currentBasketItems[section.id] != null) }
   val rotationState by animateFloatAsState(
-    targetValue = if (expandedState) 180f else 0f,
+    targetValue = if (expandedState.value) 180f else 0f,
     label = "Expand"
   )
   Card(
@@ -91,7 +90,7 @@ fun SectionItem(
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
     shape = RoundedCornerShape(12.dp),
     onClick = {
-      expandedState = !expandedState
+      expandedState.value = !expandedState.value
     },
   ) {
     Column(
@@ -108,7 +107,7 @@ fun SectionItem(
         Box(modifier = Modifier.weight(7f)) {
           ElevatedAssistChip(
             onClick = {
-              expandedState = !expandedState
+              expandedState.value = !expandedState.value
             },
             label = { Text(text = dateTimeFormatter(section)) },
             colors = AssistChipDefaults.elevatedAssistChipColors(
@@ -167,7 +166,7 @@ fun SectionItem(
         }
 
       }
-      AnimatedVisibility(visible = expandedState,
+      AnimatedVisibility(visible = expandedState.value,
         enter = slideIn(
           tween(
             300,

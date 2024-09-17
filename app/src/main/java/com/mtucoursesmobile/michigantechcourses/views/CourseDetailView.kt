@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -310,6 +311,7 @@ fun CourseDetailView(
         } else {
           val sections = courseViewModel.sectionList[courseId]
           if (sections != null) {
+            val expandedList: MutableMap<String, MutableState<Boolean>> = remember { mutableMapOf() }
             LazyColumn(
               modifier = Modifier.fillMaxSize(),
               horizontalAlignment = Alignment.CenterHorizontally,
@@ -322,14 +324,18 @@ fun CourseDetailView(
                       SectionInstructors(instructor.key)
                     )
                   }
+                if (expandedList[item.id] == null) {
+                  expandedList[item.id] = remember { mutableStateOf((index == 0 && sections.size <= 4)) }
+                }
+                val expanded = expandedList[item.id]
                 SectionItem(
                   basketViewModel,
                   section = item,
                   sectionInstructor,
                   courseViewModel.buildingList,
-                  index == 0 && sections.size <= 4,
                   courseViewModel.currentSemester,
-                  db
+                  db,
+                  expanded!!
                 )
               }
             }
