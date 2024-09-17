@@ -19,7 +19,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.AreaChart
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.CropFree
 import androidx.compose.material.icons.outlined.ErrorOutline
@@ -56,6 +55,7 @@ import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import java.text.DecimalFormat
+import java.util.Locale
 
 @OptIn(
   ExperimentalMaterial3Api::class
@@ -187,6 +187,7 @@ fun CourseDetailView(
                 ctx,
                 "Average Dropped is ${
                   String.format(
+                    Locale.getDefault(),
                     "%.2f",
                     avgDropped
                   )
@@ -205,6 +206,7 @@ fun CourseDetailView(
                 Text(
                   text = " ${
                     String.format(
+                      Locale.getDefault(),
                       "%.2f",
                       avgDropped
                     )
@@ -220,6 +222,7 @@ fun CourseDetailView(
                 ctx,
                 "Average Failed is ${
                   String.format(
+                    Locale.getDefault(),
                     "%.2f",
                     avgFailed
                   )
@@ -238,6 +241,7 @@ fun CourseDetailView(
                 Text(
                   text = " ${
                     String.format(
+                      Locale.getDefault(),
                       "%.2f",
                       avgFailed
                     )
@@ -304,12 +308,12 @@ fun CourseDetailView(
         if (state) {
           LoadingSpinnerAnimation(innerPadding = innerPadding)
         } else {
-          LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-          ) {
-            val sections = courseViewModel.sectionList[courseId]
-            if (sections != null) {
+          val sections = courseViewModel.sectionList[courseId]
+          if (sections != null) {
+            LazyColumn(
+              modifier = Modifier.fillMaxSize(),
+              horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
               itemsIndexed(items = sections.filter { section -> section.deletedAt == null },
                 key = { _, item -> item.id }) { index, item ->
                 val sectionInstructor =
