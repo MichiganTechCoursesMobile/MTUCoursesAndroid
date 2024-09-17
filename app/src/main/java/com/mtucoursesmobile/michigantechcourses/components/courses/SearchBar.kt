@@ -104,8 +104,8 @@ fun ExpandedSearchView(
       .focusRequester(textFieldFocusRequester)
       .padding(
         end = 16.dp, bottom = 6.dp
-      )
-      .height(64.dp), textStyle = TextStyle(fontSize = 20.sp), label = {
+      ).height(64.dp), textStyle = TextStyle(fontSize = 15.sp),
+      label = {
       Text(
         text = "Course Search", color = tint
       )
