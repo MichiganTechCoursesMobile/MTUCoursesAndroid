@@ -365,7 +365,7 @@ private fun ExpandableCard(
         )
       )
       .padding(4.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     shape = shape,
     onClick = {
       expandedState = !expandedState

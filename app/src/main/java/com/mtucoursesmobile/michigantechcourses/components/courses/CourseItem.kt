@@ -35,7 +35,7 @@ fun navToCourse(
     popUpTo(navController.graph.findStartDestination().id) {
       saveState = true
     }
-    // Restore state when reselecting a previously selected item
+    // Restore state when reelecting a previously selected item
     restoreState = true
 
   }
@@ -119,7 +119,7 @@ fun CourseItem(
         )
       },
     colors = ListItemDefaults.colors(
-      containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+      containerColor = MaterialTheme.colorScheme.surfaceContainer,
       overlineColor = MaterialTheme.colorScheme.onSurface,
       headlineColor = MaterialTheme.colorScheme.onSurface
     )

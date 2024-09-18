@@ -22,6 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
@@ -67,9 +68,13 @@ import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 
 @Composable
 fun SectionItem(
-  basketViewModel: BasketViewModel, section: MTUSections, instructors: Map<Number, MTUInstructor>,
-  buildings: Map<String, MTUBuilding>, currentSemester: CurrentSemester,
-  db: BasketDB, expandedState: MutableState<Boolean>
+  basketViewModel: BasketViewModel,
+  section: MTUSections,
+  instructors: Map<Number, MTUInstructor>,
+  buildings: Map<String, MTUBuilding>,
+  currentSemester: CurrentSemester,
+  db: BasketDB,
+  expandedState: MutableState<Boolean>
 ) {
   val currentBasketItems = remember { basketViewModel.currentBasketItems }
   var basketContainsSection by remember { mutableStateOf(currentBasketItems[section.id] != null) }
@@ -87,7 +92,7 @@ fun SectionItem(
         )
       )
       .padding(4.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     shape = RoundedCornerShape(12.dp),
     onClick = {
       expandedState.value = !expandedState.value
@@ -108,6 +113,13 @@ fun SectionItem(
           ElevatedAssistChip(
             onClick = {
               expandedState.value = !expandedState.value
+            },
+            leadingIcon = {
+              Icon(
+                imageVector = Icons.Outlined.AccessTime,
+                contentDescription = "Section time",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+              )
             },
             label = { Text(text = dateTimeFormatter(section)) },
             colors = AssistChipDefaults.elevatedAssistChipColors(
