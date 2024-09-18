@@ -311,12 +311,14 @@ fun CourseDetailView(
         } else {
           val sections = courseViewModel.sectionList[courseId]
           if (sections != null) {
-            val expandedList: MutableMap<String, MutableState<Boolean>> = remember { mutableMapOf() }
+            val expandedList: MutableMap<String, MutableState<Boolean>> =
+              remember { mutableMapOf() }
             LazyColumn(
               modifier = Modifier.fillMaxSize(),
               horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-              itemsIndexed(items = sections.filter { section -> section.deletedAt == null },
+              itemsIndexed(items = sections.sortedBy { section -> section.section }
+                .filter { section -> section.deletedAt == null },
                 key = { _, item -> item.id }) { index, item ->
                 val sectionInstructor =
                   courseViewModel.instructorList.filter { instructor ->
@@ -325,7 +327,8 @@ fun CourseDetailView(
                     )
                   }
                 if (expandedList[item.id] == null) {
-                  expandedList[item.id] = remember { mutableStateOf((index == 0 && sections.size <= 4)) }
+                  expandedList[item.id] =
+                    remember { mutableStateOf((index == 0 && sections.size <= 4)) }
                 }
                 val expanded = expandedList[item.id]
                 SectionItem(
