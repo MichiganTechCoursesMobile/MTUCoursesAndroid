@@ -12,8 +12,8 @@ android {
     applicationId = "com.mtucoursesmobile.michigantechcourses"
     minSdk = 29
     targetSdk = 35
-    versionCode = 5
-    versionName = "alpha-1.1c"
+    versionCode = 6
+    versionName = "alpha-1.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables {
