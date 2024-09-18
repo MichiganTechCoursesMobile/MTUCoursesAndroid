@@ -35,7 +35,9 @@ import java.time.LocalDate
 )
 @Composable
 fun CalendarView(
-  basketViewModel: BasketViewModel, courseViewModel: MTUCoursesViewModel, db: BasketDB
+  basketViewModel: BasketViewModel,
+  courseViewModel: MTUCoursesViewModel,
+  db: BasketDB
 ) {
   val activeDate = remember { mutableStateOf(LocalDate.now().plusYears(50)) }
   val calendarState = rememberWeekCalendarState(
@@ -64,10 +66,10 @@ fun CalendarView(
             context = context,
             semesterText = remember { mutableStateOf("") }
           )
-          IconButton(onClick = { /*TODO*/ }) {
+          IconButton(onClick = { /*TODO*/ }, enabled = false) {
             Icon(
               imageVector = Icons.Outlined.ShoppingBasket,
-              contentDescription = "Choose Basket"
+              contentDescription = "Choose Basket",
             )
           }
         }

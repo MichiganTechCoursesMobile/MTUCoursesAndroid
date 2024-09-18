@@ -64,11 +64,11 @@ fun CalendarTimes() {
           contentAlignment = Alignment.TopEnd
         ) {
           if (time < 12) {
-            Text(text = "$time am")
+            Text(text = "${time}am")
           } else if (time == 12) {
-            Text(text = "$time pm")
+            Text(text = "${time}pm")
           } else {
-            Text(text = "${time - 12} pm")
+            Text(text = "${time - 12}pm")
           }
         }
       }
