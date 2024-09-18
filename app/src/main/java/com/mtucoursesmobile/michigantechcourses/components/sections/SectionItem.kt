@@ -41,7 +41,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,8 +75,6 @@ fun SectionItem(
   db: BasketDB,
   expandedState: MutableState<Boolean>
 ) {
-  val currentBasketItems = remember { basketViewModel.currentBasketItems }
-  var basketContainsSection by remember { mutableStateOf(currentBasketItems[section.id] != null) }
   val rotationState by animateFloatAsState(
     targetValue = if (expandedState.value) 180f else 0f,
     label = "Expand"
@@ -138,13 +135,12 @@ fun SectionItem(
             .padding(start = 8.dp)
             .rotate(rotationState),
             onClick = {
-              if (!basketContainsSection) {
+              if (basketViewModel.currentBasketItems[section.id] == null) {
                 basketViewModel.addToBasket(
                   section,
                   currentSemester,
                   db
                 )
-                basketContainsSection = true
               } else {
                 basketViewModel.removeFromBasket(
                   section,
@@ -152,12 +148,11 @@ fun SectionItem(
                   db,
                   null
                 )
-                basketContainsSection = false
               }
 
             }) {
             AnimatedContent(
-              targetState = basketContainsSection,
+              targetState = basketViewModel.currentBasketItems[section.id] != null,
               label = "Add/Remove section from basket"
             ) {
               if (!it) {

@@ -51,6 +51,7 @@ import androidx.compose.ui.util.fastRoundToInt
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
 import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimation
+import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketPicker
 import com.mtucoursesmobile.michigantechcourses.components.sections.SectionItem
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
@@ -94,6 +95,11 @@ fun CourseDetailView(
               tint = MaterialTheme.colorScheme.primary
             )
           }
+        }, actions = {
+          BasketPicker(
+            expanded = remember { mutableStateOf(false) },
+            basketViewModel = basketViewModel
+          )
         })
     }) { innerPadding ->
     Column(

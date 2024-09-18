@@ -70,11 +70,10 @@ fun BasketView(
               "To Share ${semesterBaskets[basketViewModel.currentBasketIndex].name}",
               Toast.LENGTH_SHORT
             ).show()
-          }) {
+          }, enabled = false) {
             Icon(
               imageVector = Icons.Outlined.Share,
-              contentDescription = "Share current Basket",
-              tint = MaterialTheme.colorScheme.primary
+              contentDescription = "Share current Basket"
             )
           }
           SemesterPicker(

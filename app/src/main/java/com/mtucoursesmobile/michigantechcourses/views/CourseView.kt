@@ -38,11 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mtucoursesmobile.michigantechcourses.R
+import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimation
+import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.components.courses.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.courses.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.courses.LazyCourseList
-import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimation
-import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
