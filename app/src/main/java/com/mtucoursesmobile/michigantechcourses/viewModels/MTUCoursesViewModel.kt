@@ -22,6 +22,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
+import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.Year
@@ -36,7 +37,7 @@ class MTUCoursesViewModel : ViewModel() {
   val buildingList = mutableStateMapOf<String, MTUBuilding>()
   val failList = mutableStateMapOf<String, List<CourseFailDrop>>()
 
-  private val semesterList = mutableStateListOf<CurrentSemester>()
+  val semesterList = mutableStateListOf<MTUSemesters>()
   val courseNotFound = mutableStateOf(false)
 
   val filteredCourseList = mutableStateMapOf<String, MTUCourses>()
@@ -55,7 +56,7 @@ class MTUCoursesViewModel : ViewModel() {
       targetSemester = "SPRING"
       targetYear = (Year.now().value + 1).toString()
     }
-     return CurrentSemester(
+    return CurrentSemester(
       "${
         targetSemester.lowercase().replaceFirstChar(Char::titlecase)
       } $targetYear",
@@ -65,7 +66,10 @@ class MTUCoursesViewModel : ViewModel() {
   }
 
   @OptIn(ExperimentalMaterial3Api::class)
-  fun updateSemesterYear(year: Number, context: Context) {
+  fun updateSemesterYear(
+    year: Number,
+    context: Context
+  ) {
     currentSemester = CurrentSemester(
       "${
         currentSemester.semester.lowercase().replaceFirstChar(Char::titlecase)
@@ -80,7 +84,10 @@ class MTUCoursesViewModel : ViewModel() {
   }
 
   @OptIn(ExperimentalMaterial3Api::class)
-  fun updateSemesterPeriod(semester: String, context: Context) {
+  fun updateSemesterPeriod(
+    semester: String,
+    context: Context
+  ) {
     currentSemester = CurrentSemester(
       "$semester ${currentSemester.year}",
       currentSemester.year,
@@ -92,7 +99,10 @@ class MTUCoursesViewModel : ViewModel() {
     )
   }
 
-  private fun setSemester(newSemester: CurrentSemester, context: Context) {
+  private fun setSemester(
+    newSemester: CurrentSemester,
+    context: Context
+  ) {
     courseList.clear()
     courseNotFound.value = false
     currentSemester = newSemester
@@ -153,7 +163,10 @@ class MTUCoursesViewModel : ViewModel() {
   }
 
   @OptIn(ExperimentalMaterial3Api::class)
-  fun updateSemester(context: Context, loading: MutableState<Boolean>?) {
+  fun updateSemester(
+    context: Context,
+    loading: MutableState<Boolean>?
+  ) {
     courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
       updateMTUCourses(
@@ -268,7 +281,12 @@ class MTUCoursesViewModel : ViewModel() {
 
           else -> {
             with(filteredCourseList.iterator()) {
-              forEach { if (!courseCreditFilter.value.contains(it.value.maxCredits) || !courseCreditFilter.value.contains(it.value.minCredits)) remove() }
+              forEach {
+                if (!courseCreditFilter.value.contains(it.value.maxCredits) || !courseCreditFilter.value.contains(
+                    it.value.minCredits
+                  )
+                ) remove()
+              }
             }
           }
         }

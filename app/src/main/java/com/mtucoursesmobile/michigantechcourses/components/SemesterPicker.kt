@@ -1,7 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.components
 
 import android.content.Context
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.DateRange
@@ -19,7 +18,6 @@ import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Year
 
@@ -81,7 +79,9 @@ fun SemesterPicker(
             contentDescription = "Check",
             tint = MaterialTheme.colorScheme.primary
           )
-        })
+        },
+        enabled = courseViewModel.semesterList.any { it.semester == i.uppercase() && it.year.toInt() == courseViewModel.currentSemester.year.toInt() }
+      )
     }
     HorizontalDivider()
     for (i in currentYears) {
@@ -113,7 +113,9 @@ fun SemesterPicker(
             contentDescription = "Check",
             tint = MaterialTheme.colorScheme.primary
           )
-        })
+        },
+        enabled = courseViewModel.semesterList.any { it.semester == courseViewModel.currentSemester.semester.uppercase() && it.year.toInt() == i.toInt() }
+      )
     }
   }
 }
