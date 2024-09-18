@@ -100,7 +100,8 @@ fun InstructorInfoDialog(
             if (instructor.departments.isNotEmpty()) {
               Text(
                 text = instructor.departments[0],
-                style = MaterialTheme.typography.titleSmall
+                style = MaterialTheme.typography.titleSmall,
+                textAlign = TextAlign.Center
               )
             }
           }
