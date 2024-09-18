@@ -48,7 +48,8 @@ import java.util.Locale
 
 @Composable
 fun InstructorInfoDialog(
-  showInfoDialog: MutableState<Boolean>, instructor: MTUInstructor,
+  showInfoDialog: MutableState<Boolean>,
+  instructor: MTUInstructor,
   painter: AsyncImagePainter? = null
 ) {
   val instructorNames = instructor.fullName.split(" ").toList()
@@ -200,84 +201,85 @@ fun InstructorInfoDialog(
         } else {
           Spacer(modifier = Modifier.height(12.dp))
         }
-        Row(modifier = Modifier.padding(horizontal = 8.dp)) {
-          OutlinedCard(
-            modifier = Modifier
-              .fillMaxWidth(0.5f)
-              .padding(end = 4.dp)
-          ) {
-            Column(
+        if (!instructor.rmpId.isNullOrBlank() && (instructor.averageRating.toDouble() != 0.0) && (instructor.averageDifficultyRating.toDouble() != 0.0)) {
+          Row(modifier = Modifier.padding(horizontal = 8.dp)) {
+            OutlinedCard(
               modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally)
-                .padding(4.dp),
-              verticalArrangement = Arrangement.Center
+                .fillMaxWidth(0.5f)
+                .padding(end = 4.dp)
             ) {
-              Icon(
-                Icons.Outlined.Speed,
-                contentDescription = "Avg Difficulty",
+              Column(
                 modifier = Modifier
+                  .fillMaxWidth()
                   .align(Alignment.CenterHorizontally)
-                  .size(24.dp)
-              )
-              Text(
-                "Avg Difficulty",
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-              )
-              Text(
-                "${
-                  String.format(
-                    Locale.getDefault(),
-                    "%.2f",
-                    (instructor.averageDifficultyRating.toDouble() * 100)
-                  )
-                }%",
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-              )
+                  .padding(4.dp),
+                verticalArrangement = Arrangement.Center
+              ) {
+                Icon(
+                  Icons.Outlined.Speed,
+                  contentDescription = "Avg Difficulty",
+                  modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .size(24.dp)
+                )
+                Text(
+                  "Avg Difficulty",
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                  "${
+                    String.format(
+                      Locale.getDefault(),
+                      "%.2f",
+                      (instructor.averageDifficultyRating.toDouble() * 100)
+                    )
+                  }%",
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.fillMaxWidth()
+                )
+              }
             }
-          }
-          OutlinedCard(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(start = 4.dp)
-          ) {
-            Column(
+            OutlinedCard(
               modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.CenterHorizontally)
-                .padding(4.dp),
-              verticalArrangement = Arrangement.Center
+                .padding(start = 4.dp)
             ) {
-              Icon(
-                Icons.Outlined.EmojiEvents,
-                contentDescription = "Avg Rating",
+              Column(
                 modifier = Modifier
+                  .fillMaxWidth()
                   .align(Alignment.CenterHorizontally)
-                  .size(24.dp)
-              )
-              Text(
-                "Avg Rating",
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-              )
-              Text(
-                "${
-                  String.format(
-                    Locale.getDefault(),
-                    "%.2f",
-                    (instructor.averageRating.toDouble() * 100)
-                  )
-                }%",
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-              )
+                  .padding(4.dp),
+                verticalArrangement = Arrangement.Center
+              ) {
+                Icon(
+                  Icons.Outlined.EmojiEvents,
+                  contentDescription = "Avg Rating",
+                  modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .size(24.dp)
+                )
+                Text(
+                  "Avg Rating",
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                  "${
+                    String.format(
+                      Locale.getDefault(),
+                      "%.2f",
+                      (instructor.averageRating.toDouble() * 100)
+                    )
+                  }%",
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.fillMaxWidth()
+                )
 
+              }
             }
           }
         }
-
       }
       TextButton(
         onClick = { showInfoDialog.value = false },

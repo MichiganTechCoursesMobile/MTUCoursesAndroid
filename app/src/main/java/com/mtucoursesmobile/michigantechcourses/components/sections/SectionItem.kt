@@ -213,7 +213,7 @@ fun SectionItem(
                 val showAdditionalInstructorInfo = remember { mutableStateOf(false) }
                 var painter: AsyncImagePainter? = null
                 val showInstructorInfo =
-                  !instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0)
+                  (!instructor.value.rmpId.isNullOrBlank() && (instructor.value.averageRating.toDouble() != 0.0) && (instructor.value.averageDifficultyRating.toDouble() != 0.0)) || !(instructor.value.email.isNullOrBlank() && instructor.value.phone.isNullOrBlank())
                 Row(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier = Modifier.padding(
