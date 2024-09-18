@@ -67,7 +67,7 @@ fun ScheduleCalendar(
       var calendarEntries: MutableMap<String, MutableMap<Int, MutableList<CalendarEntry>>>? = null
 
 
-      // Set Active Date and update calendarEntries safely
+      // Set active date and update calendarEntries safely
       basketViewModel.basketList.isNotEmpty().let {
         calendarEntries =
           basketViewModel.calendarEntries.isNotEmpty().let {
