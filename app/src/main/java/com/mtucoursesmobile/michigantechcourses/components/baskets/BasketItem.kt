@@ -387,7 +387,7 @@ fun BasketItem(
           )
         },
         colors = ListItemDefaults.colors(
-          containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+          containerColor = MaterialTheme.colorScheme.surfaceContainer,
           overlineColor = MaterialTheme.colorScheme.onSurface,
           headlineColor = MaterialTheme.colorScheme.onSurface
         ),
