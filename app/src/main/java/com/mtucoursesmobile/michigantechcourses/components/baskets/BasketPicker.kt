@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.components.baskets
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.ShoppingBasket
@@ -22,29 +23,43 @@ fun BasketPicker(
   basketViewModel: BasketViewModel
 ) {
   val scope = rememberCoroutineScope()
-  IconButton(onClick = { expanded.value = true }, enabled = basketViewModel.basketList.size > 1) {
-    Icon(
-      imageVector = Icons.Outlined.ShoppingBasket,
-      contentDescription = "Change Basket",
-      tint = if (basketViewModel.basketList.size > 1) MaterialTheme.colorScheme.primary else IconButtonDefaults.iconButtonColors().disabledContentColor,
-    )
-  }
-  DropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
-    basketViewModel.basketList.forEachIndexed { index, item ->
-      DropdownMenuItem(text = { Text(item.name) }, onClick = {
-        expanded.value = false
-        scope.launch {
-          basketViewModel.setCurrentBasket(index)
-        }
-      }, trailingIcon = {
-        if (basketViewModel.currentBasketIndex == index) {
-          Icon(
-            imageVector = Icons.Filled.Check,
-            contentDescription = "Check",
-            tint = MaterialTheme.colorScheme.primary
-          )
-        }
-      })
+  AnimatedVisibility(basketViewModel.basketList.size > 1) {
+    IconButton(
+      onClick = { expanded.value = true }
+    ) {
+      Icon(
+        imageVector = Icons.Outlined.ShoppingBasket,
+        contentDescription = "Change Basket",
+        tint = MaterialTheme.colorScheme.primary,
+      )
+    }
+    DropdownMenu(
+      expanded = expanded.value,
+      onDismissRequest = { expanded.value = false }) {
+      basketViewModel.basketList.forEachIndexed { index, item ->
+        DropdownMenuItem(
+          text = { Text(item.name) },
+          onClick = {
+            expanded.value = false
+            if (basketViewModel.currentBasketIndex != index) {
+              scope.launch {
+                basketViewModel.setCurrentBasket(index)
+              }
+            }
+
+          },
+          trailingIcon = {
+            if (basketViewModel.currentBasketIndex == index) {
+              Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = "Check",
+                tint = MaterialTheme.colorScheme.primary
+              )
+            }
+          }
+        )
+      }
     }
   }
+
 }
