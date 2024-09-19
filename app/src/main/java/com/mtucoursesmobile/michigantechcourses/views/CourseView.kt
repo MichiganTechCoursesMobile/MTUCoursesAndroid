@@ -1,6 +1,5 @@
 package com.mtucoursesmobile.michigantechcourses.views
 
-import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -14,9 +13,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -60,7 +59,8 @@ fun CourseView(
   basketViewModel: BasketViewModel,
   db: BasketDB,
   navController: NavController,
-  listState: LazyListState
+  listState: LazyListState,
+  viewSettings: DrawerState
 ) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -79,14 +79,10 @@ fun CourseView(
       onSearchExpandedChanged(true)
     }
   }
-  BackHandler {
-    if (searching) {
-      courseViewModel.courseSearchValue.value = ""
-      onSearchExpandedChanged(false)
-      scope.launch { listState.animateScrollToItem(0) }
-    } else {
-      (context as? Activity)?.finish()
-    }
+  BackHandler(searching) {
+    courseViewModel.courseSearchValue.value = ""
+    onSearchExpandedChanged(false)
+    scope.launch { listState.animateScrollToItem(0) }
   }
 
   Scaffold(
@@ -99,7 +95,7 @@ fun CourseView(
           titleContentColor = if (expandedFab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer
         ),
         actions = {
-          if (!searching) {
+          AnimatedVisibility(visible = !searching) {
             AnimatedVisibility(
               visible = (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()),
               enter = scaleIn(
@@ -121,6 +117,8 @@ fun CourseView(
                 )
               }
             }
+          }
+          AnimatedVisibility(visible = !searching) {
             SemesterPicker(
               expanded = expanded,
               courseViewModel = courseViewModel,
@@ -130,15 +128,20 @@ fun CourseView(
               semesterText = semesterText,
               expandedFab = expandedFab
             )
-            IconButton(onClick = {}) {
+          }
+          AnimatedVisibility(visible = !searching) {
+            IconButton(onClick = {
+              scope.launch {
+                viewSettings.open()
+              }
+            }) {
               Icon(
                 imageVector = Icons.Outlined.Settings,
-                contentDescription = "More options",
+                contentDescription = "Open Settings",
                 tint = if (expandedFab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
               )
             }
           }
-
         },
         title = {
           if (!searching) {

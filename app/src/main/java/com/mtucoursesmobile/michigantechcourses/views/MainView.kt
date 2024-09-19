@@ -4,11 +4,14 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.School
@@ -16,19 +19,28 @@ import androidx.compose.material.icons.filled.ShoppingBasket
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.ShoppingBasket
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -39,6 +51,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.mtucoursesmobile.michigantechcourses.components.SettingsModal
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
@@ -52,6 +65,7 @@ fun MainView(
   basketViewModel: BasketViewModel,
   db: BasketDB
 ) {
+  val viewSettings = rememberDrawerState(DrawerValue.Closed)
   val items = remember {
     listOf(
       Pair(
@@ -93,126 +107,152 @@ fun MainView(
       delay(30000)
     }
   }
-  Scaffold(
-    modifier = Modifier.fillMaxSize(),
-    contentWindowInsets = WindowInsets(0.dp),
-    bottomBar = {
-      NavigationBar {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination = navBackStackEntry?.destination
-        items.forEachIndexed { _, item ->
-          NavigationBarItem(
-            label = { Text(text = item.first) },
-            selected = currentDestination?.hierarchy?.any { it.route == item.first } == true,
-            onClick = {
-              // Scroll Back to top (No need to run rest of code)
-              if (navController.currentBackStackEntry?.destination?.route.toString() == "Courses" && item.first == "Courses") {
-                if (courseNavController.currentDestination?.route != "courseList") {
-                  courseNavController.navigate("courseList")
-                } else {
-                  scope.launch { listState.animateScrollToItem(0) }
-                }
-                return@NavigationBarItem
-              }
-              scope.launch {
-                navController.navigate(item.first) {
-
-                  popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
-                  }
-                  // Restore state when reelecting a previously selected item
-                  restoreState = true
-
-                }
-              }
-            },
-            icon = {
-              AnimatedContent(targetState = currentDestination?.hierarchy?.any { it.route == item.first } == true,
-                label = item.first) { targetState ->
-                if (targetState) {
-                  Icon(
-                    imageVector = item.second.second,
-                    contentDescription = item.first
-                  )
-                } else {
-                  Icon(
-                    imageVector = item.second.first,
-                    contentDescription = item.first
-                  )
-                }
-              }
-            },
-            alwaysShowLabel = false
-          )
+  ReverseLayoutDirection {
+    ModalNavigationDrawer(
+      drawerContent = {
+        ReverseLayoutDirection {
+          ModalDrawerSheet(
+            drawerState = viewSettings,
+            drawerShape = RoundedCornerShape(16.dp),
+            windowInsets = WindowInsets(0.dp)
+          ) {
+            val maxWidth = LocalConfiguration.current.smallestScreenWidthDp * 0.8f
+            Box(modifier = Modifier.width(maxWidth.dp)) {
+              SettingsModal(viewSettings)
+            }
+          }
         }
-      }
-    }) { innerPadding ->
-    // Bottom Nav Bar
-    NavHost(
-      navController = navController,
-      startDestination = "Courses",
-      Modifier
-        .padding(innerPadding)
-        .fillMaxSize(),
-      enterTransition = { EnterTransition.None },
-      exitTransition = { ExitTransition.None }
+      },
+      drawerState = viewSettings,
+      gesturesEnabled = viewSettings.isOpen
     ) {
-      composable(
-        "Courses",
-        enterTransition = {
-          slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-        },
-        exitTransition = {
-          slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-        }) {
-        // Nested NavHost for Courses
-        CourseNav(
-          courseViewModel,
-          basketViewModel,
-          db,
-          listState,
-          courseNavController
-        )
-      }
-      composable("Baskets",
-        enterTransition = {
-          if (this.initialState.destination.route.toString() == "Calendar") {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-          } else {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+      ReverseLayoutDirection {
+        Scaffold(
+          modifier = Modifier.fillMaxSize(),
+          contentWindowInsets = WindowInsets(0.dp),
+          bottomBar = {
+            NavigationBar {
+              val navBackStackEntry by navController.currentBackStackEntryAsState()
+              val currentDestination = navBackStackEntry?.destination
+              items.forEachIndexed { _, item ->
+                NavigationBarItem(
+                  label = { Text(text = item.first) },
+                  selected = currentDestination?.hierarchy?.any { it.route == item.first } == true,
+                  onClick = {
+                    // Scroll Back to top (No need to run rest of code)
+                    if (navController.currentBackStackEntry?.destination?.route.toString() == "Courses" && item.first == "Courses") {
+                      if (courseNavController.currentDestination?.route != "courseList") {
+                        courseNavController.navigate("courseList")
+                      } else {
+                        scope.launch { listState.animateScrollToItem(0) }
+                      }
+                      return@NavigationBarItem
+                    }
+                    scope.launch {
+                      navController.navigate(item.first) {
+
+                        popUpTo(navController.graph.findStartDestination().id) {
+                          saveState = true
+                        }
+                        // Restore state when reelecting a previously selected item
+                        restoreState = true
+
+                      }
+                    }
+                  },
+                  icon = {
+                    AnimatedContent(targetState = currentDestination?.hierarchy?.any { it.route == item.first } == true,
+                      label = item.first) { targetState ->
+                      if (targetState) {
+                        Icon(
+                          imageVector = item.second.second,
+                          contentDescription = item.first
+                        )
+                      } else {
+                        Icon(
+                          imageVector = item.second.first,
+                          contentDescription = item.first
+                        )
+                      }
+                    }
+                  },
+                  alwaysShowLabel = false
+                )
+
+              }
+            }
+          }) { innerPadding ->
+          // Bottom Nav Bar
+          NavHost(
+            navController = navController,
+            startDestination = "Courses",
+            Modifier
+              .padding(innerPadding)
+              .fillMaxSize(),
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None }
+          ) {
+            composable(
+              "Courses",
+              enterTransition = {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+              },
+              exitTransition = {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+              }) {
+              // Nested NavHost for Courses
+              CourseNav(
+                courseViewModel,
+                basketViewModel,
+                db,
+                listState,
+                courseNavController,
+                viewSettings
+              )
+            }
+            composable("Baskets",
+              enterTransition = {
+                if (this.initialState.destination.route.toString() == "Calendar") {
+                  slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+                } else {
+                  slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+                }
+              },
+              exitTransition = {
+                if (this.targetState.destination.route.toString() == "Calendar") {
+                  slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+                } else {
+                  slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+                }
+              }) {
+              BasketView(
+                courseViewModel,
+                basketViewModel,
+                db,
+                listState,
+                navController,
+                courseNavController
+              )
+            }
+            composable("Calendar",
+              enterTransition = {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+              },
+              exitTransition = {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+              }) {
+              CalendarView(
+                basketViewModel,
+                courseViewModel,
+                db
+              )
+            }
           }
-        },
-        exitTransition = {
-          if (this.targetState.destination.route.toString() == "Calendar") {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-          } else {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-          }
-        }) {
-        BasketView(
-          courseViewModel,
-          basketViewModel,
-          db,
-          listState,
-          navController,
-          courseNavController
-        )
-      }
-      composable("Calendar",
-        enterTransition = {
-          slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-        },
-        exitTransition = {
-          slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-        }) {
-        CalendarView(
-          basketViewModel,
-          courseViewModel,
-          db
-        )
+        }
       }
     }
   }
+
 }
 
 // Courses
@@ -222,7 +262,8 @@ fun CourseNav(
   basketViewModel: BasketViewModel,
   db: BasketDB,
   listState: LazyListState,
-  courseNavController: NavHostController
+  courseNavController: NavHostController,
+  viewSettings: DrawerState
 ) {
   NavHost(
     navController = courseNavController,
@@ -241,7 +282,8 @@ fun CourseNav(
         basketViewModel,
         db,
         courseNavController,
-        listState
+        listState,
+        viewSettings
       )
     }
     composable("courseDetail/{courseId}",
@@ -260,5 +302,16 @@ fun CourseNav(
         db
       )
     }
+  }
+}
+
+@Composable
+private fun ReverseLayoutDirection(content: @Composable () -> Unit) {
+  val reverseDirection = when (LocalLayoutDirection.current) {
+    LayoutDirection.Rtl -> LayoutDirection.Ltr
+    LayoutDirection.Ltr -> LayoutDirection.Rtl
+  }
+  CompositionLocalProvider(LocalLayoutDirection provides reverseDirection) {
+    content()
   }
 }
