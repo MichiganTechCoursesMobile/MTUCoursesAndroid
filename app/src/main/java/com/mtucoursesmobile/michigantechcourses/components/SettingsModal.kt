@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,15 +52,15 @@ fun SettingsModal(showSettings: DrawerState) {
         windowInsets = WindowInsets.systemBars
           .only(WindowInsetsSides.End + WindowInsetsSides.Top),
         colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.primaryContainer,
-          titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+          containerColor = MaterialTheme.colorScheme.surfaceContainer,
+          titleContentColor = MaterialTheme.colorScheme.onSurface
         ),
         navigationIcon = {
           IconButton(onClick = { closeDrawer() }) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
               contentDescription = "Close Settings",
-              tint = MaterialTheme.colorScheme.onPrimaryContainer,
+              tint = MaterialTheme.colorScheme.onSurface,
             )
           }
         },
@@ -75,6 +76,13 @@ fun SettingsModal(showSettings: DrawerState) {
   ) { contentPadding ->
     val layoutDirection = LocalLayoutDirection.current
     Column(modifier = Modifier.padding(contentPadding)) {
+      IconButton(onClick = { }) {
+        Icon(
+          imageVector = Icons.Outlined.WbSunny,
+          contentDescription = "Test",
+          tint = MaterialTheme.colorScheme.primary
+        )
+      }
       Text(text = "Coming soon...")
     }
   }
