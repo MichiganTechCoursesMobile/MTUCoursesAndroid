@@ -64,13 +64,16 @@ fun BasketView(
           titleContentColor = MaterialTheme.colorScheme.primary
         ),
         actions = {
-          IconButton(onClick = {
-            Toast.makeText(
-              context,
-              "To Share ${semesterBaskets[basketViewModel.currentBasketIndex].name}",
-              Toast.LENGTH_SHORT
-            ).show()
-          }, enabled = false) {
+          IconButton(
+            onClick = {
+              Toast.makeText(
+                context,
+                "To Share ${semesterBaskets[basketViewModel.currentBasketIndex].name}",
+                Toast.LENGTH_SHORT
+              ).show()
+            },
+            enabled = false
+          ) {
             Icon(
               imageVector = Icons.Outlined.Share,
               contentDescription = "Share current Basket"
@@ -106,10 +109,7 @@ fun BasketView(
               )
             }
           Box(
-            modifier = Modifier.animateItem(
-              fadeInSpec = null,
-              fadeOutSpec = null
-            )
+            modifier = Modifier.animateItem()
           ) {
             BasketItem(
               section = section.second,

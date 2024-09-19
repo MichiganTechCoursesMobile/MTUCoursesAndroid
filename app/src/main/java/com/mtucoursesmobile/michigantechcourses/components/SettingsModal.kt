@@ -37,7 +37,7 @@ fun SettingsModal(showSettings: DrawerState) {
     }
   }
 
-  BackHandler(showSettings.isOpen) {
+  BackHandler(showSettings.isOpen || showSettings.isAnimationRunning) {
     closeDrawer()
   }
 
