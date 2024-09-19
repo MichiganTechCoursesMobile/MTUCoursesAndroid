@@ -100,7 +100,7 @@ fun FilterModal(
               leadingIcon = {
                 if (courseViewModel.sortingMode.value.first == type.key) {
                   Icon(
-                    imageVector = if (courseViewModel.sortingMode.value.second == "ascending") Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
+                    imageVector = if (courseViewModel.sortingMode.value.second != "ascending") Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
                     contentDescription = "Arrow Up"
                   )
                 }

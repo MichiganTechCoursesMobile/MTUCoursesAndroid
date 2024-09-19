@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -128,6 +130,13 @@ fun CourseView(
               semesterText = semesterText,
               expandedFab = expandedFab
             )
+            IconButton(onClick = {}) {
+              Icon(
+                imageVector = Icons.Outlined.Settings,
+                contentDescription = "More options",
+                tint = if (expandedFab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
+              )
+            }
           }
 
         },
