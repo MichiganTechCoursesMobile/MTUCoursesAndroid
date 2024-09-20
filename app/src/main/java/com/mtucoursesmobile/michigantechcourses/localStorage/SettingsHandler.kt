@@ -1,15 +1,13 @@
-package com.mtucoursesmobile.michigantechcourses.ui.theme
+package com.mtucoursesmobile.michigantechcourses.localStorage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mtucoursesmobile.michigantechcourses.localStorage.ThemeType
-import com.mtucoursesmobile.michigantechcourses.localStorage.UserPreferences
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class ThemeHandler(private val userPreferences: UserPreferences) : ViewModel() {
+class SettingsHandler(private val userPreferences: UserPreferences) : ViewModel() {
 
   val themeType: StateFlow<ThemeType> =
     userPreferences.themeTypeFlow.map { it }.stateIn(
@@ -25,6 +23,13 @@ class ThemeHandler(private val userPreferences: UserPreferences) : ViewModel() {
       initialValue = false
     )
 
+  val firstDayOfWeek: StateFlow<FirstDayOfWeek> = userPreferences.firstDayOfWeekFlow.map { it }
+    .stateIn(
+      scope = viewModelScope,
+      started = SharingStarted.WhileSubscribed(5_000),
+      initialValue = FirstDayOfWeek.SUNDAY
+    )
+
 
   fun updateIsDynamicTheme() {
     userPreferences.setDynamicTheme(
@@ -36,6 +41,13 @@ class ThemeHandler(private val userPreferences: UserPreferences) : ViewModel() {
   fun updateThemeType(themeType: ThemeType) {
     userPreferences.setThemeType(
       themeType,
+      viewModelScope
+    )
+  }
+
+  fun updateFirstDayOfWeek(firstDayOfWeek: FirstDayOfWeek) {
+    userPreferences.setFirstDayOfWeek(
+      firstDayOfWeek,
       viewModelScope
     )
   }

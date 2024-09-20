@@ -54,7 +54,8 @@ private val dateFormatter = DateTimeFormatter.ofPattern("dd")
 @Composable
 fun ScheduleCalendar(
   weekState: WeekCalendarState, courseViewModel: MTUCoursesViewModel,
-  basketViewModel: BasketViewModel, activeDate: MutableState<LocalDate>
+  basketViewModel: BasketViewModel, activeDate: MutableState<LocalDate>,
+  visibleDate: MutableState<LocalDate>
 ) {
   val today = remember { mutableStateOf(LocalDate.now()) }
   WeekCalendar(
@@ -92,6 +93,11 @@ fun ScheduleCalendar(
           }
         }?.let {
           activeDate.value = it
+          if (activeDate.value < today.value) {
+            visibleDate.value = today.value
+          } else {
+            visibleDate.value = it
+          }
         } ?: run {
           if (courseViewModel.currentSemester.year.toInt() != today.value.year) {
             activeDate.value = LocalDate.of(
@@ -99,12 +105,13 @@ fun ScheduleCalendar(
               1,
               1
             )
+            visibleDate.value = activeDate.value
           } else {
             activeDate.value = today.value
+            visibleDate.value = today.value
           }
         }
       }
-
       Day(
         day.date,
         calendarEntries?.get(currentDayOfWeek),
@@ -155,7 +162,7 @@ private fun Day(
           fontWeight = FontWeight.Bold,
         )
       }
-      Box() {
+      Box {
         Box(
           modifier = Modifier
             .fillMaxWidth()

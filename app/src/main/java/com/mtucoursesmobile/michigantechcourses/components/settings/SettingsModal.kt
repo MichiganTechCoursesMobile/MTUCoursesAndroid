@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.components
+package com.mtucoursesmobile.michigantechcourses.components.settings
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
@@ -19,14 +19,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import com.mtucoursesmobile.michigantechcourses.components.settings.ThemePicker
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,9 +76,10 @@ fun SettingsModal(showSettings: DrawerState) {
     }
   ) { contentPadding ->
     val layoutDirection = LocalLayoutDirection.current
-    
+
     Column(modifier = Modifier.padding(contentPadding)) {
       ThemePicker()
+      DayOfWeekPicker()
     }
   }
 }

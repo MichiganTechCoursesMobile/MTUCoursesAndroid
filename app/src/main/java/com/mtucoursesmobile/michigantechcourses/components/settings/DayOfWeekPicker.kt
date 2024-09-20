@@ -15,18 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Brush
 import androidx.compose.material.icons.rounded.ArrowDropDown
-import androidx.compose.material.icons.rounded.BrightnessAuto
-import androidx.compose.material.icons.rounded.ColorLens
-import androidx.compose.material.icons.rounded.NightsStay
-import androidx.compose.material.icons.rounded.WbSunny
+import androidx.compose.material.icons.rounded.EditCalendar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -43,17 +38,16 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mtucoursesmobile.michigantechcourses.localStorage.FirstDayOfWeek
 import com.mtucoursesmobile.michigantechcourses.localStorage.SettingsHandler
-import com.mtucoursesmobile.michigantechcourses.localStorage.ThemeType
 import com.mtucoursesmobile.michigantechcourses.ui.theme.ModelProvider
 import kotlinx.coroutines.launch
 
 @Composable
-fun ThemePicker() {
+fun DayOfWeekPicker() {
   val scope = rememberCoroutineScope()
   val model: SettingsHandler = viewModel(factory = ModelProvider.Factory)
-  val isDynamic by model.isDynamic.collectAsState()
-  val themeType by model.themeType.collectAsState()
+  val firstDayOfWeek by model.firstDayOfWeek.collectAsState()
   var expanded by remember { mutableStateOf(false) }
 
   Card(
@@ -65,7 +59,9 @@ fun ThemePicker() {
           easing = LinearOutSlowInEasing
         )
       )
-      .padding(12.dp),
+      .padding(
+        horizontal = 12.dp
+      ),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     shape = RoundedCornerShape(12.dp),
   ) {
@@ -82,13 +78,13 @@ fun ThemePicker() {
 
     ) {
       Icon(
-        imageVector = Icons.Outlined.Brush,
-        contentDescription = "Theme Picker",
+        imageVector = Icons.Rounded.EditCalendar,
+        contentDescription = "First Day of the Week",
         modifier = Modifier.padding(end = 8.dp),
         tint = MaterialTheme.colorScheme.primary
       )
       Text(
-        text = "Theme",
+        text = "First Day of the Week",
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Medium,
         modifier = Modifier.weight(1f)
@@ -117,10 +113,10 @@ fun ThemePicker() {
               .fillMaxWidth()
               .height(42.dp)
               .selectable(
-                selected = (themeType == ThemeType.SYSTEM),
+                selected = (firstDayOfWeek == FirstDayOfWeek.SATURDAY),
                 onClick = {
                   scope.launch {
-                    model.updateThemeType(ThemeType.SYSTEM)
+                    model.updateFirstDayOfWeek(FirstDayOfWeek.SATURDAY)
                   }
                 },
                 role = Role.RadioButton
@@ -128,18 +124,12 @@ fun ThemePicker() {
               .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically
           ) {
-            Icon(
-              imageVector = Icons.Rounded.BrightnessAuto,
-              contentDescription = "Default Theme Icon",
-              tint = MaterialTheme.colorScheme.primary,
-              modifier = Modifier.padding(end = 8.dp)
-            )
             Text(
-              "Default",
+              "Saturday",
               Modifier.weight(1f)
             )
             RadioButton(
-              selected = themeType == ThemeType.SYSTEM,
+              selected = firstDayOfWeek == FirstDayOfWeek.SATURDAY,
               onClick = null
             )
           }
@@ -156,10 +146,10 @@ fun ThemePicker() {
               .fillMaxWidth()
               .height(42.dp)
               .selectable(
-                selected = (themeType == ThemeType.LIGHT),
+                selected = (firstDayOfWeek == FirstDayOfWeek.SUNDAY),
                 onClick = {
                   scope.launch {
-                    model.updateThemeType(ThemeType.LIGHT)
+                    model.updateFirstDayOfWeek(FirstDayOfWeek.SUNDAY)
                   }
                 },
                 role = Role.RadioButton
@@ -167,18 +157,12 @@ fun ThemePicker() {
               .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically
           ) {
-            Icon(
-              imageVector = Icons.Rounded.WbSunny,
-              contentDescription = "Light Theme Icon",
-              tint = MaterialTheme.colorScheme.primary,
-              modifier = Modifier.padding(end = 8.dp)
-            )
             Text(
-              "Light",
+              "Sunday",
               Modifier.weight(1f)
             )
             RadioButton(
-              selected = themeType == ThemeType.LIGHT,
+              selected = firstDayOfWeek == FirstDayOfWeek.SUNDAY,
               onClick = null
             )
           }
@@ -197,63 +181,24 @@ fun ThemePicker() {
               .fillMaxWidth()
               .height(42.dp)
               .selectable(
-                selected = (themeType == ThemeType.DARK),
-                onClick = { scope.launch { model.updateThemeType(ThemeType.DARK) } },
+                selected = (firstDayOfWeek == FirstDayOfWeek.MONDAY),
+                onClick = {
+                  scope.launch {
+                    model.updateFirstDayOfWeek(FirstDayOfWeek.MONDAY)
+                  }
+                },
                 role = Role.RadioButton
               )
               .padding(horizontal = 10.dp),
             verticalAlignment = Alignment.CenterVertically
           ) {
-            Icon(
-              imageVector = Icons.Rounded.NightsStay,
-              contentDescription = "Night Theme Icon",
-              tint = MaterialTheme.colorScheme.primary,
-              modifier = Modifier.padding(end = 8.dp)
-            )
             Text(
-              "Dark",
+              "Monday",
               Modifier.weight(1f)
             )
             RadioButton(
-              selected = themeType == ThemeType.DARK,
+              selected = firstDayOfWeek == FirstDayOfWeek.MONDAY,
               onClick = null
-            )
-          }
-        }
-        Card(
-          modifier = Modifier
-            .padding(
-              horizontal = 8.dp,
-              vertical = 4.dp
-            )
-            .padding(bottom = 4.dp),
-          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
-        ) {
-          Row(
-            Modifier
-              .fillMaxWidth()
-              .height(52.dp)
-              .selectable(
-                selected = (isDynamic),
-                onClick = { scope.launch { model.updateIsDynamicTheme() } },
-                role = Role.Switch
-              )
-              .padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Icon(
-              imageVector = Icons.Rounded.ColorLens,
-              contentDescription = "Dynamic Color Icon",
-              tint = MaterialTheme.colorScheme.primary,
-              modifier = Modifier.padding(end = 8.dp)
-            )
-            Text(
-              "Dynamic Color",
-              Modifier.weight(1f)
-            )
-            Switch(
-              checked = isDynamic,
-              onCheckedChange = null
             )
           }
         }

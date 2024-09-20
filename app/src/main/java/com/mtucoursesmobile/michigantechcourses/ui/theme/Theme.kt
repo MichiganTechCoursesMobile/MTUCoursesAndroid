@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mtucoursesmobile.michigantechcourses.AppSetup
+import com.mtucoursesmobile.michigantechcourses.localStorage.SettingsHandler
 import com.mtucoursesmobile.michigantechcourses.localStorage.ThemeType
 import com.mtucoursesmobile.michigantechcourses.localStorage.UserPreferences
 import kotlinx.coroutines.flow.SharingStarted
@@ -150,7 +151,7 @@ object ModelProvider {
     }
 
     initializer {
-      ThemeHandler(appViewModelProvider().userPreferences)
+      SettingsHandler(appViewModelProvider().userPreferences)
     }
   }
 }
