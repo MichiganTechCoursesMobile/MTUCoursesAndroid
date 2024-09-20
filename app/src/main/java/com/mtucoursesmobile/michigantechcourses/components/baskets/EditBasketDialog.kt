@@ -3,9 +3,7 @@ package com.mtucoursesmobile.michigantechcourses.components.baskets
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -36,8 +34,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun EditBasketDialog(
-  showEditDialog: MutableState<Boolean>, semesterBaskets: SnapshotStateList<CourseBasket>,
-  basketViewModel: BasketViewModel, currentSemester: CurrentSemester, db: BasketDB
+  showEditDialog: MutableState<Boolean>,
+  semesterBaskets: SnapshotStateList<CourseBasket>,
+  basketViewModel: BasketViewModel,
+  currentSemester: CurrentSemester,
+  db: BasketDB
 ) {
   var renameText by remember { mutableStateOf("") }
   val scope = rememberCoroutineScope()
@@ -47,13 +48,13 @@ fun EditBasketDialog(
     Card(
       modifier = Modifier
         .fillMaxWidth()
-        .height(240.dp)
+
         .padding(16.dp),
       shape = RoundedCornerShape(16.dp)
     ) {
       Column(
         modifier = Modifier
-          .fillMaxSize()
+          .fillMaxWidth()
           .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
@@ -72,9 +73,9 @@ fun EditBasketDialog(
           },
           isError = textFieldError,
           supportingText = {
-            if (textFieldError) {
+            if (renameText.length > 16) {
               Text(
-                text = "Name cannot be blank",
+                text = "Name cannot be greater than 16 characters",
                 color = MaterialTheme.colorScheme.error
               )
             }
@@ -94,7 +95,7 @@ fun EditBasketDialog(
             Text(text = "Never mind")
           }
           TextButton(onClick = {
-            if (renameText == "") {
+            if (renameText == "" || renameText.length > 16) {
               textFieldError = true
             } else {
               semesterBaskets[basketViewModel.currentBasketIndex].name = renameText
@@ -106,7 +107,7 @@ fun EditBasketDialog(
               }
               showEditDialog.value = false
             }
-          }) {
+          }, enabled = (renameText != "" && renameText.length <= 16)) {
             Text(text = "Rename")
           }
         }
