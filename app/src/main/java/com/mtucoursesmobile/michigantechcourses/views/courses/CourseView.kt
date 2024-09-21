@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.views
+package com.mtucoursesmobile.michigantechcourses.views.courses
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -40,10 +40,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mtucoursesmobile.michigantechcourses.R
 import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimation
-import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.components.courses.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.courses.FilterModal
-import com.mtucoursesmobile.michigantechcourses.components.courses.LazyCourseList
+import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
@@ -121,8 +120,11 @@ fun CourseView(
           AnimatedVisibility(visible = !searching) {
             SemesterPicker(
               expanded = expanded,
-              courseViewModel = courseViewModel,
-              basketViewModel = basketViewModel,
+              currentSemester = courseViewModel.currentSemester,
+              semesterList = courseViewModel.semesterList,
+              updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
+              updateSemesterYear = courseViewModel::updateSemesterYear,
+              getSemesterBaskets = basketViewModel::getSemesterBaskets,
               db = db,
               context = context,
               semesterText = semesterText,

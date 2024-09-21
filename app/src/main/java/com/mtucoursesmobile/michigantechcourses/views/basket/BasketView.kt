@@ -1,13 +1,11 @@
-package com.mtucoursesmobile.michigantechcourses.views
+package com.mtucoursesmobile.michigantechcourses.views.basket
 
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Share
@@ -29,32 +27,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
-import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketItem
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketTabs
+import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 
 @OptIn(
-  ExperimentalMaterial3Api::class,
-  ExperimentalFoundationApi::class
+  ExperimentalMaterial3Api::class
 )
 @Composable
 fun BasketView(
   courseViewModel: MTUCoursesViewModel,
   basketViewModel: BasketViewModel,
   db: BasketDB,
-  listState: LazyListState,
   navController: NavController,
   courseNavController: NavController
 ) {
   val expanded = remember { mutableStateOf(false) }
   val context = LocalContext.current
   val semesterText = remember { mutableStateOf(courseViewModel.currentSemester.readable) }
-  val semesterBaskets = remember { basketViewModel.basketList }
-  val currentBasketItems = remember { basketViewModel.currentBasketItems }
-  val currentSemester = remember { courseViewModel.currentSemester }
   val snackbarHostState = remember { SnackbarHostState() }
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
@@ -68,7 +61,7 @@ fun BasketView(
             onClick = {
               Toast.makeText(
                 context,
-                "To Share ${semesterBaskets[basketViewModel.currentBasketIndex].name}",
+                "To Share ${basketViewModel.basketList[basketViewModel.currentBasketIndex].name}",
                 Toast.LENGTH_SHORT
               ).show()
             },
@@ -80,26 +73,35 @@ fun BasketView(
             )
           }
           SemesterPicker(
-            expanded,
-            courseViewModel,
-            basketViewModel,
-            db,
-            context,
-            semesterText,
-            courseNavController
+            expanded = expanded,
+            currentSemester = courseViewModel.currentSemester,
+            semesterList = courseViewModel.semesterList,
+            updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
+            updateSemesterYear = courseViewModel::updateSemesterYear,
+            getSemesterBaskets = basketViewModel::getSemesterBaskets,
+            db = db,
+            context = context,
+            semesterText = semesterText,
+            courseNavController = courseNavController
           )
         })
     },
     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
     Column(Modifier.padding(innerPadding)) {
       BasketTabs(
-        basketViewModel = basketViewModel,
+        basketList = basketViewModel.basketList,
+        setCurrentBasket = basketViewModel::setCurrentBasket,
+        duplicateBasket = basketViewModel::duplicateBasket,
+        addBasket = basketViewModel::addBasket,
+        removeBasket = basketViewModel::removeBasket,
+        refreshBaskets = basketViewModel::refreshBaskets,
+        currentBasketIndex = basketViewModel.currentBasketIndex,
         courseViewModel = courseViewModel,
         db = db
       )
       LazyColumn {
         itemsIndexed(
-          items = currentBasketItems.toList(),
+          items = basketViewModel.currentBasketItems.toList(),
           key = { _, section -> section.second.id }) { _, section ->
           val course = courseViewModel.courseList[section.second.courseId]
           val sectionInstructor =
@@ -114,14 +116,14 @@ fun BasketView(
             BasketItem(
               section = section.second,
               course = course,
-              basketViewModel = basketViewModel,
-              currentSemester = currentSemester,
+              removeFromBasket = basketViewModel::removeFromBasket,
+              currentSemester = courseViewModel.currentSemester,
               db = db,
-              navController,
-              courseNavController,
-              sectionInstructor,
-              courseViewModel.buildingList,
-              snackbarHostState
+              navController = navController,
+              courseNavController = courseNavController,
+              instructors = sectionInstructor,
+              buildings = courseViewModel.buildingList,
+              snackbarHostState = snackbarHostState
             )
           }
 

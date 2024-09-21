@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,8 +33,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
+import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
-import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 
 @OptIn(
@@ -42,7 +44,13 @@ import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 )
 @Composable
 fun BasketTabs(
-  basketViewModel: BasketViewModel,
+  basketList: SnapshotStateList<CourseBasket>,
+  setCurrentBasket: (Int) -> Unit,
+  duplicateBasket: (CurrentSemester, BasketDB, Int) -> Unit,
+  addBasket: (CurrentSemester, String, BasketDB) -> Unit,
+  removeBasket: (CurrentSemester, String, BasketDB) -> Unit,
+  refreshBaskets: (CurrentSemester, BasketDB) -> Unit,
+  currentBasketIndex: Int,
   courseViewModel: MTUCoursesViewModel,
   db: BasketDB
 ) {
@@ -52,20 +60,20 @@ fun BasketTabs(
   SecondaryScrollableTabRow(
     divider = { /* Remove default divider */ },
     modifier = Modifier.fillMaxWidth(),
-    selectedTabIndex = basketViewModel.currentBasketIndex,
+    selectedTabIndex = currentBasketIndex,
   ) {
-    basketViewModel.basketList.forEachIndexed { index, item ->
+    basketList.forEachIndexed { index, item ->
       var expandedDropdown by remember { mutableStateOf(false) }
       Box(
         modifier = Modifier
           .clip(RoundedCornerShape(8.dp))
           .combinedClickable(onClick = {
-            basketViewModel.setCurrentBasket(index)
+            setCurrentBasket(index)
           },
             onLongClick = {
               expandedDropdown = true
               haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-              basketViewModel.setCurrentBasket(index)
+              setCurrentBasket(index)
             })
           .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center
@@ -95,7 +103,7 @@ fun BasketTabs(
             DropdownMenuItem(
               text = { Text(text = "Duplicate") },
               onClick = {
-                basketViewModel.duplicateBasket(
+                duplicateBasket(
                   courseViewModel.currentSemester,
                   db,
                   index
@@ -121,7 +129,7 @@ fun BasketTabs(
                   contentDescription = "Delete Basket"
                 )
               },
-              enabled = basketViewModel.basketList.size > 1
+              enabled = basketList.size > 1
             )
           }
         }
@@ -131,9 +139,9 @@ fun BasketTabs(
     Box {
       IconButton(
         onClick = {
-          basketViewModel.addBasket(
+          addBasket(
             courseViewModel.currentSemester,
-            "Basket ${basketViewModel.basketList.size + 1}",
+            "Basket ${basketList.size + 1}",
             db
           )
         }
@@ -151,19 +159,22 @@ fun BasketTabs(
     showDeleteDialog.value -> {
       DeleteBasketDialog(
         showDialog = showDeleteDialog,
-        currentBasketName = basketViewModel.basketList[basketViewModel.currentBasketIndex].name,
-        basketViewModel = basketViewModel,
+        currentBasketName = basketList[currentBasketIndex].name,
         semester = courseViewModel.currentSemester,
-        currentBasketId = basketViewModel.basketList[basketViewModel.currentBasketIndex].id,
-        db = db
+        currentBasketId = basketList[currentBasketIndex].id,
+        db = db,
+        removeBasket = removeBasket,
+        currentBasketIndex = currentBasketIndex,
+        setCurrentBasket = setCurrentBasket
       )
     }
 
     showEditDialog.value -> {
       EditBasketDialog(
         showEditDialog = showEditDialog,
-        semesterBaskets = basketViewModel.basketList,
-        basketViewModel = basketViewModel,
+        semesterBaskets = basketList,
+        currentBasketIndex = currentBasketIndex,
+        refreshBaskets = refreshBaskets,
         currentSemester = courseViewModel.currentSemester,
         db = db
       )

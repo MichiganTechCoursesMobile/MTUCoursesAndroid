@@ -21,7 +21,6 @@ import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.ShoppingBasket
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -55,10 +54,13 @@ import com.mtucoursesmobile.michigantechcourses.components.settings.SettingsModa
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.views.basket.BasketView
+import com.mtucoursesmobile.michigantechcourses.views.calendar.CalendarView
+import com.mtucoursesmobile.michigantechcourses.views.courses.CourseDetailView
+import com.mtucoursesmobile.michigantechcourses.views.courses.CourseView
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainView(
   courseViewModel: MTUCoursesViewModel,
@@ -229,7 +231,6 @@ fun MainView(
                 courseViewModel,
                 basketViewModel,
                 db,
-                listState,
                 navController,
                 courseNavController
               )

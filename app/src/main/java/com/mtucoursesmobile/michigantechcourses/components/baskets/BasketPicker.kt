@@ -8,22 +8,24 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
-import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 import kotlinx.coroutines.launch
 
 @Composable
 fun BasketPicker(
   expanded: MutableState<Boolean>,
-  basketViewModel: BasketViewModel
+  basketList: SnapshotStateList<CourseBasket>,
+  currentBasketIndex: Int,
+  setCurrentBasket: (Int) -> Unit
 ) {
   val scope = rememberCoroutineScope()
-  AnimatedVisibility(basketViewModel.basketList.size > 1) {
+  AnimatedVisibility(basketList.size > 1) {
     IconButton(
       onClick = { expanded.value = true }
     ) {
@@ -36,20 +38,20 @@ fun BasketPicker(
     DropdownMenu(
       expanded = expanded.value,
       onDismissRequest = { expanded.value = false }) {
-      basketViewModel.basketList.forEachIndexed { index, item ->
+      basketList.forEachIndexed { index, item ->
         DropdownMenuItem(
           text = { Text(item.name) },
           onClick = {
             expanded.value = false
-            if (basketViewModel.currentBasketIndex != index) {
+            if (currentBasketIndex != index) {
               scope.launch {
-                basketViewModel.setCurrentBasket(index)
+                setCurrentBasket(index)
               }
             }
 
           },
           trailingIcon = {
-            if (basketViewModel.currentBasketIndex == index) {
+            if (currentBasketIndex == index) {
               Icon(
                 imageVector = Icons.Filled.Check,
                 contentDescription = "Check",

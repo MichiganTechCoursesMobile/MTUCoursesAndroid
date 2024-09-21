@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.components
+package com.mtucoursesmobile.michigantechcourses.components.courses
 
 import android.content.Context
 import androidx.compose.material.icons.Icons
@@ -15,17 +15,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavController
+import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
+import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
-import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import kotlinx.coroutines.launch
 import java.time.Year
 
 @Composable
 fun SemesterPicker(
   expanded: MutableState<Boolean>,
-  courseViewModel: MTUCoursesViewModel,
-  basketViewModel: BasketViewModel,
+  currentSemester: CurrentSemester,
+  semesterList: List<MTUSemesters>,
+  updateSemesterPeriod: (String, Context) -> Unit,
+  updateSemesterYear: (Number, Context) -> Unit,
+  getSemesterBaskets: (CurrentSemester, BasketDB) -> Unit,
   db: BasketDB,
   context: Context,
   semesterText: MutableState<String>,
@@ -57,30 +60,34 @@ fun SemesterPicker(
       DropdownMenuItem(
         text = { Text(i) },
         onClick = {
-          if (courseViewModel.currentSemester.semester.lowercase() != i.lowercase()) {
+          if (currentSemester.semester.lowercase() != i.lowercase()) {
             expanded.value = false
             scope.launch {
               courseNavController?.navigate("courseList")
-              courseViewModel.updateSemesterPeriod(
+              updateSemesterPeriod(
                 i,
                 context
               )
-              basketViewModel.getSemesterBaskets(
-                courseViewModel.currentSemester,
+              getSemesterBaskets(
+                CurrentSemester(
+                  readable = "$i ${currentSemester.year}",
+                  semester = i,
+                  year = currentSemester.year
+                ),
                 db
               )
-              semesterText.value = "$i ${courseViewModel.currentSemester.year}"
+              semesterText.value = "$i ${currentSemester.year}"
             }
           }
         },
         trailingIcon = {
-          if (courseViewModel.currentSemester.semester.lowercase() == i.lowercase()) Icon(
+          if (currentSemester.semester.lowercase() == i.lowercase()) Icon(
             imageVector = Icons.Filled.Check,
             contentDescription = "Check",
             tint = MaterialTheme.colorScheme.primary
           )
         },
-        enabled = courseViewModel.semesterList.any { it.semester == i.uppercase() && it.year.toInt() == courseViewModel.currentSemester.year.toInt() }
+        enabled = semesterList.any { it.semester == i.uppercase() && it.year.toInt() == currentSemester.year.toInt() }
       )
     }
     HorizontalDivider()
@@ -88,33 +95,39 @@ fun SemesterPicker(
       DropdownMenuItem(
         text = { Text(i.toString()) },
         onClick = {
-          if (courseViewModel.currentSemester.year != i.toString()) {
+          if (currentSemester.year != i.toString()) {
             expanded.value = false
             scope.launch {
               courseNavController?.navigate("courseList")
-              courseViewModel.updateSemesterYear(
+              updateSemesterYear(
                 i,
                 context
               )
-              basketViewModel.getSemesterBaskets(
-                courseViewModel.currentSemester,
+              getSemesterBaskets(
+                CurrentSemester(
+                  readable = "${
+                    currentSemester.semester.lowercase().replaceFirstChar(Char::titlecase)
+                  } $i",
+                  semester = currentSemester.semester,
+                  year = i.toString()
+                ),
                 db
               )
               semesterText.value = "${
-                courseViewModel.currentSemester.semester.lowercase()
+                currentSemester.semester.lowercase()
                   .replaceFirstChar(Char::titlecase)
               } $i"
             }
           }
         },
         trailingIcon = {
-          if (courseViewModel.currentSemester.year == i.toString()) Icon(
+          if (currentSemester.year == i.toString()) Icon(
             imageVector = Icons.Filled.Check,
             contentDescription = "Check",
             tint = MaterialTheme.colorScheme.primary
           )
         },
-        enabled = courseViewModel.semesterList.any { it.semester == courseViewModel.currentSemester.semester.uppercase() && it.year.toInt() == i.toInt() }
+        enabled = semesterList.any { it.semester == currentSemester.semester.uppercase() && it.year.toInt() == i.toInt() }
       )
     }
   }

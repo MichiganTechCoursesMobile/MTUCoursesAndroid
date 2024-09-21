@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.views
+package com.mtucoursesmobile.michigantechcourses.views.calendar
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -18,10 +18,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
-import com.mtucoursesmobile.michigantechcourses.components.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketPicker
 import com.mtucoursesmobile.michigantechcourses.components.calendar.CalendarTimes
-import com.mtucoursesmobile.michigantechcourses.components.calendar.ScheduleCalendar
+import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.localStorage.FirstDayOfWeek
 import com.mtucoursesmobile.michigantechcourses.localStorage.SettingsHandler
@@ -71,15 +70,20 @@ fun CalendarView(
         actions = {
           SemesterPicker(
             expanded = remember { mutableStateOf(false) },
-            courseViewModel = courseViewModel,
-            basketViewModel = basketViewModel,
+            currentSemester = courseViewModel.currentSemester,
+            semesterList = courseViewModel.semesterList,
+            updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
+            updateSemesterYear = courseViewModel::updateSemesterYear,
+            getSemesterBaskets = basketViewModel::getSemesterBaskets,
             db = db,
             context = context,
             semesterText = remember { mutableStateOf("") }
           )
           BasketPicker(
             expanded = remember { mutableStateOf(false) },
-            basketViewModel = basketViewModel
+            basketList = basketViewModel.basketList,
+            currentBasketIndex = basketViewModel.currentBasketIndex,
+            setCurrentBasket = basketViewModel::setCurrentBasket,
           )
         }
       )

@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.components.calendar
+package com.mtucoursesmobile.michigantechcourses.views.calendar
 
 import android.util.Log
 import androidx.compose.foundation.Canvas

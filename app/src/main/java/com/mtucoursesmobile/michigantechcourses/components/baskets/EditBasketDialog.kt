@@ -29,15 +29,15 @@ import androidx.compose.ui.window.Dialog
 import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
-import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun EditBasketDialog(
   showEditDialog: MutableState<Boolean>,
   semesterBaskets: SnapshotStateList<CourseBasket>,
-  basketViewModel: BasketViewModel,
   currentSemester: CurrentSemester,
+  currentBasketIndex: Int,
+  refreshBaskets: (CurrentSemester, BasketDB) -> Unit,
   db: BasketDB
 ) {
   var renameText by remember { mutableStateOf("") }
@@ -59,7 +59,7 @@ fun EditBasketDialog(
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Text(
-          text = "Edit ${semesterBaskets[basketViewModel.currentBasketIndex].name}'s name?",
+          text = "Edit ${semesterBaskets[currentBasketIndex].name}'s name?",
           style = MaterialTheme.typography.titleLarge
         )
         OutlinedTextField(
@@ -94,20 +94,23 @@ fun EditBasketDialog(
           }) {
             Text(text = "Never mind")
           }
-          TextButton(onClick = {
-            if (renameText == "" || renameText.length > 16) {
-              textFieldError = true
-            } else {
-              semesterBaskets[basketViewModel.currentBasketIndex].name = renameText
-              scope.launch {
-                basketViewModel.refreshBaskets(
-                  currentSemester,
-                  db
-                )
+          TextButton(
+            onClick = {
+              if (renameText == "" || renameText.length > 16) {
+                textFieldError = true
+              } else {
+                semesterBaskets[currentBasketIndex].name = renameText
+                scope.launch {
+                  refreshBaskets(
+                    currentSemester,
+                    db
+                  )
+                }
+                showEditDialog.value = false
               }
-              showEditDialog.value = false
-            }
-          }, enabled = (renameText != "" && renameText.length <= 16)) {
+            },
+            enabled = (renameText != "" && renameText.length <= 16)
+          ) {
             Text(text = "Rename")
           }
         }

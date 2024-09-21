@@ -68,7 +68,6 @@ import com.mtucoursesmobile.michigantechcourses.components.sections.InstructorIn
 import com.mtucoursesmobile.michigantechcourses.components.sections.PlaceHolderAvatar
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
-import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -91,7 +90,7 @@ fun navToCourse(
 fun BasketItem(
   section: MTUSections,
   course: MTUCourses?,
-  basketViewModel: BasketViewModel,
+  removeFromBasket: (MTUSections, CurrentSemester, BasketDB, SnackbarHostState) -> Unit,
   currentSemester: CurrentSemester,
   db: BasketDB,
   navController: NavController,
@@ -126,7 +125,7 @@ fun BasketItem(
       if (delete) {
         scope.launch {
           delay(250)
-          basketViewModel.removeFromBasket(
+          removeFromBasket(
             section,
             currentSemester,
             db,

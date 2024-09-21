@@ -7,12 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
-import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 
 @Composable
 fun DeleteBasketDialog(
-  showDialog: MutableState<Boolean>, currentBasketName: String, basketViewModel: BasketViewModel,
-  semester: CurrentSemester, currentBasketId: String, db: BasketDB
+  showDialog: MutableState<Boolean>, currentBasketName: String,
+  semester: CurrentSemester, currentBasketId: String, db: BasketDB,
+  removeBasket: (CurrentSemester, String, BasketDB) -> Unit,
+  currentBasketIndex: Int, setCurrentBasket: (Int) -> Unit,
 ) {
   AlertDialog(
     title = { Text(text = "Delete Basket?") },
@@ -21,15 +22,17 @@ fun DeleteBasketDialog(
     confirmButton = {
       TextButton(onClick = {
         showDialog.value = false
-        basketViewModel.removeBasket(
+        removeBasket(
           semester,
           currentBasketId,
           db
         )
-        if (basketViewModel.currentBasketIndex - 1 >= 0) {
-          basketViewModel.setCurrentBasket(basketViewModel.currentBasketIndex - 1)
+        if (currentBasketIndex - 1 >= 0) {
+          setCurrentBasket(currentBasketIndex - 1)
+        } else {
+          setCurrentBasket(currentBasketIndex)
         }
-        basketViewModel.setCurrentBasket(basketViewModel.currentBasketIndex)
+
       }) {
         Text(text = "Delete")
       }

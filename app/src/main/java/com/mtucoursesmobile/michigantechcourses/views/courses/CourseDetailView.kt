@@ -1,4 +1,4 @@
-package com.mtucoursesmobile.michigantechcourses.views
+package com.mtucoursesmobile.michigantechcourses.views.courses
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
@@ -95,10 +95,13 @@ fun CourseDetailView(
               tint = MaterialTheme.colorScheme.primary
             )
           }
-        }, actions = {
+        },
+        actions = {
           BasketPicker(
             expanded = remember { mutableStateOf(false) },
-            basketViewModel = basketViewModel
+            basketList = basketViewModel.basketList,
+            currentBasketIndex = basketViewModel.currentBasketIndex,
+            setCurrentBasket = basketViewModel::setCurrentBasket
           )
         })
     }) { innerPadding ->
