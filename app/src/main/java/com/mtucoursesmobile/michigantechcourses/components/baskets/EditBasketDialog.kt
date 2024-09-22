@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import kotlinx.coroutines.launch
 
 @Composable
@@ -37,8 +36,7 @@ fun EditBasketDialog(
   semesterBaskets: SnapshotStateList<CourseBasket>,
   currentSemester: CurrentSemester,
   currentBasketIndex: Int,
-  refreshBaskets: (CurrentSemester, BasketDB) -> Unit,
-  db: BasketDB
+  refreshBaskets: (CurrentSemester) -> Unit
 ) {
   var renameText by remember { mutableStateOf("") }
   val scope = rememberCoroutineScope()
@@ -102,8 +100,7 @@ fun EditBasketDialog(
                 semesterBaskets[currentBasketIndex].name = renameText
                 scope.launch {
                   refreshBaskets(
-                    currentSemester,
-                    db
+                    currentSemester
                   )
                 }
                 showEditDialog.value = false

@@ -28,14 +28,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
 import com.mtucoursesmobile.michigantechcourses.components.courses.CourseItem
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LazyCourseList(
   listState: LazyListState,
-  courseViewModel: MTUCoursesViewModel,
+  courseViewModel: CourseViewModel,
   navController: NavController, innerPadding: PaddingValues
 ) {
   val context = LocalContext.current

@@ -1,5 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
+import android.app.Application
+import android.util.Log
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -8,31 +10,63 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.mtucoursesmobile.michigantechcourses.AppSetup
 import com.mtucoursesmobile.michigantechcourses.classes.CalendarEntry
 import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.classes.SectionTimeRRulesConfig
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.localStorage.CalendarBundle
 import com.mtucoursesmobile.michigantechcourses.localStorage.CourseBasketBundle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.Year
+import java.util.Calendar
 import java.util.UUID
 
-class BasketViewModel : ViewModel() {
+class BasketViewModel(app: Application) :
+  AndroidViewModel(app) {
+  private var db = (app as AppSetup).dataBase
   val basketList = mutableStateListOf<CourseBasket>()
   val calendarEntries =
     mutableMapOf<String, MutableMap<String, MutableMap<Int, MutableList<CalendarEntry>>>>()
   var currentBasketIndex by mutableIntStateOf(0)
   var currentBasketItems = mutableStateMapOf<String, MTUSections>()
 
+  // Initialize View Model by getting the current semester baskets
+  init {
+    fun initialSemester(): CurrentSemester {
+      var targetSemester = "FALL"
+      var targetYear = Year.now().value.toString()
+      if (Calendar.getInstance().get(Calendar.MONTH) + 1 > 8) {
+        targetSemester = "SPRING"
+        targetYear = (Year.now().value + 1).toString()
+      }
+      return CurrentSemester(
+        "${
+          targetSemester.lowercase().replaceFirstChar(Char::titlecase)
+        } $targetYear",
+        targetYear,
+        targetSemester
+      )
+    }
+    Log.d(
+      "Test",
+      "Testing View Model Run"
+    )
+    viewModelScope.launch {
+      getSemesterBaskets(
+        initialSemester(),
+      )
+    }
+  }
+
+  // Get the selected semester's baskets
   fun getSemesterBaskets(
-    semester: CurrentSemester,
-    db: BasketDB
+    semester: CurrentSemester
   ) {
     val dao = db.basketDao()
     CoroutineScope(Dispatchers.IO).launch {
@@ -68,7 +102,6 @@ class BasketViewModel : ViewModel() {
         viewModelScope.launch {
           updateBaskets(
             semester,
-            db,
             baskets.baskets
           )
         }
@@ -83,17 +116,17 @@ class BasketViewModel : ViewModel() {
     }
   }
 
+
+  // Add a section to a basket
   fun addToBasket(
     section: MTUSections,
-    semester: CurrentSemester,
-    db: BasketDB
+    semester: CurrentSemester
   ) {
     currentBasketItems[section.id] = section
     basketList[currentBasketIndex].sections[section.id] = section
     viewModelScope.launch {
       updateBaskets(
         semester,
-        db,
         basketList
       )
     }
@@ -119,10 +152,10 @@ class BasketViewModel : ViewModel() {
     }
   }
 
+  // Remove a section from a basket
   fun removeFromBasket(
     section: MTUSections,
     semester: CurrentSemester,
-    db: BasketDB,
     snackbarHostState: SnackbarHostState?
   ) {
     currentBasketItems.remove(section.id)
@@ -147,7 +180,6 @@ class BasketViewModel : ViewModel() {
     viewModelScope.launch {
       updateBaskets(
         semester,
-        db,
         basketList
       )
     }
@@ -163,8 +195,7 @@ class BasketViewModel : ViewModel() {
           SnackbarResult.ActionPerformed -> {
             addToBasket(
               section,
-              semester,
-              db
+              semester
             )
           }
 
@@ -176,16 +207,17 @@ class BasketViewModel : ViewModel() {
     }
   }
 
+  // Change the current basket
   fun setCurrentBasket(index: Int) {
     currentBasketIndex = index
     currentBasketItems.clear()
     currentBasketItems.putAll(basketList[currentBasketIndex].sections)
   }
 
+  // Create a new basket
   fun addBasket(
     semester: CurrentSemester,
-    name: String,
-    db: BasketDB
+    name: String
   ) {
     basketList.add(
       CourseBasket(
@@ -197,31 +229,29 @@ class BasketViewModel : ViewModel() {
     viewModelScope.launch {
       updateBaskets(
         semester,
-        db,
         basketList
       )
     }
   }
 
+  // Delete a specific basket
   fun removeBasket(
     semester: CurrentSemester,
-    id: String,
-    db: BasketDB
+    id: String
   ) {
     basketList.removeAll(basketList.filter { basket -> basket.id == id })
     calendarEntries.remove(id)
     viewModelScope.launch {
       updateBaskets(
         semester,
-        db,
         basketList
       )
     }
   }
 
+  // Refresh / Update a specific basket
   private fun updateBaskets(
     semester: CurrentSemester,
-    db: BasketDB,
     baskets: List<CourseBasket>
   ) {
     val dao = db.basketDao()
@@ -247,9 +277,9 @@ class BasketViewModel : ViewModel() {
     }
   }
 
+  // Duplicate a basket
   fun duplicateBasket(
     semester: CurrentSemester,
-    db: BasketDB,
     index: Int
   ) {
     viewModelScope.launch {
@@ -269,23 +299,21 @@ class BasketViewModel : ViewModel() {
       }
       updateBaskets(
         semester,
-        db,
         basketList
       )
     }
   }
 
+  // Refresh all baskets for a given semester
   fun refreshBaskets(
-    semester: CurrentSemester,
-    db: BasketDB
+    semester: CurrentSemester
   ) {
     updateBaskets(
       semester,
-      db,
       basketList
     )
   }
-
+  
   // Converts sectionTimeRules into a CalendarEntry for easier access in CalendarView
   private fun convertCalendarEntry(
     day: String, sectionTime: SectionTimeRRulesConfig, section: MTUSections

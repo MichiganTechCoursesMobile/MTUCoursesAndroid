@@ -1,3 +1,5 @@
+@file:Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+
 package com.mtucoursesmobile.michigantechcourses.api
 
 import android.util.Log

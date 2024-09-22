@@ -12,20 +12,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.room.Room
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketConverters
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.ui.theme.MichiganTechCoursesTheme
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
 import com.mtucoursesmobile.michigantechcourses.views.MainView
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
@@ -64,39 +59,31 @@ class MainActivity : ComponentActivity() {
           }
         }
       )
-      val context = LocalContext.current
-      val coursesViewModel: MTUCoursesViewModel = viewModel()
+      val courseViewModel: CourseViewModel = viewModel()
       val basketViewModel: BasketViewModel = viewModel()
-      val scope = rememberCoroutineScope()
-      val db = remember {
-        Room.databaseBuilder(
-          context,
-          BasketDB::class.java,
-          "basket-db"
-        ).addTypeConverter(BasketConverters()).build()
+      val courses = courseViewModel.courseList.toList().toMutableStateList()
+      val context = LocalContext.current
+
+      LaunchedEffect(courses) {
+        courseViewModel.updateFilteredList()
       }
-      val courses = coursesViewModel.courseList.toList().toMutableStateList()
 
       LaunchedEffect(Unit) {
-        coursesViewModel.initialCourselist(
-          context
-        )
-        scope.launch {
-          basketViewModel.getSemesterBaskets(
-            coursesViewModel.currentSemester,
-            db
-          )
+        while (true) {
+          if (!courseViewModel.courseNotFound.value && courseViewModel.courseList.isNotEmpty()) {
+            courseViewModel.updateSemester(
+              context,
+              null
+            )
+          }
+          delay(30000)
         }
-      }
-      LaunchedEffect(courses) {
-        coursesViewModel.updateFilteredList()
       }
 
       MichiganTechCoursesTheme {
         MainView(
-          coursesViewModel,
-          basketViewModel,
-          db
+          courseViewModel,
+          basketViewModel
         )
       }
     }

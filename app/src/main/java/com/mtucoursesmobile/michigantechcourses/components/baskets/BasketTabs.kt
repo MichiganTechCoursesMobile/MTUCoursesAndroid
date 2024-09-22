@@ -35,8 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
 
 @OptIn(
   ExperimentalFoundationApi::class,
@@ -46,13 +45,12 @@ import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 fun BasketTabs(
   basketList: SnapshotStateList<CourseBasket>,
   setCurrentBasket: (Int) -> Unit,
-  duplicateBasket: (CurrentSemester, BasketDB, Int) -> Unit,
-  addBasket: (CurrentSemester, String, BasketDB) -> Unit,
-  removeBasket: (CurrentSemester, String, BasketDB) -> Unit,
-  refreshBaskets: (CurrentSemester, BasketDB) -> Unit,
+  duplicateBasket: (CurrentSemester, Int) -> Unit,
+  addBasket: (CurrentSemester, String) -> Unit,
+  removeBasket: (CurrentSemester, String) -> Unit,
+  refreshBaskets: (CurrentSemester) -> Unit,
   currentBasketIndex: Int,
-  courseViewModel: MTUCoursesViewModel,
-  db: BasketDB
+  courseViewModel: CourseViewModel
 ) {
   val haptics = LocalHapticFeedback.current
   val showDeleteDialog = remember { mutableStateOf(false) }
@@ -105,7 +103,6 @@ fun BasketTabs(
               onClick = {
                 duplicateBasket(
                   courseViewModel.currentSemester,
-                  db,
                   index
                 )
                 expandedDropdown = false
@@ -142,7 +139,6 @@ fun BasketTabs(
           addBasket(
             courseViewModel.currentSemester,
             "Basket ${basketList.size + 1}",
-            db
           )
         }
       ) {
@@ -162,7 +158,6 @@ fun BasketTabs(
         currentBasketName = basketList[currentBasketIndex].name,
         semester = courseViewModel.currentSemester,
         currentBasketId = basketList[currentBasketIndex].id,
-        db = db,
         removeBasket = removeBasket,
         currentBasketIndex = currentBasketIndex,
         setCurrentBasket = setCurrentBasket
@@ -176,7 +171,6 @@ fun BasketTabs(
         currentBasketIndex = currentBasketIndex,
         refreshBaskets = refreshBaskets,
         currentSemester = courseViewModel.currentSemester,
-        db = db
       )
     }
   }

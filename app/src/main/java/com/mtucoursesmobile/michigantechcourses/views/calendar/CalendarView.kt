@@ -21,14 +21,13 @@ import com.kizitonwose.calendar.compose.weekcalendar.rememberWeekCalendarState
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketPicker
 import com.mtucoursesmobile.michigantechcourses.components.calendar.CalendarTimes
 import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.localStorage.FirstDayOfWeek
-import com.mtucoursesmobile.michigantechcourses.localStorage.SettingsHandler
-import com.mtucoursesmobile.michigantechcourses.ui.theme.ModelProvider
 import com.mtucoursesmobile.michigantechcourses.utils.getWeekPageTitle
 import com.mtucoursesmobile.michigantechcourses.utils.rememberFirstVisibleWeekAfterScroll
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsModelProvider
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -37,12 +36,12 @@ import java.time.LocalDate
 )
 @Composable
 fun CalendarView(
-  basketViewModel: BasketViewModel,
-  courseViewModel: MTUCoursesViewModel,
-  db: BasketDB
+  courseViewModel: CourseViewModel,
+  basketViewModel: BasketViewModel
 ) {
-  val model: SettingsHandler = viewModel(factory = ModelProvider.Factory)
-  val firstDayOfWeek = when (model.firstDayOfWeek.collectAsState().value) {
+  // Load settings for first day of the Week
+  val settingsModel: SettingsViewModel = viewModel(factory = SettingsModelProvider.Factory)
+  val firstDayOfWeek = when (settingsModel.firstDayOfWeek.collectAsState().value) {
     FirstDayOfWeek.MONDAY -> DayOfWeek.MONDAY
     FirstDayOfWeek.SUNDAY -> DayOfWeek.SUNDAY
     FirstDayOfWeek.SATURDAY -> DayOfWeek.SATURDAY
@@ -75,7 +74,6 @@ fun CalendarView(
             updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
             updateSemesterYear = courseViewModel::updateSemesterYear,
             getSemesterBaskets = basketViewModel::getSemesterBaskets,
-            db = db,
             context = context,
             semesterText = remember { mutableStateOf("") }
           )

@@ -1,3 +1,5 @@
+@file:Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+
 package com.mtucoursesmobile.michigantechcourses.api
 
 import android.content.Context
@@ -31,7 +33,7 @@ fun getMTUSemesters(
 
   val semesterCall: Call<List<MTUSemesters>> = retrofitAPI.getCurrentSemesters()
 
-  semesterCall.enqueue(object : Callback<List<MTUSemesters>?> {
+  semesterCall!!.enqueue(object : Callback<List<MTUSemesters>?> {
     override fun onResponse(
       call: Call<List<MTUSemesters>?>,
       response: Response<List<MTUSemesters>?>
@@ -40,7 +42,7 @@ fun getMTUSemesters(
         val semesterData: List<MTUSemesters> = response.body()!!
 
         semesterList.addAll(semesterData)
-        
+
       }
     }
 

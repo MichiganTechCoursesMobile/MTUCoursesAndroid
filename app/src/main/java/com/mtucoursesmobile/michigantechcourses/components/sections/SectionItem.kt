@@ -63,19 +63,17 @@ import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
 
 @Composable
 fun SectionItem(
   currentBasketItems: SnapshotStateMap<String, MTUSections>,
-  addToBasket: (MTUSections, CurrentSemester, BasketDB) -> Unit,
-  removeFromBasket: (MTUSections, CurrentSemester, BasketDB, SnackbarHostState?) -> Unit,
+  addToBasket: (MTUSections, CurrentSemester) -> Unit,
+  removeFromBasket: (MTUSections, CurrentSemester, SnackbarHostState?) -> Unit,
   section: MTUSections,
   instructors: Map<Number, MTUInstructor>,
   buildings: Map<String, MTUBuilding>,
   currentSemester: CurrentSemester,
-  db: BasketDB,
   expandedState: MutableState<Boolean>
 ) {
   val rotationState by animateFloatAsState(
@@ -142,13 +140,11 @@ fun SectionItem(
                 addToBasket(
                   section,
                   currentSemester,
-                  db
                 )
               } else {
                 removeFromBasket(
                   section,
                   currentSemester,
-                  db,
                   null
                 )
               }

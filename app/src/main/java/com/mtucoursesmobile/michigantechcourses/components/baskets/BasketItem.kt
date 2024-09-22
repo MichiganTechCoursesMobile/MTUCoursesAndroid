@@ -5,14 +5,16 @@ import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -66,17 +68,21 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.components.sections.InstructorInfoDialog
 import com.mtucoursesmobile.michigantechcourses.components.sections.PlaceHolderAvatar
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+
+/*
+* Navigate to course detail from a basket item
+*/
 fun navToCourse(
   courseNavController: NavController,
   courseId: String
 ) {
   courseNavController.navigate("courseDetail/${courseId}") {
 
+    //Navigate to course detail
     popUpTo(courseNavController.graph.findStartDestination().id) {
       saveState = true
     }
@@ -86,13 +92,17 @@ fun navToCourse(
   }
 }
 
+/*
+* Individual Item (Section) found in a Basket
+*/
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BasketItem(
   section: MTUSections,
   course: MTUCourses?,
-  removeFromBasket: (MTUSections, CurrentSemester, BasketDB, SnackbarHostState) -> Unit,
+  removeFromBasket: (MTUSections, CurrentSemester, SnackbarHostState) -> Unit,
   currentSemester: CurrentSemester,
-  db: BasketDB,
   navController: NavController,
   courseNavController: NavController,
   instructors: Map<Number, MTUInstructor>,
@@ -103,14 +113,17 @@ fun BasketItem(
   val dismissThreshold = 0.50f
   val currentFraction = remember { mutableFloatStateOf(0f) }
   AnimatedVisibility(
-    visible = course != null,
+    visible = course != null, //Prevent issues with null courses
     enter = slideInVertically(),
-    exit = slideOutVertically()
+    exit = fadeOut()
   ) {
+    // Handles the logic for the swiping animation
     val dismissState = rememberSwipeToDismissBoxState(confirmValueChange = {
       var swipped = false
       var delete = false
       var view = false
+
+      // Swipe to Delete Section from basket, or to view section's detailed course view
       if (it == SwipeToDismissBoxValue.EndToStart) {
         if (currentFraction.floatValue >= dismissThreshold && currentFraction.floatValue < 1.0f) {
           swipped = true
@@ -122,20 +135,24 @@ fun BasketItem(
           view = true
         }
       }
+      // Delete section from basket
       if (delete) {
         scope.launch {
           delay(250)
           removeFromBasket(
             section,
             currentSemester,
-            db,
             snackbarHostState
           )
         }
       }
+      // Navigate to course detail
       if (view) {
         scope.launch {
+          // Ensure that the Course page is at its default state to prevent issues
           courseNavController.navigate("courseList")
+
+          //Navigate to the Main Course List
           navController.navigate("Courses") {
             popUpTo(navController.graph.findStartDestination().id) {
               saveState = true
@@ -143,6 +160,8 @@ fun BasketItem(
             // Restore state when reselecting a previously selected item
             restoreState = true
           }
+
+          // Quickly navigate to the selected course detail
           navToCourse(
             courseNavController,
             course!!.id
@@ -159,7 +178,8 @@ fun BasketItem(
             SwipeToDismissBoxValue.Settled -> MaterialTheme.colorScheme.background
             SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
             SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
-          }
+          },
+          label = "Change the color based on the direction you slide"
         )
         val alignment = when (dismissState.targetValue) {
           SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
@@ -172,7 +192,8 @@ fun BasketItem(
           SwipeToDismissBoxValue.Settled -> Icons.Outlined.ArrowDropDown
         }
         val scale by animateFloatAsState(
-          if (dismissThreshold == currentFraction.floatValue) 0.75f else 1f
+          if (dismissThreshold == currentFraction.floatValue) 0.75f else 1f,
+          label = "Threshold for sliding animation"
         )
         Box(
           Modifier
@@ -197,6 +218,7 @@ fun BasketItem(
       }
     ) {
 
+      // Individual Basket Item
       ListItem(
         overlineContent = {
           Row {
@@ -256,7 +278,8 @@ fun BasketItem(
                           )
                         }
                       }
-                      Row(verticalAlignment = Alignment.CenterVertically) {
+                      // We use a FlowRow here to prevent narrow displays from experiencing issues
+                      FlowRow(modifier = Modifier.align(Alignment.CenterVertically)) {
                         Text(
                           modifier = Modifier.padding(end = 2.dp),
                           text = instructor.fullName,
@@ -264,6 +287,7 @@ fun BasketItem(
                           maxLines = 1,
                           overflow = TextOverflow.Ellipsis
                         )
+                        // If there is more than 1 instructor teacher a section
                         if (instructors.size > 1) {
                           Badge(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -275,6 +299,7 @@ fun BasketItem(
                       }
                     }
                   }
+                  // Shows the additional instructor info
                   when {
                     showAdditionalInstructorInfo.value -> {
                       InstructorInfoDialog(
@@ -285,7 +310,7 @@ fun BasketItem(
                     }
                   }
                 }
-              } else {
+              } else { // Instructor is unknown
                 Row(verticalAlignment = Alignment.CenterVertically) {
                   PlaceHolderAvatar(
                     id = "¯\\_(ツ)_/¯",
@@ -346,6 +371,7 @@ fun BasketItem(
                 .padding(end = 4.dp),
               colors = SuggestionChipDefaults.suggestionChipColors(labelColor = if (section.availableSeats.toInt() <= 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
             )
+            // Open the building in Device Map app (Google Maps, Waze, etc...)
             if (section.buildingName != null && section.locationType == "PHYSICAL") {
               val mContext = LocalContext.current
               val intent = Intent(
@@ -373,7 +399,7 @@ fun BasketItem(
               )
             }
             SuggestionChip(
-              onClick = { clipboardManager.setText(AnnotatedString(section.crn)) },
+              onClick = { clipboardManager.setText(AnnotatedString(section.crn)) }, //Copy CRN to clipboard
               label = { Text(text = "CRN: ${section.crn}") },
               modifier = Modifier.padding(end = 4.dp)
             )

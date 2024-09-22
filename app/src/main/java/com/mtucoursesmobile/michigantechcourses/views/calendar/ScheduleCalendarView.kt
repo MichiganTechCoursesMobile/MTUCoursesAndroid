@@ -43,7 +43,7 @@ import com.kizitonwose.calendar.compose.weekcalendar.WeekCalendarState
 import com.mtucoursesmobile.michigantechcourses.classes.CalendarEntry
 import com.mtucoursesmobile.michigantechcourses.utils.toHslColor
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -53,8 +53,9 @@ private val dateFormatter = DateTimeFormatter.ofPattern("dd")
 
 @Composable
 fun ScheduleCalendar(
-  weekState: WeekCalendarState, courseViewModel: MTUCoursesViewModel,
-  basketViewModel: BasketViewModel, activeDate: MutableState<LocalDate>,
+  weekState: WeekCalendarState, courseViewModel: CourseViewModel,
+  basketViewModel: BasketViewModel,
+  activeDate: MutableState<LocalDate>,
   visibleDate: MutableState<LocalDate>
 ) {
   val today = remember { mutableStateOf(LocalDate.now()) }
@@ -125,7 +126,7 @@ fun ScheduleCalendar(
 @Composable
 private fun Day(
   date: LocalDate, dayEntries: MutableMap<Int, MutableList<CalendarEntry>>?,
-  courseViewModel: MTUCoursesViewModel
+  courseViewModel: CourseViewModel
 ) {
   Box(
     modifier = Modifier

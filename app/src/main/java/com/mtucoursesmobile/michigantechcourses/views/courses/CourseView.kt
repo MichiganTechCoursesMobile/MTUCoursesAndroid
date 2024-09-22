@@ -43,9 +43,8 @@ import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimati
 import com.mtucoursesmobile.michigantechcourses.components.courses.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.courses.FilterModal
 import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
 import kotlinx.coroutines.launch
 
 
@@ -54,9 +53,8 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun CourseView(
-  courseViewModel: MTUCoursesViewModel,
+  courseViewModel: CourseViewModel,
   basketViewModel: BasketViewModel,
-  db: BasketDB,
   navController: NavController,
   listState: LazyListState,
   viewSettings: DrawerState
@@ -125,7 +123,6 @@ fun CourseView(
               updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
               updateSemesterYear = courseViewModel::updateSemesterYear,
               getSemesterBaskets = basketViewModel::getSemesterBaskets,
-              db = db,
               context = context,
               semesterText = semesterText,
               expandedFab = expandedFab

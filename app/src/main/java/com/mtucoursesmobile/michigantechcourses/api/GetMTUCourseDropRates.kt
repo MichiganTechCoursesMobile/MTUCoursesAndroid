@@ -1,3 +1,5 @@
+@file:Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+
 package com.mtucoursesmobile.michigantechcourses.api
 
 import android.util.Log
@@ -17,10 +19,10 @@ interface RetroFitDrop {
     "Accept: application/json"
   )
   @GET("passfaildrop")
-  fun getMTUFailDrop() : Call<HashMap<String, List<CourseFailDrop>>>
+  fun getMTUFailDrop(): Call<HashMap<String, List<CourseFailDrop>>>
 }
 
-fun getMTUCourseDropRates(failList: MutableMap<String, List<CourseFailDrop>>){
+fun getMTUCourseDropRates(failList: MutableMap<String, List<CourseFailDrop>>) {
   val okHttpClient = OkHttpClient.Builder()
     .build()
 
@@ -32,7 +34,7 @@ fun getMTUCourseDropRates(failList: MutableMap<String, List<CourseFailDrop>>){
 
   val failDropCall: Call<HashMap<String, List<CourseFailDrop>>> = retrofitAPI.getMTUFailDrop()
 
-  failDropCall!!.enqueue(object: Callback<HashMap<String, List<CourseFailDrop>>?> {
+  failDropCall!!.enqueue(object : Callback<HashMap<String, List<CourseFailDrop>>?> {
     override fun onResponse(
       call: Call<HashMap<String, List<CourseFailDrop>>?>,
       response: Response<HashMap<String, List<CourseFailDrop>>?>

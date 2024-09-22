@@ -30,16 +30,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -51,23 +47,22 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mtucoursesmobile.michigantechcourses.components.settings.SettingsModal
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
+import com.mtucoursesmobile.michigantechcourses.utils.ReverseLayoutDirection
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
 import com.mtucoursesmobile.michigantechcourses.views.basket.BasketView
 import com.mtucoursesmobile.michigantechcourses.views.calendar.CalendarView
 import com.mtucoursesmobile.michigantechcourses.views.courses.CourseDetailView
 import com.mtucoursesmobile.michigantechcourses.views.courses.CourseView
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun MainView(
-  courseViewModel: MTUCoursesViewModel,
-  basketViewModel: BasketViewModel,
-  db: BasketDB
+  courseViewModel: CourseViewModel,
+  basketViewModel: BasketViewModel
 ) {
   val viewSettings = rememberDrawerState(DrawerValue.Closed)
+  // Navigation bar items
   val items = remember {
     listOf(
       Pair(
@@ -96,19 +91,11 @@ fun MainView(
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val listState = rememberLazyListState()
+  // Navigation controller for bottom nav bar
   val navController = rememberNavController()
+  // Navigation controller for courses and detailed course views
   val courseNavController = rememberNavController()
-  LaunchedEffect(Unit) {
-    while (true) {
-      if (!courseViewModel.courseNotFound.value && courseViewModel.courseList.isNotEmpty()) {
-        courseViewModel.updateSemester(
-          context,
-          null
-        )
-      }
-      delay(30000)
-    }
-  }
+
   ReverseLayoutDirection {
     ModalNavigationDrawer(
       drawerContent = {
@@ -141,17 +128,20 @@ fun MainView(
                   label = { Text(text = item.first) },
                   selected = currentDestination?.hierarchy?.any { it.route == item.first } == true,
                   onClick = {
-                    // Scroll Back to top (No need to run rest of code)
-                    if (navController.currentBackStackEntry?.destination?.route.toString() == "Courses" && item.first == "Courses") {
-                      if (courseNavController.currentDestination?.route != "courseList") {
-                        courseNavController.navigate("courseList")
-                      } else {
-                        scope.launch { listState.animateScrollToItem(0) }
+                    // Prevent unneeded navigation
+                    if (navController.currentBackStackEntry?.destination?.route.toString() == item.first) {
+                      // Handle logic for clicking Courses twice to scroll to the top of the page
+                      if (item.first == "Courses") {
+                        if (courseNavController.currentDestination?.route != "courseList") {
+                          courseNavController.navigate("courseList")
+                        } else {
+                          scope.launch { listState.animateScrollToItem(0) } // Scrolls course list back to the top
+                        }
                       }
                       return@NavigationBarItem
                     }
                     scope.launch {
-                      navController.navigate(item.first) {
+                      navController.navigate(item.first) { // Navigate to the selected item
 
                         popUpTo(navController.graph.findStartDestination().id) {
                           saveState = true
@@ -206,7 +196,6 @@ fun MainView(
               CourseNav(
                 courseViewModel,
                 basketViewModel,
-                db,
                 listState,
                 courseNavController,
                 viewSettings
@@ -230,7 +219,6 @@ fun MainView(
               BasketView(
                 courseViewModel,
                 basketViewModel,
-                db,
                 navController,
                 courseNavController
               )
@@ -243,9 +231,8 @@ fun MainView(
                 slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
               }) {
               CalendarView(
-                basketViewModel,
                 courseViewModel,
-                db
+                basketViewModel,
               )
             }
           }
@@ -256,12 +243,11 @@ fun MainView(
 
 }
 
-// Courses
+// Navigation Handler for Courses and their Detailed Views/Pages
 @Composable
 fun CourseNav(
-  courseViewModel: MTUCoursesViewModel,
+  courseViewModel: CourseViewModel,
   basketViewModel: BasketViewModel,
-  db: BasketDB,
   listState: LazyListState,
   courseNavController: NavHostController,
   viewSettings: DrawerState
@@ -281,7 +267,6 @@ fun CourseNav(
       CourseView(
         courseViewModel,
         basketViewModel,
-        db,
         courseNavController,
         listState,
         viewSettings
@@ -299,20 +284,9 @@ fun CourseNav(
         courseViewModel,
         basketViewModel,
         courseNavController,
-        backStackEntry.arguments?.getString("courseId"),
-        db
+        backStackEntry.arguments?.getString("courseId")
       )
     }
   }
 }
 
-@Composable
-private fun ReverseLayoutDirection(content: @Composable () -> Unit) {
-  val reverseDirection = when (LocalLayoutDirection.current) {
-    LayoutDirection.Rtl -> LayoutDirection.Ltr
-    LayoutDirection.Ltr -> LayoutDirection.Rtl
-  }
-  CompositionLocalProvider(LocalLayoutDirection provides reverseDirection) {
-    content()
-  }
-}

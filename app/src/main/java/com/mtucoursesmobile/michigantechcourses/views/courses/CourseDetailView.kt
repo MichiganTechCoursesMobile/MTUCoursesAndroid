@@ -53,22 +53,21 @@ import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
 import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimation
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketPicker
 import com.mtucoursesmobile.michigantechcourses.components.sections.SectionItem
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
 import java.text.DecimalFormat
 import java.util.Locale
 
 @OptIn(
   ExperimentalMaterial3Api::class
 )
+// Detailed page of a specific course
 @Composable
 fun CourseDetailView(
-  courseViewModel: MTUCoursesViewModel,
+  courseViewModel: CourseViewModel,
   basketViewModel: BasketViewModel,
   navController: NavController,
   courseId: String?,
-  db: BasketDB
 ) {
   val foundCourse =
     courseViewModel.courseList[courseId]
@@ -128,7 +127,7 @@ fun CourseDetailView(
             end = 4.dp
           )
         )
-        if (foundCourse.offered.isNotEmpty()) {
+        if (foundCourse.offered?.isNotEmpty() == true) {
           val offeredSem = StringBuilder()
           for (i in foundCourse.offered) {
             offeredSem.append("${i.lowercase().replaceFirstChar(Char::titlecase)}, ")
@@ -348,7 +347,6 @@ fun CourseDetailView(
                   sectionInstructor,
                   courseViewModel.buildingList,
                   courseViewModel.currentSemester,
-                  db,
                   expanded!!
                 )
               }
@@ -360,6 +358,7 @@ fun CourseDetailView(
   }
 }
 
+// Card that expands for the course description
 @Composable
 private fun ExpandableCard(
   description: String,

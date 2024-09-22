@@ -43,17 +43,17 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mtucoursesmobile.michigantechcourses.localStorage.SettingsHandler
 import com.mtucoursesmobile.michigantechcourses.localStorage.ThemeType
-import com.mtucoursesmobile.michigantechcourses.ui.theme.ModelProvider
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsModelProvider
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun ThemePicker() {
   val scope = rememberCoroutineScope()
-  val model: SettingsHandler = viewModel(factory = ModelProvider.Factory)
-  val isDynamic by model.isDynamic.collectAsState()
-  val themeType by model.themeType.collectAsState()
+  val settingsModel: SettingsViewModel = viewModel(factory = SettingsModelProvider.Factory)
+  val isDynamic by settingsModel.isDynamic.collectAsState()
+  val themeType by settingsModel.themeType.collectAsState()
   var expanded by remember { mutableStateOf(false) }
 
   Card(
@@ -120,7 +120,7 @@ fun ThemePicker() {
                 selected = (themeType == ThemeType.SYSTEM),
                 onClick = {
                   scope.launch {
-                    model.updateThemeType(ThemeType.SYSTEM)
+                    settingsModel.updateThemeType(ThemeType.SYSTEM)
                   }
                 },
                 role = Role.RadioButton
@@ -159,7 +159,7 @@ fun ThemePicker() {
                 selected = (themeType == ThemeType.LIGHT),
                 onClick = {
                   scope.launch {
-                    model.updateThemeType(ThemeType.LIGHT)
+                    settingsModel.updateThemeType(ThemeType.LIGHT)
                   }
                 },
                 role = Role.RadioButton
@@ -198,7 +198,7 @@ fun ThemePicker() {
               .height(42.dp)
               .selectable(
                 selected = (themeType == ThemeType.DARK),
-                onClick = { scope.launch { model.updateThemeType(ThemeType.DARK) } },
+                onClick = { scope.launch { settingsModel.updateThemeType(ThemeType.DARK) } },
                 role = Role.RadioButton
               )
               .padding(horizontal = 10.dp),
@@ -235,7 +235,7 @@ fun ThemePicker() {
               .height(52.dp)
               .selectable(
                 selected = (isDynamic),
-                onClick = { scope.launch { model.updateIsDynamicTheme() } },
+                onClick = { scope.launch { settingsModel.updateIsDynamicTheme() } },
                 role = Role.Switch
               )
               .padding(horizontal = 10.dp),

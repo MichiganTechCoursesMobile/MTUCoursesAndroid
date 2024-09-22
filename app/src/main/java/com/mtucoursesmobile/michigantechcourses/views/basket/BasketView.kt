@@ -30,18 +30,16 @@ import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketItem
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketTabs
 import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
 
 @OptIn(
   ExperimentalMaterial3Api::class
 )
 @Composable
 fun BasketView(
-  courseViewModel: MTUCoursesViewModel,
+  courseViewModel: CourseViewModel,
   basketViewModel: BasketViewModel,
-  db: BasketDB,
   navController: NavController,
   courseNavController: NavController
 ) {
@@ -79,7 +77,6 @@ fun BasketView(
             updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
             updateSemesterYear = courseViewModel::updateSemesterYear,
             getSemesterBaskets = basketViewModel::getSemesterBaskets,
-            db = db,
             context = context,
             semesterText = semesterText,
             courseNavController = courseNavController
@@ -97,7 +94,6 @@ fun BasketView(
         refreshBaskets = basketViewModel::refreshBaskets,
         currentBasketIndex = basketViewModel.currentBasketIndex,
         courseViewModel = courseViewModel,
-        db = db
       )
       LazyColumn {
         itemsIndexed(
@@ -118,7 +114,6 @@ fun BasketView(
               course = course,
               removeFromBasket = basketViewModel::removeFromBasket,
               currentSemester = courseViewModel.currentSemester,
-              db = db,
               navController = navController,
               courseNavController = courseNavController,
               instructors = sectionInstructor,

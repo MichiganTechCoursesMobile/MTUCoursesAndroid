@@ -39,15 +39,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mtucoursesmobile.michigantechcourses.localStorage.FirstDayOfWeek
-import com.mtucoursesmobile.michigantechcourses.localStorage.SettingsHandler
-import com.mtucoursesmobile.michigantechcourses.ui.theme.ModelProvider
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsModelProvider
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun DayOfWeekPicker() {
   val scope = rememberCoroutineScope()
-  val model: SettingsHandler = viewModel(factory = ModelProvider.Factory)
-  val firstDayOfWeek by model.firstDayOfWeek.collectAsState()
+  val settingsModel: SettingsViewModel = viewModel(factory = SettingsModelProvider.Factory)
+  val firstDayOfWeek by settingsModel.firstDayOfWeek.collectAsState()
   var expanded by remember { mutableStateOf(false) }
 
   Card(
@@ -116,7 +116,7 @@ fun DayOfWeekPicker() {
                 selected = (firstDayOfWeek == FirstDayOfWeek.SATURDAY),
                 onClick = {
                   scope.launch {
-                    model.updateFirstDayOfWeek(FirstDayOfWeek.SATURDAY)
+                    settingsModel.updateFirstDayOfWeek(FirstDayOfWeek.SATURDAY)
                   }
                 },
                 role = Role.RadioButton
@@ -149,7 +149,7 @@ fun DayOfWeekPicker() {
                 selected = (firstDayOfWeek == FirstDayOfWeek.SUNDAY),
                 onClick = {
                   scope.launch {
-                    model.updateFirstDayOfWeek(FirstDayOfWeek.SUNDAY)
+                    settingsModel.updateFirstDayOfWeek(FirstDayOfWeek.SUNDAY)
                   }
                 },
                 role = Role.RadioButton
@@ -184,7 +184,7 @@ fun DayOfWeekPicker() {
                 selected = (firstDayOfWeek == FirstDayOfWeek.MONDAY),
                 onClick = {
                   scope.launch {
-                    model.updateFirstDayOfWeek(FirstDayOfWeek.MONDAY)
+                    settingsModel.updateFirstDayOfWeek(FirstDayOfWeek.MONDAY)
                   }
                 },
                 role = Role.RadioButton

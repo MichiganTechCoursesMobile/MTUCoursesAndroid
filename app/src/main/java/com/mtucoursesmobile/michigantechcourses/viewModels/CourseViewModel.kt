@@ -1,12 +1,12 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
+import android.app.Application
 import android.content.Context
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.mtucoursesmobile.michigantechcourses.api.getMTUBuildings
 import com.mtucoursesmobile.michigantechcourses.api.getMTUCourseDropRates
@@ -28,7 +28,9 @@ import kotlinx.coroutines.launch
 import java.time.Year
 import java.util.Calendar
 
-class MTUCoursesViewModel : ViewModel() {
+class CourseViewModel(app: Application) :
+  AndroidViewModel(app) {
+
   var currentSemester = initialSemester()
 
   val courseList = mutableStateMapOf<String, MTUCourses>()
@@ -49,6 +51,13 @@ class MTUCoursesViewModel : ViewModel() {
 
   private val lastUpdatedSince = mutableListOf<LastUpdatedSince>()
 
+  // Get the initial course list
+  init {
+    initialCourselist(
+      app.applicationContext
+    )
+  }
+
   private fun initialSemester(): CurrentSemester {
     var targetSemester = "FALL"
     var targetYear = Year.now().value.toString()
@@ -65,7 +74,7 @@ class MTUCoursesViewModel : ViewModel() {
     )
   }
 
-  @OptIn(ExperimentalMaterial3Api::class)
+  // Updates the selected semester's year (Fall 2024 -> Fall 2025)
   fun updateSemesterYear(
     year: Number,
     context: Context
@@ -83,7 +92,7 @@ class MTUCoursesViewModel : ViewModel() {
     )
   }
 
-  @OptIn(ExperimentalMaterial3Api::class)
+  // Change the semester but keep the year (Fall 2024 -> Spring 2024)
   fun updateSemesterPeriod(
     semester: String,
     context: Context
@@ -99,6 +108,7 @@ class MTUCoursesViewModel : ViewModel() {
     )
   }
 
+  // Set the semester to a given semester, then get its courses and sections
   private fun setSemester(
     newSemester: CurrentSemester,
     context: Context
@@ -127,7 +137,8 @@ class MTUCoursesViewModel : ViewModel() {
 
   }
 
-  fun initialCourselist(context: Context) {
+  // Get the first set of courses, sections, instructors, buildings, semesters, and drop rates
+  private fun initialCourselist(context: Context) {
     courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
       getMTUBuildings(buildingList)
@@ -162,7 +173,7 @@ class MTUCoursesViewModel : ViewModel() {
     }
   }
 
-  @OptIn(ExperimentalMaterial3Api::class)
+  // Update the semester's courses (usually every 30 seconds or so)
   fun updateSemester(
     context: Context,
     loading: MutableState<Boolean>?
@@ -183,16 +194,19 @@ class MTUCoursesViewModel : ViewModel() {
     }
   }
 
+  // Sort by Subject & Level switch
   fun toggleLevel(value: ClosedFloatingPointRange<Float>) {
     courseLevelFilter.value = value
     updateFilteredList()
   }
 
+  // Sort by Credit count switch
   fun toggleCredit(value: ClosedFloatingPointRange<Float>) {
     courseCreditFilter.value = value
     updateFilteredList()
   }
 
+  // Toggle has seats (or any future filter)
   fun toggleOther(value: String) {
     if (courseOtherFilter.isEmpty()) {
       courseOtherFilter.add(value)
@@ -233,6 +247,7 @@ class MTUCoursesViewModel : ViewModel() {
     )
   )
 
+  // Update the filtered list based on the current filter settings
   fun updateFilteredList() {
     viewModelScope.launch {
       filteredCourseList.clear()

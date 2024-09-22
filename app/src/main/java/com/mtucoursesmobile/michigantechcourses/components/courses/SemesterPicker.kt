@@ -17,7 +17,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
-import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import kotlinx.coroutines.launch
 import java.time.Year
 
@@ -28,8 +27,7 @@ fun SemesterPicker(
   semesterList: List<MTUSemesters>,
   updateSemesterPeriod: (String, Context) -> Unit,
   updateSemesterYear: (Number, Context) -> Unit,
-  getSemesterBaskets: (CurrentSemester, BasketDB) -> Unit,
-  db: BasketDB,
+  getSemesterBaskets: (CurrentSemester) -> Unit,
   context: Context,
   semesterText: MutableState<String>,
   courseNavController: NavController? = null,
@@ -73,8 +71,7 @@ fun SemesterPicker(
                   readable = "$i ${currentSemester.year}",
                   semester = i,
                   year = currentSemester.year
-                ),
-                db
+                )
               )
               semesterText.value = "$i ${currentSemester.year}"
             }
@@ -110,8 +107,7 @@ fun SemesterPicker(
                   } $i",
                   semester = currentSemester.semester,
                   year = i.toString()
-                ),
-                db
+                )
               )
               semesterText.value = "${
                 currentSemester.semester.lowercase()
