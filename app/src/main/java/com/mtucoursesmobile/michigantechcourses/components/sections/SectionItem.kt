@@ -33,6 +33,7 @@ import androidx.compose.material3.ElevatedAssistChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
@@ -41,6 +42,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,11 +65,12 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.localStorage.BasketDB
 import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
-import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 
 @Composable
 fun SectionItem(
-  basketViewModel: BasketViewModel,
+  currentBasketItems: SnapshotStateMap<String, MTUSections>,
+  addToBasket: (MTUSections, CurrentSemester, BasketDB) -> Unit,
+  removeFromBasket: (MTUSections, CurrentSemester, BasketDB, SnackbarHostState?) -> Unit,
   section: MTUSections,
   instructors: Map<Number, MTUInstructor>,
   buildings: Map<String, MTUBuilding>,
@@ -135,14 +138,14 @@ fun SectionItem(
             .padding(start = 8.dp)
             .rotate(rotationState),
             onClick = {
-              if (basketViewModel.currentBasketItems[section.id] == null) {
-                basketViewModel.addToBasket(
+              if (currentBasketItems[section.id] == null) {
+                addToBasket(
                   section,
                   currentSemester,
                   db
                 )
               } else {
-                basketViewModel.removeFromBasket(
+                removeFromBasket(
                   section,
                   currentSemester,
                   db,
@@ -152,7 +155,7 @@ fun SectionItem(
 
             }) {
             AnimatedContent(
-              targetState = basketViewModel.currentBasketItems[section.id] != null,
+              targetState = currentBasketItems[section.id] != null,
               label = "Add/Remove section from basket"
             ) {
               if (!it) {

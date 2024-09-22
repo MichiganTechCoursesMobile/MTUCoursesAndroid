@@ -225,7 +225,15 @@ fun CourseView(
     }
     FilterModal(
       listState = listState,
-      courseViewModel
+      sortingMode = courseViewModel.sortingMode,
+      sortingTypes = courseViewModel.sortingTypes,
+      courseLevelFilter = courseViewModel.courseLevelFilter,
+      courseCreditFilter = courseViewModel.courseCreditFilter,
+      otherCourseFilters = courseViewModel.otherCourseFilters,
+      toggleLevel = courseViewModel::toggleLevel,
+      toggleCredit = courseViewModel::toggleCredit,
+      toggleOther = courseViewModel::toggleOther,
+      showFilter = courseViewModel.showFilter
     )
   }
 }

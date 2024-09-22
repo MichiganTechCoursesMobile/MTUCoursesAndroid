@@ -24,16 +24,17 @@ import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mtucoursesmobile.michigantechcourses.viewModels.MTUCoursesViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(
@@ -43,15 +44,23 @@ import kotlinx.coroutines.launch
 @Composable
 fun FilterModal(
   listState: LazyListState,
-  courseViewModel: MTUCoursesViewModel
+  sortingMode: MutableState<Pair<String, String>>,
+  sortingTypes: SnapshotStateMap<String, String>,
+  courseLevelFilter: MutableState<ClosedFloatingPointRange<Float>>,
+  courseCreditFilter: MutableState<ClosedFloatingPointRange<Float>>,
+  otherCourseFilters: MutableList<Pair<String, MutableState<Boolean>>>,
+  toggleLevel: (ClosedFloatingPointRange<Float>) -> Unit,
+  toggleCredit: (ClosedFloatingPointRange<Float>) -> Unit,
+  toggleOther: (String) -> Unit,
+  showFilter: MutableState<Boolean>
 ) {
   val scope = rememberCoroutineScope()
   BottomSheetDefaults.windowInsets
-  if (courseViewModel.showFilter.value) {
+  if (showFilter.value) {
 
     ModalBottomSheet(sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
       onDismissRequest = {
-        courseViewModel.showFilter.value = false
+        showFilter.value = false
       }) {
       //Sorting
       Text(
@@ -71,36 +80,36 @@ fun FilterModal(
             .fillMaxWidth(1f)
             .wrapContentHeight(align = Alignment.Top)
         ) {
-          for (type in courseViewModel.sortingTypes) {
+          for (type in sortingTypes) {
             FilterChip(
-              selected = courseViewModel.sortingMode.value.first == type.key,
+              selected = sortingMode.value.first == type.key,
               onClick = {
                 scope.launch {
                   listState.animateScrollToItem(0)
                 }
                 scope.launch {
-                  if (courseViewModel.sortingMode.value.first == type.key) {
-                    if (courseViewModel.sortingMode.value.second == "ascending") {
-                      courseViewModel.sortingMode.value = Pair(
+                  if (sortingMode.value.first == type.key) {
+                    if (sortingMode.value.second == "ascending") {
+                      sortingMode.value = Pair(
                         type.key,
                         "descending"
                       )
                     } else {
-                      courseViewModel.sortingMode.value = Pair(
+                      sortingMode.value = Pair(
                         type.key,
                         "ascending"
                       )
                     }
                   } else {
-                    courseViewModel.sortingMode.value = type.toPair()
+                    sortingMode.value = type.toPair()
                   }
                 }
               },
               label = { Text(text = type.key) },
               leadingIcon = {
-                if (courseViewModel.sortingMode.value.first == type.key) {
+                if (sortingMode.value.first == type.key) {
                   Icon(
-                    imageVector = if (courseViewModel.sortingMode.value.second != "ascending") Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
+                    imageVector = if (sortingMode.value.second != "ascending") Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
                     contentDescription = "Arrow Up"
                   )
                 }
@@ -112,7 +121,7 @@ fun FilterModal(
       }
       // Level
       var levelSliderPosition by remember {
-        mutableStateOf(courseViewModel.courseLevelFilter.value)
+        mutableStateOf(courseLevelFilter.value)
       }
       when (levelSliderPosition.toString()) {
         "1.0..1.0" -> Text(
@@ -153,7 +162,7 @@ fun FilterModal(
         valueRange = 1f..4f,
         onValueChangeFinished = {
           scope.launch {
-            courseViewModel.toggleLevel(levelSliderPosition)
+            toggleLevel(levelSliderPosition)
             listState.animateScrollToItem(0)
           }
         },
@@ -164,7 +173,7 @@ fun FilterModal(
 
       //Credits
       var creditSliderPosition by remember {
-        mutableStateOf(courseViewModel.courseCreditFilter.value)
+        mutableStateOf(courseCreditFilter.value)
       }
       when (creditSliderPosition.toString()) {
         "0.0..0.0" -> Text(
@@ -199,7 +208,7 @@ fun FilterModal(
         valueRange = 0f..4f,
         onValueChangeFinished = {
           scope.launch {
-            courseViewModel.toggleCredit(creditSliderPosition)
+            toggleCredit(creditSliderPosition)
             listState.animateScrollToItem(0)
           }
         },
@@ -225,7 +234,7 @@ fun FilterModal(
             .fillMaxWidth(1f)
             .wrapContentHeight(align = Alignment.Top)
         ) {
-          courseViewModel.otherCourseFilters.forEach() { it ->
+          otherCourseFilters.forEach { it ->
             val (checked, onCheckChange) = remember {
               mutableStateOf(it.second.value)
             }
@@ -234,7 +243,7 @@ fun FilterModal(
                 onCheckChange(!checked)
                 it.second.value = !it.second.value
                 scope.launch {
-                  courseViewModel.toggleOther(it.first)
+                  toggleOther(it.first)
                   listState.animateScrollToItem(0)
                 }
               },

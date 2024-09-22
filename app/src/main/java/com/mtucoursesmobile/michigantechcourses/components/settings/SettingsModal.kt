@@ -21,7 +21,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -31,7 +30,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsModal(showSettings: DrawerState) {
   val scope = rememberCoroutineScope()
-  val context = LocalContext.current
 
   fun closeDrawer() {
     scope.launch {

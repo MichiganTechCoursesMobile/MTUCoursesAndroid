@@ -341,7 +341,9 @@ fun CourseDetailView(
                 }
                 val expanded = expandedList[item.id]
                 SectionItem(
-                  basketViewModel,
+                  basketViewModel.currentBasketItems,
+                  basketViewModel::addToBasket,
+                  basketViewModel::removeFromBasket,
                   section = item,
                   sectionInstructor,
                   courseViewModel.buildingList,
