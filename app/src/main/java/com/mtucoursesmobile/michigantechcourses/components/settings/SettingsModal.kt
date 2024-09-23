@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,9 +79,14 @@ fun SettingsModal(showSettings: DrawerState) {
   ) { contentPadding ->
     val layoutDirection = LocalLayoutDirection.current
 
-    Column(modifier = Modifier.padding(contentPadding)) {
+    Column(modifier = Modifier
+      .padding(contentPadding)
+      .verticalScroll(rememberScrollState())) {
       ThemePicker()
       DayOfWeekPicker()
+      HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+      AboutDropdown()
+      ContactMeDropdown()
     }
   }
 }
