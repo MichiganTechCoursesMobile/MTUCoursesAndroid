@@ -184,7 +184,7 @@ fun ContactMeDropdown() {
             horizontal = 8.dp,
             vertical = 4.dp
           ),
-          onClick = { context.startActivity(goToReportIssue) },
+          onClick = { context.startActivity(goToKoFi) },
           colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
         ) {
           Row(
