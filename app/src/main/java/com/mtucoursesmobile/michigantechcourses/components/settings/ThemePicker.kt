@@ -1,5 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.components.settings
 
+import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -220,41 +221,43 @@ fun ThemePicker() {
             )
           }
         }
-        Card(
-          modifier = Modifier
-            .padding(
-              horizontal = 8.dp,
-              vertical = 4.dp
-            )
-            .padding(bottom = 4.dp),
-          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
-        ) {
-          Row(
-            Modifier
-              .fillMaxWidth()
-              .height(52.dp)
-              .selectable(
-                selected = (isDynamic),
-                onClick = { scope.launch { settingsModel.updateIsDynamicTheme() } },
-                role = Role.Switch
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+          Card(
+            modifier = Modifier
+              .padding(
+                horizontal = 8.dp,
+                vertical = 4.dp
               )
-              .padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+              .padding(bottom = 4.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
           ) {
-            Icon(
-              imageVector = Icons.Rounded.ColorLens,
-              contentDescription = "Dynamic Color Icon",
-              tint = MaterialTheme.colorScheme.primary,
-              modifier = Modifier.padding(end = 8.dp)
-            )
-            Text(
-              "Dynamic Color",
-              Modifier.weight(1f)
-            )
-            Switch(
-              checked = isDynamic,
-              onCheckedChange = null
-            )
+            Row(
+              Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+                .selectable(
+                  selected = (isDynamic),
+                  onClick = { scope.launch { settingsModel.updateIsDynamicTheme() } },
+                  role = Role.Switch
+                )
+                .padding(horizontal = 10.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Icon(
+                imageVector = Icons.Rounded.ColorLens,
+                contentDescription = "Dynamic Color Icon",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(end = 8.dp)
+              )
+              Text(
+                "Dynamic Color",
+                Modifier.weight(1f)
+              )
+              Switch(
+                checked = isDynamic,
+                onCheckedChange = null
+              )
+            }
           }
         }
       }

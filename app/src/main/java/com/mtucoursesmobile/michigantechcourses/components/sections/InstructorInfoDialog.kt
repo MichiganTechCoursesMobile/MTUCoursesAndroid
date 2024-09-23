@@ -29,7 +29,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -204,7 +203,7 @@ fun InstructorInfoDialog(
         }
         if (!instructor.rmpId.isNullOrBlank() && (instructor.averageRating.toDouble() != 0.0) && (instructor.averageDifficultyRating.toDouble() != 0.0)) {
           Row(modifier = Modifier.padding(horizontal = 8.dp)) {
-            OutlinedCard(
+            ElevatedCard(
               modifier = Modifier
                 .fillMaxWidth(0.5f)
                 .padding(end = 4.dp)
@@ -241,7 +240,7 @@ fun InstructorInfoDialog(
                 )
               }
             }
-            OutlinedCard(
+            ElevatedCard(
               modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 4.dp)
