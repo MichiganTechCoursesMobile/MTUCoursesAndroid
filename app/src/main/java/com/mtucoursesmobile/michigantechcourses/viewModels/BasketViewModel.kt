@@ -293,15 +293,42 @@ class BasketViewModel(app: Application) :
           copiedSections
         )
       )
-      val copiedCalendar = calendarEntries[basketList[index].id]
-      if (copiedCalendar != null) {
+      var copiedCalendar = mutableMapOf<String, MutableMap<Int, MutableList<CalendarEntry>>>()
+      calendarEntries[basketList[index].id]?.let {
+        copiedCalendar =
+          calendarEntries[basketList[index].id]?.let { deepCopyCalendarEntries(it) }!!
+      }
+      if (calendarEntries[basketList[index].id] != null) {
         calendarEntries[newID] = copiedCalendar
+      }
+      for (e in calendarEntries) {
+        Log.d(
+          "DEBUGCAL",
+          System.identityHashCode(e).toString()
+        )
       }
       updateBaskets(
         semester,
         basketList
       )
     }
+  }
+
+  // Deep copy the calendar entries
+  private fun deepCopyCalendarEntries(
+    original: MutableMap<String, MutableMap<Int, MutableList<CalendarEntry>>>
+  ): MutableMap<String, MutableMap<Int, MutableList<CalendarEntry>>> {
+    val copiedMap = mutableMapOf<String, MutableMap<Int, MutableList<CalendarEntry>>>()
+    for ((key, value) in original) {
+      val copiedInnerMap = mutableMapOf<Int, MutableList<CalendarEntry>>()
+      for ((innerKey, innerValue) in value) {
+        val copiedList = innerValue.map { it.copy() }
+          .toMutableList() // Assuming CalendarEntry has a copy() function
+        copiedInnerMap[innerKey] = copiedList
+      }
+      copiedMap[key] = copiedInnerMap
+    }
+    return copiedMap
   }
 
   // Refresh all baskets for a given semester
@@ -313,7 +340,7 @@ class BasketViewModel(app: Application) :
       basketList
     )
   }
-  
+
   // Converts sectionTimeRules into a CalendarEntry for easier access in CalendarView
   private fun convertCalendarEntry(
     day: String, sectionTime: SectionTimeRRulesConfig, section: MTUSections
