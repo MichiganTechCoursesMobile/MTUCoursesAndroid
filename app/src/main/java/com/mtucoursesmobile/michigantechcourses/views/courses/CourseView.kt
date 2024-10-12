@@ -6,10 +6,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
@@ -32,16 +29,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import com.mtucoursesmobile.michigantechcourses.R
-import com.mtucoursesmobile.michigantechcourses.components.LoadingSpinnerAnimation
 import com.mtucoursesmobile.michigantechcourses.components.courses.ExpandableSearchView
 import com.mtucoursesmobile.michigantechcourses.components.courses.FilterModal
+import com.mtucoursesmobile.michigantechcourses.components.courses.LoadingScreen
 import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
@@ -94,7 +88,12 @@ fun CourseView(
         actions = {
           AnimatedVisibility(visible = !searching) {
             AnimatedVisibility(
-              visible = (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()),
+              visible = (courseViewModel.courseStatus.intValue == 1 &&
+                  courseViewModel.sectionStatus.intValue == 1 &&
+                  courseViewModel.semesterStatus.intValue == 1 &&
+                  courseViewModel.instructorStatus.intValue == 1 &&
+                  courseViewModel.buildingStatus.intValue == 1 &&
+                  courseViewModel.dropStatus.intValue == 1),
               enter = scaleIn(
                 animationSpec = tween(
                   delayMillis = 700
@@ -162,7 +161,12 @@ fun CourseView(
     },
     floatingActionButton = {
       AnimatedVisibility(
-        visible = (courseViewModel.courseList.isNotEmpty() && courseViewModel.sectionList.isNotEmpty()),
+        visible = (courseViewModel.courseStatus.intValue == 1 &&
+            courseViewModel.sectionStatus.intValue == 1 &&
+            courseViewModel.semesterStatus.intValue == 1 &&
+            courseViewModel.instructorStatus.intValue == 1 &&
+            courseViewModel.buildingStatus.intValue == 1 &&
+            courseViewModel.dropStatus.intValue == 1),
         enter = scaleIn(
           animationSpec = tween(
             delayMillis = 700
@@ -189,35 +193,35 @@ fun CourseView(
         )
       }
     }) { innerPadding ->
-    if (courseViewModel.courseNotFound.value) {
-      Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-      ) {
-        Text(
-          text = "404 Courses not found",
+    AnimatedContent(
+      targetState = (
+          courseViewModel.courseStatus.intValue != 1 ||
+              courseViewModel.sectionStatus.intValue != 1 ||
+              courseViewModel.semesterStatus.intValue != 1 ||
+              courseViewModel.instructorStatus.intValue != 1 ||
+              courseViewModel.buildingStatus.intValue != 1 ||
+              courseViewModel.dropStatus.intValue != 1
+          ),
+      label = "CourseList",
+    ) { isLoading ->
+      if (isLoading) {
+        LoadingScreen(
+          innerPadding,
+          courseViewModel.courseStatus.intValue,
+          courseViewModel.sectionStatus.intValue,
+          courseViewModel.semesterStatus.intValue,
+          courseViewModel.instructorStatus.intValue,
+          courseViewModel.buildingStatus.intValue,
+          courseViewModel.dropStatus.intValue,
+          courseViewModel::retry
         )
-        AsyncImage(
-          model = R.drawable.cat404,
-          contentDescription = "404 Cat"
+      } else {
+        LazyCourseList(
+          listState = listState,
+          courseViewModel,
+          navController,
+          innerPadding
         )
-      }
-    } else {
-      AnimatedContent(
-        targetState = (courseViewModel.courseList.isEmpty() && courseViewModel.sectionList.isEmpty()),
-        label = "CourseList",
-      ) { isEmpty ->
-        if (isEmpty) {
-          LoadingSpinnerAnimation(innerPadding)
-        } else {
-          LazyCourseList(
-            listState = listState,
-            courseViewModel,
-            navController,
-            innerPadding
-          )
-        }
       }
     }
     FilterModal(

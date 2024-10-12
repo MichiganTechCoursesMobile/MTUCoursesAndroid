@@ -3,9 +3,7 @@
 package com.mtucoursesmobile.michigantechcourses.api
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.MutableState
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
@@ -21,6 +19,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 
 interface RetroFitUpdate {
   @GET("courses")
@@ -41,9 +40,6 @@ interface RetroFitUpdate {
   ): Call<List<MTUInstructor>>
 }
 
-@OptIn(
-  ExperimentalMaterial3Api::class,
-)
 fun updateMTUCourses(
   courseList: MutableMap<String, MTUCourses>,
   sectionList: MutableMap<String, MutableList<MTUSections>>,
@@ -70,6 +66,22 @@ fun updateMTUCourses(
     lastUpdatedInstructors = Instant.now().toString()
   }
   val okHttpClient = OkHttpClient.Builder()
+    .readTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .connectTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .writeTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .callTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
     .build()
 
   val retroFit = Retrofit.Builder()
@@ -116,10 +128,14 @@ fun updateMTUCourses(
     }
 
     override fun onFailure(call: Call<List<MTUCourses>?>, t: Throwable) {
-      Log.d(
-        "DEBUG",
-        t.cause.toString()
-      )
+      if (loading != null) {
+        Toast.makeText(
+          ctx,
+          "Update Failed",
+          Toast.LENGTH_SHORT
+        ).show()
+        loading.value = false
+      }
       return
     }
   })
@@ -161,10 +177,14 @@ fun updateMTUCourses(
     }
 
     override fun onFailure(call: Call<List<MTUSections>?>, t: Throwable) {
-      Log.d(
-        "DEBUG",
-        t.cause.toString()
-      )
+      if (loading != null) {
+        Toast.makeText(
+          ctx,
+          "Update Failed",
+          Toast.LENGTH_SHORT
+        ).show()
+        loading.value = false
+      }
       return
     }
 
@@ -191,10 +211,14 @@ fun updateMTUCourses(
     }
 
     override fun onFailure(call: Call<List<MTUInstructor>?>, t: Throwable) {
-      Log.d(
-        "DEBUG",
-        t.cause.toString()
-      )
+      if (loading != null) {
+        Toast.makeText(
+          ctx,
+          "Update Failed",
+          Toast.LENGTH_SHORT
+        ).show()
+        loading.value = false
+      }
       return
     }
   })

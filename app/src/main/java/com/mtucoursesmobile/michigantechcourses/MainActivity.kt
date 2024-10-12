@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
 
       LaunchedEffect(Unit) {
         while (true) {
-          if (!courseViewModel.courseNotFound.value && courseViewModel.courseList.isNotEmpty()) {
+          if (courseViewModel.courseStatus.intValue == 0 && courseViewModel.courseList.isNotEmpty()) {
             courseViewModel.updateSemester(
               context,
               null

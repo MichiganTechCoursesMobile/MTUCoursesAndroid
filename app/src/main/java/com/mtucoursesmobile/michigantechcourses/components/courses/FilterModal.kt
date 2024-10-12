@@ -114,7 +114,8 @@ fun FilterModal(
                   )
                 }
               },
-              modifier = Modifier.padding(end = 4.dp)
+              modifier = Modifier.padding(end = 4.dp),
+              colors = FilterChipDefaults.filterChipColors(selectedContainerColor = MaterialTheme.colorScheme.primaryContainer)
             )
           }
         }

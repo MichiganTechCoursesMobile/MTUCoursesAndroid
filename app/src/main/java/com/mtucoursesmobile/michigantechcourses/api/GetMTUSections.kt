@@ -2,9 +2,7 @@
 
 package com.mtucoursesmobile.michigantechcourses.api
 
-import android.content.Context
-import android.util.Log
-import android.widget.Toast
+import androidx.compose.runtime.MutableIntState
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
@@ -17,6 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 
 interface RetroFitSection {
 
@@ -29,10 +28,26 @@ interface RetroFitSection {
 
 fun getMTUSections(
   sectionList: MutableMap<String, MutableList<MTUSections>>,
-  semester: String, year: String, lastUpdatedSince: MutableList<LastUpdatedSince>, context: Context,
-  currentSemester: CurrentSemester
+  semester: String, year: String, lastUpdatedSince: MutableList<LastUpdatedSince>,
+  currentSemester: CurrentSemester, sectionStatus: MutableIntState
 ) {
   val okHttpClient = OkHttpClient.Builder()
+    .readTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .connectTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .writeTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .callTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
     .build()
 
   val retroFit = Retrofit.Builder()
@@ -56,6 +71,7 @@ fun getMTUSections(
         val sectionData: List<MTUSections> = response.body()!!
         if (currentSemester.semester == semester && currentSemester.year == year) {
           if (sectionData.isEmpty()) {
+            sectionStatus.intValue = 2
             return
           }
           sectionList.putAll(sectionData.groupBy { it.courseId }.mapValuesTo(
@@ -70,21 +86,14 @@ fun getMTUSections(
               timeGot
             )
           )
+          sectionStatus.intValue = 1
         }
         return
       }
     }
 
     override fun onFailure(call: Call<List<MTUSections>?>, t: Throwable) {
-      Log.d(
-        "DEBUG",
-        t.cause.toString()
-      )
-      Toast.makeText(
-        context,
-        "Something went wrong, please try again...",
-        Toast.LENGTH_LONG
-      ).show()
+      sectionStatus.intValue = 2
       return
     }
   })

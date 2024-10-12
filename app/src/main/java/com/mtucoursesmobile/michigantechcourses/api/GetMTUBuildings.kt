@@ -2,7 +2,7 @@
 
 package com.mtucoursesmobile.michigantechcourses.api
 
-import android.util.Log
+import androidx.compose.runtime.MutableIntState
 import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -11,6 +11,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import java.util.concurrent.TimeUnit
 
 interface RetroFitBuildings {
   @GET("buildings")
@@ -19,8 +20,26 @@ interface RetroFitBuildings {
 
 }
 
-fun getMTUBuildings(buildingList: MutableMap<String, MTUBuilding>) {
+fun getMTUBuildings(
+  buildingList: MutableMap<String, MTUBuilding>, buildingStatus: MutableIntState
+) {
   val okHttpClient = OkHttpClient.Builder()
+    .readTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .connectTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .writeTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .callTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
     .build()
 
   val retroFit = Retrofit.Builder()
@@ -37,16 +56,20 @@ fun getMTUBuildings(buildingList: MutableMap<String, MTUBuilding>) {
     ) {
       if (response.isSuccessful) {
         val buildingData: List<MTUBuilding> = response.body()!!
+        if (buildingData.isEmpty()) {
+          buildingStatus.intValue = 2
+          return
+        }
         buildingList.clear()
         buildingList.putAll(buildingData.associateBy { it.name })
+        buildingStatus.intValue = 1
+        return
       }
     }
 
     override fun onFailure(call: Call<List<MTUBuilding>?>, t: Throwable) {
-      Log.d(
-        "DEBUG",
-        t.cause.toString()
-      )
+      buildingStatus.intValue = 2
+      return
     }
 
   })

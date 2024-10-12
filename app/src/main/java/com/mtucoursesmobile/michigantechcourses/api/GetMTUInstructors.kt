@@ -2,8 +2,7 @@
 
 package com.mtucoursesmobile.michigantechcourses.api
 
-import android.content.Context
-import android.util.Log
+import androidx.compose.runtime.MutableIntState
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import okhttp3.OkHttpClient
@@ -14,6 +13,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 
 interface RetroFitInstructors {
   @GET("instructors")
@@ -23,10 +23,26 @@ interface RetroFitInstructors {
 }
 
 fun getMTUInstructors(
-  instructorList: MutableMap<Number, MTUInstructor>, context: Context,
-  lastUpdatedSince: MutableList<LastUpdatedSince>
+  instructorList: MutableMap<Number, MTUInstructor>,
+  lastUpdatedSince: MutableList<LastUpdatedSince>, instructorStatus: MutableIntState
 ) {
   val okHttpClient = OkHttpClient.Builder()
+    .readTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .connectTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .writeTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .callTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
     .build()
 
   val retroFit = Retrofit.Builder()
@@ -43,6 +59,10 @@ fun getMTUInstructors(
     ) {
       if (response.isSuccessful) {
         val instructorData: List<MTUInstructor> = response.body()!!
+        if (instructorData.isEmpty()) {
+          instructorStatus.intValue = 2
+          return
+        }
         instructorList.clear()
         instructorList.putAll(instructorData.associateBy { it.id })
         lastUpdatedSince.removeAll(lastUpdatedSince.filter { entry -> entry.type == "course" })
@@ -54,14 +74,14 @@ fun getMTUInstructors(
             Instant.now().toString()
           )
         )
+        instructorStatus.intValue = 1
       }
+      return
     }
 
     override fun onFailure(call: Call<List<MTUInstructor>?>, t: Throwable) {
-      Log.d(
-        "DEBUG",
-        t.cause.toString()
-      )
+      instructorStatus.intValue = 2
+      return
     }
 
   })

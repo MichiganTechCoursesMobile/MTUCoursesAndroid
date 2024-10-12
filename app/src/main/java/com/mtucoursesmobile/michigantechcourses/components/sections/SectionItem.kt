@@ -323,9 +323,7 @@ fun SectionItem(
                 Uri.parse("geo:0,0?q=${buildings[section.buildingName]?.lat},${buildings[section.buildingName]?.lon}(${buildings[section.buildingName]?.shortName})")
               )
               SuggestionChip(
-                onClick = {
-                  mContext.startActivity(intent)
-                },
+                onClick = { if (expandedState.value) mContext.startActivity(intent) },
                 label = { Text(text = "${buildings[section.buildingName]?.shortName} ${section.room}") },
                 modifier = Modifier.padding(end = 4.dp)
               )
@@ -343,7 +341,7 @@ fun SectionItem(
               )
             }
             SuggestionChip(
-              onClick = { clipboardManager.setText(AnnotatedString(section.crn)) },
+              onClick = { if (expandedState.value) clipboardManager.setText(AnnotatedString(section.crn)) },
               label = { Text(text = "CRN: ${section.crn}") },
               modifier = Modifier.padding(end = 4.dp)
             )

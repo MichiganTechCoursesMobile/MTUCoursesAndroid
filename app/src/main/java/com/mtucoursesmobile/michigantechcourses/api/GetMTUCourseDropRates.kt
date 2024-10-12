@@ -2,7 +2,7 @@
 
 package com.mtucoursesmobile.michigantechcourses.api
 
-import android.util.Log
+import androidx.compose.runtime.MutableIntState
 import com.mtucoursesmobile.michigantechcourses.classes.CourseFailDrop
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -12,6 +12,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Headers
+import java.util.concurrent.TimeUnit
 
 interface RetroFitDrop {
   @Headers(
@@ -22,8 +23,26 @@ interface RetroFitDrop {
   fun getMTUFailDrop(): Call<HashMap<String, List<CourseFailDrop>>>
 }
 
-fun getMTUCourseDropRates(failList: MutableMap<String, List<CourseFailDrop>>) {
+fun getMTUCourseDropRates(
+  failList: MutableMap<String, List<CourseFailDrop>>, dropStatus: MutableIntState
+) {
   val okHttpClient = OkHttpClient.Builder()
+    .readTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .connectTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .writeTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .callTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
     .build()
 
   val retroFit = Retrofit.Builder()
@@ -41,10 +60,12 @@ fun getMTUCourseDropRates(failList: MutableMap<String, List<CourseFailDrop>>) {
     ) {
       val failDropHash: HashMap<String, List<CourseFailDrop>> = response.body()!!
       if (failDropHash.isEmpty()) {
+        dropStatus.intValue = 2
         return
       }
       failList.clear()
       failList.putAll(failDropHash)
+      dropStatus.intValue = 1
       return
     }
 
@@ -52,10 +73,7 @@ fun getMTUCourseDropRates(failList: MutableMap<String, List<CourseFailDrop>>) {
       call: Call<HashMap<String, List<CourseFailDrop>>?>,
       t: Throwable
     ) {
-      Log.d(
-        "DEBUG",
-        t.cause.toString()
-      )
+      dropStatus.intValue = 2
       return
     }
 

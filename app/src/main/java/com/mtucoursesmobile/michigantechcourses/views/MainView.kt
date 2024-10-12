@@ -22,10 +22,12 @@ import androidx.compose.material.icons.outlined.ShoppingBasket
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
@@ -127,6 +129,10 @@ fun MainView(
                 NavigationBarItem(
                   label = { Text(text = item.first) },
                   selected = currentDestination?.hierarchy?.any { it.route == item.first } == true,
+                  colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                  ),
                   onClick = {
                     // Prevent unneeded navigation
                     if (navController.currentBackStackEntry?.destination?.route.toString() == item.first) {

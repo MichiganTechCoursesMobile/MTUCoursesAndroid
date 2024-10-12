@@ -3,6 +3,7 @@ package com.mtucoursesmobile.michigantechcourses.viewModels
 import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +41,6 @@ class CourseViewModel(app: Application) :
   val failList = mutableStateMapOf<String, List<CourseFailDrop>>()
 
   val semesterList = mutableStateListOf<MTUSemesters>()
-  val courseNotFound = mutableStateOf(false)
 
   val filteredCourseList = mutableStateMapOf<String, MTUCourses>()
   var courseSearchValue = mutableStateOf("")
@@ -51,10 +51,17 @@ class CourseViewModel(app: Application) :
 
   private val lastUpdatedSince = mutableListOf<LastUpdatedSince>()
 
+  val semesterStatus = mutableIntStateOf(0)
+  val courseStatus = mutableIntStateOf(0)
+  val sectionStatus = mutableIntStateOf(0)
+  val instructorStatus = mutableIntStateOf(0)
+  val buildingStatus = mutableIntStateOf(0)
+  val dropStatus = mutableIntStateOf(0)
+
+
   // Get the initial course list
   init {
     initialCourselist(
-      app.applicationContext
     )
   }
 
@@ -76,8 +83,7 @@ class CourseViewModel(app: Application) :
 
   // Updates the selected semester's year (Fall 2024 -> Fall 2025)
   fun updateSemesterYear(
-    year: Number,
-    context: Context
+    year: Number
   ) {
     currentSemester = CurrentSemester(
       "${
@@ -87,15 +93,13 @@ class CourseViewModel(app: Application) :
       currentSemester.semester
     )
     setSemester(
-      currentSemester,
-      context
+      currentSemester
     )
   }
 
   // Change the semester but keep the year (Fall 2024 -> Spring 2024)
   fun updateSemesterPeriod(
-    semester: String,
-    context: Context
+    semester: String
   ) {
     currentSemester = CurrentSemester(
       "$semester ${currentSemester.year}",
@@ -103,72 +107,78 @@ class CourseViewModel(app: Application) :
       semester.uppercase()
     )
     setSemester(
-      currentSemester,
-      context
+      currentSemester
     )
   }
 
   // Set the semester to a given semester, then get its courses and sections
   private fun setSemester(
-    newSemester: CurrentSemester,
-    context: Context
+    newSemester: CurrentSemester
   ) {
     courseList.clear()
-    courseNotFound.value = false
+    sectionList.clear()
+    courseStatus.intValue = 0
+    sectionStatus.intValue = 0
+    filteredCourseList.clear()
     currentSemester = newSemester
     viewModelScope.launch(Dispatchers.IO) {
       getMTUCourses(
         courseList,
-        courseNotFound,
         newSemester.semester,
         newSemester.year,
         lastUpdatedSince,
-        currentSemester
+        currentSemester,
+        courseStatus
       )
       getMTUSections(
         sectionList,
         newSemester.semester,
         newSemester.year,
         lastUpdatedSince,
-        context,
-        currentSemester
+        currentSemester,
+        sectionStatus
       )
     }
 
   }
 
   // Get the first set of courses, sections, instructors, buildings, semesters, and drop rates
-  private fun initialCourselist(context: Context) {
-    courseNotFound.value = false
+  private fun initialCourselist() {
     viewModelScope.launch(Dispatchers.IO) {
-      getMTUBuildings(buildingList)
+      getMTUBuildings(
+        buildingList,
+        buildingStatus
+      )
       getMTUInstructors(
         instructorList,
-        context,
-        lastUpdatedSince
+        lastUpdatedSince,
+        instructorStatus
       )
       getMTUSemesters(
         semesterList,
-        context
+        semesterStatus
       )
-      getMTUCourseDropRates(failList)
+      getMTUCourseDropRates(
+        failList,
+        dropStatus
+      )
 
       currentSemester = initialSemester()
       getMTUCourses(
         courseList,
-        courseNotFound,
         currentSemester.semester,
         currentSemester.year,
         lastUpdatedSince,
-        currentSemester
+        currentSemester,
+        courseStatus
       )
       getMTUSections(
         sectionList,
         currentSemester.semester,
         currentSemester.year,
         lastUpdatedSince,
-        context,
-        currentSemester
+        currentSemester,
+        sectionStatus
       )
     }
   }
@@ -178,7 +188,6 @@ class CourseViewModel(app: Application) :
     context: Context,
     loading: MutableState<Boolean>?
   ) {
-    courseNotFound.value = false
     viewModelScope.launch(Dispatchers.IO) {
       updateMTUCourses(
         courseList,
@@ -191,6 +200,71 @@ class CourseViewModel(app: Application) :
         context,
         currentSemester
       )
+    }
+  }
+
+  fun retry() {
+    if (courseStatus.intValue == 2) {
+      courseStatus.intValue = 0
+      filteredCourseList.clear()
+      viewModelScope.launch(Dispatchers.IO) {
+        getMTUCourses(
+          courseList,
+          currentSemester.semester,
+          currentSemester.year,
+          lastUpdatedSince,
+          currentSemester,
+          courseStatus
+        )
+      }
+    }
+    if (sectionStatus.intValue == 2) {
+      sectionStatus.intValue = 0
+      viewModelScope.launch(Dispatchers.IO) {
+        getMTUSections(
+          sectionList,
+          currentSemester.semester,
+          currentSemester.year,
+          lastUpdatedSince,
+          currentSemester,
+          sectionStatus
+        )
+      }
+    }
+    if (semesterStatus.intValue == 2) {
+      semesterStatus.intValue = 0
+      getMTUSemesters(
+        semesterList,
+        semesterStatus
+      )
+    }
+    if (instructorStatus.intValue == 2) {
+      instructorStatus.intValue = 0
+      viewModelScope.launch(Dispatchers.IO) {
+        getMTUInstructors(
+          instructorList,
+          lastUpdatedSince,
+          instructorStatus
+        )
+      }
+    }
+    if (buildingStatus.intValue == 2) {
+      buildingStatus.intValue = 0
+      viewModelScope.launch(Dispatchers.IO) {
+        getMTUBuildings(
+          buildingList,
+          buildingStatus
+        )
+      }
+    }
+    if (dropStatus.intValue == 2) {
+      dropStatus.intValue = 0
+      viewModelScope.launch(Dispatchers.IO) {
+        getMTUCourseDropRates(
+          failList,
+          dropStatus
+        )
+      }
     }
   }
 

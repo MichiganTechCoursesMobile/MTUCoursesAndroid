@@ -2,12 +2,10 @@
 
 package com.mtucoursesmobile.michigantechcourses.api
 
-import android.util.Log
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.MutableIntState
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
-import kotlinx.coroutines.DelicateCoroutinesApi
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -18,6 +16,7 @@ import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Query
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 
 interface RetroFitCourses {
   @Headers(
@@ -31,16 +30,31 @@ interface RetroFitCourses {
   ): Call<List<MTUCourses>>
 }
 
-@OptIn(DelicateCoroutinesApi::class)
 fun getMTUCourses(
   courseList: MutableMap<String, MTUCourses>,
-  courseNotFound: MutableState<Boolean>,
   semester: String,
   year: String,
   lastUpdatedSince: MutableList<LastUpdatedSince>,
-  currentSemester: CurrentSemester
+  currentSemester: CurrentSemester,
+  courseStatus: MutableIntState
 ) {
   val okHttpClient = OkHttpClient.Builder()
+    .readTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .connectTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .writeTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .callTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
     .build()
 
   val retroFit = Retrofit.Builder()
@@ -64,7 +78,7 @@ fun getMTUCourses(
         val courseData: List<MTUCourses> = response.body()!!
         if (currentSemester.semester == semester && currentSemester.year == year) {
           if (courseData.isEmpty()) {
-            courseNotFound.value = true
+            courseStatus.intValue = 2
             return
           }
           courseList.clear()
@@ -78,6 +92,7 @@ fun getMTUCourses(
               timeGot
             )
           )
+          courseStatus.intValue = 1
         }
         return
       }
@@ -87,11 +102,7 @@ fun getMTUCourses(
       call: Call<List<MTUCourses>?>,
       t: Throwable
     ) {
-      Log.d(
-        "DEBUG",
-        t.cause.toString()
-      )
-      courseNotFound.value = true
+      courseStatus.intValue = 2
       return
     }
   })

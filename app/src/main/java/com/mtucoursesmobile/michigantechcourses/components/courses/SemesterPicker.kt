@@ -19,14 +19,15 @@ import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
 import kotlinx.coroutines.launch
 import java.time.Year
+import kotlin.reflect.KFunction1
 
 @Composable
 fun SemesterPicker(
   expanded: MutableState<Boolean>,
   currentSemester: CurrentSemester,
   semesterList: List<MTUSemesters>,
-  updateSemesterPeriod: (String, Context) -> Unit,
-  updateSemesterYear: (Number, Context) -> Unit,
+  updateSemesterPeriod: KFunction1<String, Unit>,
+  updateSemesterYear: KFunction1<Number, Unit>,
   getSemesterBaskets: (CurrentSemester) -> Unit,
   context: Context,
   semesterText: MutableState<String>,
@@ -63,8 +64,7 @@ fun SemesterPicker(
             scope.launch {
               courseNavController?.navigate("courseList")
               updateSemesterPeriod(
-                i,
-                context
+                i
               )
               getSemesterBaskets(
                 CurrentSemester(
@@ -97,8 +97,7 @@ fun SemesterPicker(
             scope.launch {
               courseNavController?.navigate("courseList")
               updateSemesterYear(
-                i,
-                context
+                i
               )
               getSemesterBaskets(
                 CurrentSemester(

@@ -2,8 +2,7 @@
 
 package com.mtucoursesmobile.michigantechcourses.api
 
-import android.content.Context
-import android.widget.Toast
+import androidx.compose.runtime.MutableIntState
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -12,6 +11,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import java.util.concurrent.TimeUnit
 
 interface RetroFitAPISemesters {
   @GET("semesters")
@@ -21,9 +21,25 @@ interface RetroFitAPISemesters {
 
 fun getMTUSemesters(
   semesterList: MutableList<MTUSemesters>,
-  context: Context
+  semesterStatus: MutableIntState
 ) {
   val okHttpClient = OkHttpClient.Builder()
+    .readTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .connectTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .writeTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
+    .callTimeout(
+      10,
+      TimeUnit.SECONDS
+    )
     .build()
 
   val retrofit = Retrofit.Builder()
@@ -41,20 +57,23 @@ fun getMTUSemesters(
       if (response.isSuccessful) {
         val semesterData: List<MTUSemesters> = response.body()!!
 
-        semesterList.addAll(semesterData)
+        if (semesterData.isEmpty()) {
+          semesterStatus.intValue = 2
+          return
+        }
 
+        semesterList.addAll(semesterData)
+        semesterStatus.intValue = 1
       }
+      return
     }
 
     override fun onFailure(
       call: Call<List<MTUSemesters>?>,
       t: Throwable
     ) {
-      Toast.makeText(
-        context,
-        "API not available, check Network Connection",
-        Toast.LENGTH_LONG
-      ).show()
+      semesterStatus.intValue = 2
+      return
     }
   })
 }
