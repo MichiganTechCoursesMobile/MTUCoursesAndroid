@@ -13,6 +13,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 interface RetroFitBuildings {
@@ -26,12 +27,6 @@ fun getMTUBuildings(
   buildingList: MutableMap<String, MTUBuilding>, buildingStatus: MutableIntState, context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
-    .cache(
-      Cache(
-        context.cacheDir,
-        maxSize = 50L * 1024L * 1024L // 50 MiB
-      )
-    )
     .readTimeout(
       10,
       TimeUnit.SECONDS
@@ -48,6 +43,16 @@ fun getMTUBuildings(
       10,
       TimeUnit.SECONDS
     )
+    .cache(
+      Cache(
+        File(
+          context.cacheDir,
+          "buildingCache"
+        ),
+        maxSize = 50L * 1024L * 1024L // 50 MiB
+      )
+    )
+    .addNetworkInterceptor(BasicCacheInterceptor())
     .build()
 
   val retroFit = Retrofit.Builder()

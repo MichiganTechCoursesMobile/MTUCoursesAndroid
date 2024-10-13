@@ -2,10 +2,12 @@
 
 package com.mtucoursesmobile.michigantechcourses.api
 
+import android.content.Context
 import androidx.compose.runtime.MutableIntState
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.LastUpdatedSince
 import com.mtucoursesmobile.michigantechcourses.classes.MTUCourses
+import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -15,6 +17,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Query
+import java.io.File
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 
@@ -36,7 +39,8 @@ fun getMTUCourses(
   year: String,
   lastUpdatedSince: MutableList<LastUpdatedSince>,
   currentSemester: CurrentSemester,
-  courseStatus: MutableIntState
+  courseStatus: MutableIntState,
+  context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
     .readTimeout(
@@ -54,7 +58,16 @@ fun getMTUCourses(
     .callTimeout(
       10,
       TimeUnit.SECONDS
+    ).cache(
+      Cache(
+        File(
+          context.cacheDir,
+          "buildingCache"
+        ),
+        maxSize = 50L * 1024L * 1024L // 50 MiB
+      )
     )
+    .addNetworkInterceptor(CourseCacheInterceptor())
     .build()
 
   val retroFit = Retrofit.Builder()

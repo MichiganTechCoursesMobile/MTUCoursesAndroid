@@ -115,6 +115,7 @@ class CourseViewModel(app: Application) :
   private fun setSemester(
     newSemester: CurrentSemester
   ) {
+    val context = getApplication<Application>().applicationContext
     courseList.clear()
     sectionList.clear()
     courseStatus.intValue = 0
@@ -128,7 +129,8 @@ class CourseViewModel(app: Application) :
         newSemester.year,
         lastUpdatedSince,
         currentSemester,
-        courseStatus
+        courseStatus,
+        context
       )
       getMTUSections(
         sectionList,
@@ -136,7 +138,8 @@ class CourseViewModel(app: Application) :
         newSemester.year,
         lastUpdatedSince,
         currentSemester,
-        sectionStatus
+        sectionStatus,
+        context
       )
     }
 
@@ -175,7 +178,8 @@ class CourseViewModel(app: Application) :
         currentSemester.year,
         lastUpdatedSince,
         currentSemester,
-        courseStatus
+        courseStatus,
+        context
       )
       getMTUSections(
         sectionList,
@@ -183,7 +187,8 @@ class CourseViewModel(app: Application) :
         currentSemester.year,
         lastUpdatedSince,
         currentSemester,
-        sectionStatus
+        sectionStatus,
+        context
       )
     }
   }
@@ -220,7 +225,8 @@ class CourseViewModel(app: Application) :
           currentSemester.year,
           lastUpdatedSince,
           currentSemester,
-          courseStatus
+          courseStatus,
+          context
         )
       }
     }
@@ -233,7 +239,8 @@ class CourseViewModel(app: Application) :
           currentSemester.year,
           lastUpdatedSince,
           currentSemester,
-          sectionStatus
+          sectionStatus,
+          context
         )
       }
     }
