@@ -165,7 +165,7 @@ fun CalendarItem(
                             containerColor = Color(
                               "${courseList[entry.section.courseId]?.title}${entry.section.id}".toHslColor(
                                 saturation = 0.6f,
-                                lightness = 0.6f
+                                lightness = 0.7f
                               )
                             )
                           ),
