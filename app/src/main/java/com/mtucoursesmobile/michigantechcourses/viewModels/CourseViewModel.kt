@@ -145,22 +145,27 @@ class CourseViewModel(app: Application) :
   // Get the first set of courses, sections, instructors, buildings, semesters, and drop rates
   private fun initialCourselist() {
     viewModelScope.launch(Dispatchers.IO) {
+      val context = getApplication<Application>().applicationContext
       getMTUBuildings(
         buildingList,
-        buildingStatus
+        buildingStatus,
+        context
       )
       getMTUInstructors(
         instructorList,
         lastUpdatedSince,
-        instructorStatus
+        instructorStatus,
+        context
       )
       getMTUSemesters(
         semesterList,
-        semesterStatus
+        semesterStatus,
+        context
       )
       getMTUCourseDropRates(
         failList,
-        dropStatus
+        dropStatus,
+        context
       )
 
       currentSemester = initialSemester()
@@ -204,6 +209,7 @@ class CourseViewModel(app: Application) :
   }
 
   fun retry() {
+    val context = getApplication<Application>().applicationContext
     if (courseStatus.intValue == 2) {
       courseStatus.intValue = 0
       filteredCourseList.clear()
@@ -235,7 +241,8 @@ class CourseViewModel(app: Application) :
       semesterStatus.intValue = 0
       getMTUSemesters(
         semesterList,
-        semesterStatus
+        semesterStatus,
+        context
       )
     }
     if (instructorStatus.intValue == 2) {
@@ -244,7 +251,8 @@ class CourseViewModel(app: Application) :
         getMTUInstructors(
           instructorList,
           lastUpdatedSince,
-          instructorStatus
+          instructorStatus,
+          context
         )
       }
     }
@@ -253,7 +261,8 @@ class CourseViewModel(app: Application) :
       viewModelScope.launch(Dispatchers.IO) {
         getMTUBuildings(
           buildingList,
-          buildingStatus
+          buildingStatus,
+          context
         )
       }
     }
@@ -262,7 +271,8 @@ class CourseViewModel(app: Application) :
       viewModelScope.launch(Dispatchers.IO) {
         getMTUCourseDropRates(
           failList,
-          dropStatus
+          dropStatus,
+          context
         )
       }
     }

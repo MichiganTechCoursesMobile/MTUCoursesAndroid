@@ -80,7 +80,6 @@ fun ThemePicker() {
       ),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.Center
-
     ) {
       Icon(
         imageVector = Icons.Outlined.Brush,

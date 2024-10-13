@@ -2,8 +2,10 @@
 
 package com.mtucoursesmobile.michigantechcourses.api
 
+import android.content.Context
 import androidx.compose.runtime.MutableIntState
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSemesters
+import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -21,15 +23,22 @@ interface RetroFitAPISemesters {
 
 fun getMTUSemesters(
   semesterList: MutableList<MTUSemesters>,
-  semesterStatus: MutableIntState
+  semesterStatus: MutableIntState,
+  context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
+    .cache(
+      Cache(
+        context.cacheDir,
+        maxSize = 50L * 1024L * 1024L // 50 MiB
+      )
+    )
     .readTimeout(
       10,
       TimeUnit.SECONDS
     )
     .connectTimeout(
-      10,
+      2,
       TimeUnit.SECONDS
     )
     .writeTimeout(

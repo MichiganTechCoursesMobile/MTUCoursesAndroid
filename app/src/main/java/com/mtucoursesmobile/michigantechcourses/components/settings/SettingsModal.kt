@@ -54,10 +54,7 @@ fun SettingsModal(showSettings: DrawerState) {
         scrollBehavior = scrollBehavior,
         windowInsets = WindowInsets.systemBars
           .only(WindowInsetsSides.End + WindowInsetsSides.Top),
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surfaceContainer,
-          titleContentColor = MaterialTheme.colorScheme.onSurface
-        ),
+        
         navigationIcon = {
           IconButton(onClick = { closeDrawer() }) {
             Icon(
@@ -79,11 +76,14 @@ fun SettingsModal(showSettings: DrawerState) {
   ) { contentPadding ->
     val layoutDirection = LocalLayoutDirection.current
 
-    Column(modifier = Modifier
-      .padding(contentPadding)
-      .verticalScroll(rememberScrollState())) {
+    Column(
+      modifier = Modifier
+        .padding(contentPadding)
+        .verticalScroll(rememberScrollState())
+    ) {
       ThemePicker()
       DayOfWeekPicker()
+      ExperimentalSharing()
       HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
       AboutDropdown()
       ContactMeDropdown()

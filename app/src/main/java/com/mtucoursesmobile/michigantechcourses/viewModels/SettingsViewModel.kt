@@ -35,6 +35,12 @@ class SettingsViewModel(private val userPreferences: UserPreferences) : ViewMode
       initialValue = FirstDayOfWeek.SUNDAY
     )
 
+  val sharingEnabled: StateFlow<Boolean> = userPreferences.sharingEnabledFlow.map { it }.stateIn(
+    scope = viewModelScope,
+    started = SharingStarted.WhileSubscribed(5_000),
+    initialValue = false
+  )
+
 
   fun updateIsDynamicTheme() {
     userPreferences.setDynamicTheme(
@@ -53,6 +59,13 @@ class SettingsViewModel(private val userPreferences: UserPreferences) : ViewMode
   fun updateFirstDayOfWeek(firstDayOfWeek: FirstDayOfWeek) {
     userPreferences.setFirstDayOfWeek(
       firstDayOfWeek,
+      viewModelScope
+    )
+  }
+
+  fun updateSharingEnabled() {
+    userPreferences.setSharingEnabled(
+      !sharingEnabled.value,
       viewModelScope
     )
   }

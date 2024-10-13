@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 const val IS_DYNAMIC_THEME = "is_dynamic_theme"
 const val THEME_TYPE = "theme_type"
 const val FIRST_DAY_OF_WEEK = "first_day_of_week"
+const val SHARING_ENABLED = "sharing_enabled"
 
 enum class ThemeType { SYSTEM, LIGHT, DARK }
 
@@ -24,6 +25,7 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
     val isDynamicTheme = booleanPreferencesKey(IS_DYNAMIC_THEME)
     val themeType = intPreferencesKey(THEME_TYPE)
     val firstDayOfWeek = intPreferencesKey(FIRST_DAY_OF_WEEK)
+    val sharingEnabled = booleanPreferencesKey(SHARING_ENABLED)
   }
 
   val isDynamicThemeFlow: Flow<Boolean> = dataStore.data.map { preferences ->
@@ -36,6 +38,10 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
 
   val firstDayOfWeekFlow: Flow<FirstDayOfWeek> = dataStore.data.map { preferences ->
     FirstDayOfWeek.entries[preferences[firstDayOfWeek] ?: 1]
+  }
+
+  val sharingEnabledFlow: Flow<Boolean> = dataStore.data.map { preferences ->
+    preferences[sharingEnabled] ?: false
   }
 
   fun setDynamicTheme(value: Boolean, scope: CoroutineScope) {
@@ -58,6 +64,14 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
     scope.launch {
       dataStore.edit { preferences ->
         preferences[firstDayOfWeek] = value.ordinal
+      }
+    }
+  }
+
+  fun setSharingEnabled(value: Boolean, scope: CoroutineScope) {
+    scope.launch {
+      dataStore.edit { preferences ->
+        preferences[sharingEnabled] = value
       }
     }
   }

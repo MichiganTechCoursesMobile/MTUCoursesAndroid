@@ -2,8 +2,10 @@
 
 package com.mtucoursesmobile.michigantechcourses.api
 
+import android.content.Context
 import androidx.compose.runtime.MutableIntState
 import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
+import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
@@ -21,15 +23,21 @@ interface RetroFitBuildings {
 }
 
 fun getMTUBuildings(
-  buildingList: MutableMap<String, MTUBuilding>, buildingStatus: MutableIntState
+  buildingList: MutableMap<String, MTUBuilding>, buildingStatus: MutableIntState, context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
+    .cache(
+      Cache(
+        context.cacheDir,
+        maxSize = 50L * 1024L * 1024L // 50 MiB
+      )
+    )
     .readTimeout(
       10,
       TimeUnit.SECONDS
     )
     .connectTimeout(
-      10,
+      2,
       TimeUnit.SECONDS
     )
     .writeTimeout(

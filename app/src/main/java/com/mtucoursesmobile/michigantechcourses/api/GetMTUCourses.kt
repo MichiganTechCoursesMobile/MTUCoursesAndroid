@@ -44,7 +44,7 @@ fun getMTUCourses(
       TimeUnit.SECONDS
     )
     .connectTimeout(
-      10,
+      2,
       TimeUnit.SECONDS
     )
     .writeTimeout(

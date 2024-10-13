@@ -1,5 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.views.basket
 
+import android.content.Context
+import android.content.Intent
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -26,11 +28,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.SectionInstructors
 import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketItem
@@ -38,7 +43,10 @@ import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketTabs
 import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsModelProvider
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsViewModel
 import java.text.DecimalFormat
+import java.util.Base64
 
 @OptIn(
   ExperimentalMaterial3Api::class
@@ -54,6 +62,8 @@ fun BasketView(
   val context = LocalContext.current
   val semesterText = remember { mutableStateOf(courseViewModel.currentSemester.readable) }
   val snackbarHostState = remember { SnackbarHostState() }
+  val settingsModel: SettingsViewModel = viewModel(factory = SettingsModelProvider.Factory)
+  val sharingEnabled by settingsModel.sharingEnabled.collectAsState()
   val listState = rememberLazyListState()
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
@@ -63,21 +73,6 @@ fun BasketView(
           titleContentColor = MaterialTheme.colorScheme.primary
         ),
         actions = {
-          IconButton(
-            onClick = {
-              Toast.makeText(
-                context,
-                "To Share ${basketViewModel.basketList[basketViewModel.currentBasketIndex].name}",
-                Toast.LENGTH_SHORT
-              ).show()
-            },
-            enabled = false
-          ) {
-            Icon(
-              imageVector = Icons.Outlined.Share,
-              contentDescription = "Share current Basket"
-            )
-          }
           SemesterPicker(
             expanded = expanded,
             currentSemester = courseViewModel.currentSemester,
@@ -88,6 +83,30 @@ fun BasketView(
             semesterText = semesterText,
             courseNavController = courseNavController
           )
+          AnimatedVisibility(visible = sharingEnabled && basketViewModel.currentBasketItems.size != 0) {
+            val currentCRNs =
+              basketViewModel.currentBasketItems.toList().joinToString(",") { it.second.crn }
+            val urlData =
+              "MTUANDROID:SEMESTER=${courseViewModel.currentSemester.semester}-${courseViewModel.currentSemester.year}&CRNS=$currentCRNs&BASKET_NAME=${basketViewModel.basketList[basketViewModel.currentBasketIndex].name}&NAME="
+            val sharingLink = "https://mymtu.link/viewBasket/" + Base64.getEncoder()
+              .encodeToString(urlData.toByteArray())
+            IconButton(
+              onClick = {
+                if (basketViewModel.currentBasketItems.size != 0) {
+                  context.share(
+                    sharingLink,
+                    basketViewModel.basketList[basketViewModel.currentBasketIndex].name
+                  )
+                }
+              }
+            ) {
+              Icon(
+                imageVector = Icons.Outlined.Share,
+                contentDescription = "Share current Basket",
+                tint = MaterialTheme.colorScheme.primary
+              )
+            }
+          }
         })
     },
     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -110,9 +129,7 @@ fun BasketView(
         val minCredits =
           basketViewModel.currentBasketItems.toList().sumOf { it.second.minCredits.toDouble() }
         FloatingActionButton(
-          onClick = {
-            courseViewModel.showFilter.value = true
-          }
+          onClick = {}
         ) {
           AnimatedContent(
             targetState = (listState.lastScrolledBackward || !listState.canScrollBackward),
@@ -196,9 +213,35 @@ fun BasketView(
 
         }
       }
-
     }
   }
-
 }
+
+private fun Context.share(link: String, basketName: String) {
+  try {
+    val share = Intent.createChooser(
+      Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(
+          Intent.EXTRA_TEXT,
+          link
+        )
+        putExtra(
+          Intent.EXTRA_TITLE,
+          "Share $basketName"
+        )
+        type = "text/plain"
+      },
+      null
+    )
+    startActivity(share)
+  } catch (t: Throwable) {
+    Toast.makeText(
+      this,
+      "Something went wrong",
+      Toast.LENGTH_LONG
+    ).show()
+  }
+}
+
 
