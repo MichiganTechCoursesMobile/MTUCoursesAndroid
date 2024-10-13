@@ -1,6 +1,8 @@
 package com.mtucoursesmobile.michigantechcourses.components.baskets
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.ShoppingBasket
@@ -14,6 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.mtucoursesmobile.michigantechcourses.classes.CourseBasket
 import kotlinx.coroutines.launch
 
@@ -35,9 +39,17 @@ fun BasketPicker(
         tint = MaterialTheme.colorScheme.primary,
       )
     }
+    val scrollState = rememberScrollState()
     DropdownMenu(
       expanded = expanded.value,
-      onDismissRequest = { expanded.value = false }) {
+      onDismissRequest = { expanded.value = false },
+      scrollState = scrollState,
+      modifier = Modifier
+        .heightIn(
+          0.dp,
+          300.dp
+        )
+    ) {
       basketList.forEachIndexed { index, item ->
         DropdownMenuItem(
           text = { Text(item.name) },
@@ -63,5 +75,4 @@ fun BasketPicker(
       }
     }
   }
-
 }
