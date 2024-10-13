@@ -191,7 +191,6 @@ fun MainView(
           ) {
             composable(
               "Courses",
-              deepLinks = listOf(navDeepLink { uriPattern = "https://mymtu.link/" }),
               enterTransition = {
                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
               },
@@ -208,6 +207,9 @@ fun MainView(
               )
             }
             composable("Baskets",
+              deepLinks = listOf(navDeepLink {
+                uriPattern = "https://mymtu.link/viewBasket/{basketContent}"
+              }),
               enterTransition = {
                 if (this.initialState.destination.route.toString() == "Calendar") {
                   slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
@@ -221,7 +223,12 @@ fun MainView(
                 } else {
                   slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
                 }
-              }) {
+              },
+              arguments = listOf(navArgument("basketContent") {
+                type = NavType.StringType
+                nullable = true
+              })
+            ) {
               BasketView(
                 courseViewModel,
                 basketViewModel,

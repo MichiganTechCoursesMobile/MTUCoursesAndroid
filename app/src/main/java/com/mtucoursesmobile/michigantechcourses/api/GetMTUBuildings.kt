@@ -27,6 +27,16 @@ fun getMTUBuildings(
   buildingList: MutableMap<String, MTUBuilding>, buildingStatus: MutableIntState, context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
+    .cache(
+      Cache(
+        File(
+          context.cacheDir,
+          "http-cache"
+        ),
+        maxSize = 50L * 1024L * 1024L // 50 MiB
+      )
+    )
+    .addNetworkInterceptor(BasicCacheInterceptor())
     .readTimeout(
       10,
       TimeUnit.SECONDS
@@ -43,16 +53,6 @@ fun getMTUBuildings(
       10,
       TimeUnit.SECONDS
     )
-    .cache(
-      Cache(
-        File(
-          context.cacheDir,
-          "buildingCache"
-        ),
-        maxSize = 50L * 1024L * 1024L // 50 MiB
-      )
-    )
-    .addNetworkInterceptor(BasicCacheInterceptor())
     .build()
 
   val retroFit = Retrofit.Builder()

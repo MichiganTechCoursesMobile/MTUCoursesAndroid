@@ -43,6 +43,16 @@ fun getMTUCourses(
   context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
+    .cache(
+      Cache(
+        File(
+          context.cacheDir,
+          "http-cache"
+        ),
+        maxSize = 50L * 1024L * 1024L // 50 MiB
+      )
+    )
+    .addNetworkInterceptor(CourseCacheInterceptor())
     .readTimeout(
       10,
       TimeUnit.SECONDS
@@ -58,16 +68,7 @@ fun getMTUCourses(
     .callTimeout(
       10,
       TimeUnit.SECONDS
-    ).cache(
-      Cache(
-        File(
-          context.cacheDir,
-          "buildingCache"
-        ),
-        maxSize = 50L * 1024L * 1024L // 50 MiB
-      )
     )
-    .addNetworkInterceptor(CourseCacheInterceptor())
     .build()
 
   val retroFit = Retrofit.Builder()

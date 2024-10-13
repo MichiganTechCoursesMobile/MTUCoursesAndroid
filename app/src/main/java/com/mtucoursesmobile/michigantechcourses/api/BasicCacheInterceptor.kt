@@ -16,7 +16,7 @@ class BasicCacheInterceptor : Interceptor {
       .build()
     return response.newBuilder()
       .header(
-        "Cache-Interceptor",
+        "Cache-Control",
         cacheControl.toString()
       )
       .build()

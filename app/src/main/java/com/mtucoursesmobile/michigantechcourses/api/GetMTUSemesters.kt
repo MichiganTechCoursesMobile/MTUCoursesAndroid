@@ -28,6 +28,16 @@ fun getMTUSemesters(
   context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
+    .cache(
+      Cache(
+        File(
+          context.cacheDir,
+          "http-cache"
+        ),
+        maxSize = 50L * 1024L * 1024L // 50 MiB
+      )
+    )
+    .addNetworkInterceptor(BasicCacheInterceptor())
     .readTimeout(
       10,
       TimeUnit.SECONDS
@@ -44,16 +54,6 @@ fun getMTUSemesters(
       10,
       TimeUnit.SECONDS
     )
-    .cache(
-      Cache(
-        File(
-          context.cacheDir,
-          "buildingCache"
-        ),
-        maxSize = 50L * 1024L * 1024L // 50 MiB
-      )
-    )
-    .addNetworkInterceptor(BasicCacheInterceptor())
     .build()
 
   val retrofit = Retrofit.Builder()
