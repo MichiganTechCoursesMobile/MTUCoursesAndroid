@@ -1,6 +1,8 @@
 package com.mtucoursesmobile.michigantechcourses
 
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
@@ -87,6 +89,10 @@ class MainActivity : ComponentActivity() {
         )
       }
     }
+    // ATTENTION: This was auto-generated to handle app links.
+    val appLinkIntent: Intent = intent
+    val appLinkAction: String? = appLinkIntent.action
+    val appLinkData: Uri? = appLinkIntent.data
   }
 }
 

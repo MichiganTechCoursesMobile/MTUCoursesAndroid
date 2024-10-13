@@ -47,6 +47,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.mtucoursesmobile.michigantechcourses.components.settings.SettingsModal
 import com.mtucoursesmobile.michigantechcourses.utils.ReverseLayoutDirection
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
@@ -190,6 +191,7 @@ fun MainView(
           ) {
             composable(
               "Courses",
+              deepLinks = listOf(navDeepLink { uriPattern = "https://mymtu.link/" }),
               enterTransition = {
                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
               },
