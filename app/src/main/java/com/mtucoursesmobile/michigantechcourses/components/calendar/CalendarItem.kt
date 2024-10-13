@@ -119,7 +119,7 @@ fun CalendarItem(
               style = Stroke(strokeWidth)
             )
           }
-
+          // Idek, this was so long ago. Good luck figuring it out.
           var boxHeight by remember { mutableStateOf(0.dp) } // Calculate Box Height Dynamically
           val localDensity = LocalDensity.current
           Box(
@@ -195,8 +195,8 @@ fun CalendarItem(
                             text = "${courseList[entry.section.courseId]?.subject} ${courseList[entry.section.courseId]?.crse}",
                             fontSize = 8.sp,
                             modifier = Modifier.padding(
-                              start = 4.dp,
-                              top = 4.dp
+                              start = 6.dp,
+                              top = 6.dp
                             ),
                             lineHeight = 12.sp,
                             color = Color.Black,
