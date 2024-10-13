@@ -10,7 +10,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -71,6 +70,7 @@ import com.mtucoursesmobile.michigantechcourses.components.sections.PlaceHolderA
 import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
 
 
 /*
@@ -353,15 +353,14 @@ fun BasketItem(
           )
         },
         supportingContent = {
-          val scrollState = rememberScrollState()
           val clipboardManager: ClipboardManager = LocalClipboardManager.current
-          Row(
+          FlowRow(
             modifier = Modifier
-              .horizontalScroll(scrollState)
-              .offset(y = 6.dp)
+              .offset(y = 6.dp),
+            verticalArrangement = Arrangement.spacedBy((-10).dp)
           ) {
             SuggestionChip(
-              onClick = { /*TODO*/ },
+              onClick = { },
               label = {
                 Text(
                   text = "${section.availableSeats}/${section.totalSeats}",
@@ -402,6 +401,24 @@ fun BasketItem(
               onClick = { clipboardManager.setText(AnnotatedString(section.crn)) }, //Copy CRN to clipboard
               label = { Text(text = "CRN: ${section.crn}") },
               modifier = Modifier.padding(end = 4.dp)
+            )
+            SuggestionChip(
+              label = {
+                Text(
+                  text = "${
+                    if (section.maxCredits == section.minCredits) DecimalFormat(
+                      "0.#"
+                    ).format(section.maxCredits) else {
+                      "${DecimalFormat("0.#").format(section.minCredits)} - ${
+                        DecimalFormat(
+                          "0.#"
+                        ).format(section.maxCredits)
+                      }"
+                    }
+                  } Credit${if (section.maxCredits.toDouble() > 1) "s" else ""}"
+                )
+              },
+              onClick = { },
             )
           }
         },

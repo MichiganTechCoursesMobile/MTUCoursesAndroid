@@ -1,15 +1,21 @@
 package com.mtucoursesmobile.michigantechcourses.views.basket
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +38,7 @@ import com.mtucoursesmobile.michigantechcourses.components.baskets.BasketTabs
 import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
+import java.text.DecimalFormat
 
 @OptIn(
   ExperimentalMaterial3Api::class
@@ -47,6 +54,7 @@ fun BasketView(
   val context = LocalContext.current
   val semesterText = remember { mutableStateOf(courseViewModel.currentSemester.readable) }
   val snackbarHostState = remember { SnackbarHostState() }
+  val listState = rememberLazyListState()
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
     topBar = {
@@ -77,13 +85,77 @@ fun BasketView(
             updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
             updateSemesterYear = courseViewModel::updateSemesterYear,
             getSemesterBaskets = basketViewModel::getSemesterBaskets,
-            context = context,
             semesterText = semesterText,
             courseNavController = courseNavController
           )
         })
     },
-    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    floatingActionButton = {
+      AnimatedVisibility(
+        visible = basketViewModel.currentBasketItems.size != 0,
+        enter = slideInHorizontally(
+          initialOffsetX = {
+            (it / 2) * 3
+          },
+        ),
+        exit = slideOutHorizontally(
+          targetOffsetX = {
+            (it / 2) * 3
+          },
+        )
+      ) {
+        val maxCredits =
+          basketViewModel.currentBasketItems.toList().sumOf { it.second.maxCredits.toDouble() }
+        val minCredits =
+          basketViewModel.currentBasketItems.toList().sumOf { it.second.minCredits.toDouble() }
+        FloatingActionButton(
+          onClick = {
+            courseViewModel.showFilter.value = true
+          }
+        ) {
+          AnimatedContent(
+            targetState = (listState.lastScrolledBackward || !listState.canScrollBackward),
+            label = "Credits"
+          ) { isScrolling ->
+            if (isScrolling) {
+              Text(
+                text = "${
+                  if (maxCredits == minCredits) DecimalFormat(
+                    "0.#"
+                  ).format(maxCredits) else {
+                    "${DecimalFormat("0.#").format(minCredits)} - ${
+                      DecimalFormat(
+                        "0.#"
+                      ).format(maxCredits)
+                    }"
+                  }
+
+                } Credit${if (maxCredits > 1 || maxCredits == 0.0) "s" else ""}",
+                modifier = Modifier.padding(horizontal = 10.dp)
+              )
+            } else {
+              Text(
+                text = if (maxCredits == minCredits) DecimalFormat(
+                  "0.#"
+                ).format(maxCredits) else {
+                  "${DecimalFormat("0.#").format(minCredits)} - ${
+                    DecimalFormat(
+                      "0.#"
+                    ).format(maxCredits)
+                  }"
+                },
+                modifier = Modifier.padding(horizontal = 10.dp)
+              )
+            }
+          }
+
+        }
+      }
+
+    }
+  ) { innerPadding ->
+
     Column(Modifier.padding(innerPadding)) {
       BasketTabs(
         basketList = basketViewModel.basketList,
@@ -95,7 +167,7 @@ fun BasketView(
         currentBasketIndex = basketViewModel.currentBasketIndex,
         courseViewModel = courseViewModel,
       )
-      LazyColumn {
+      LazyColumn(state = listState) {
         itemsIndexed(
           items = basketViewModel.currentBasketItems.toList(),
           key = { _, section -> section.second.id }) { _, section ->

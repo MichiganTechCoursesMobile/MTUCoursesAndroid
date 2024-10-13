@@ -6,7 +6,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
@@ -14,7 +16,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -57,8 +60,11 @@ fun CourseView(
   val scope = rememberCoroutineScope()
   val expanded = remember { mutableStateOf(false) }
   val semesterText = remember { mutableStateOf(courseViewModel.currentSemester.readable) }
-  val expandedFab by remember {
+  val topBarColor by remember {
     derivedStateOf { listState.firstVisibleItemIndex == 0 }
+  }
+  val expandedFab by remember {
+    derivedStateOf { (listState.lastScrolledBackward || !listState.canScrollBackward) }
   }
   val (searching, onSearchExpandedChanged) = remember {
     mutableStateOf(false)
@@ -82,8 +88,8 @@ fun CourseView(
     topBar = {
       TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = if (expandedFab) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer,
-          titleContentColor = if (expandedFab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer
+          containerColor = if (topBarColor) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer,
+          titleContentColor = if (topBarColor) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer
         ),
         actions = {
           AnimatedVisibility(visible = !searching) {
@@ -109,7 +115,7 @@ fun CourseView(
                 Icon(
                   imageVector = Icons.Outlined.Search,
                   contentDescription = "Search Courses",
-                  tint = if (expandedFab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
+                  tint = if (topBarColor) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
                 )
               }
             }
@@ -122,9 +128,8 @@ fun CourseView(
               updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
               updateSemesterYear = courseViewModel::updateSemesterYear,
               getSemesterBaskets = basketViewModel::getSemesterBaskets,
-              context = context,
               semesterText = semesterText,
-              expandedFab = expandedFab
+              topBarColor = topBarColor
             )
           }
           AnimatedVisibility(visible = !searching) {
@@ -136,7 +141,7 @@ fun CourseView(
               Icon(
                 imageVector = Icons.Outlined.Settings,
                 contentDescription = "Open Settings",
-                tint = if (expandedFab) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
+                tint = if (topBarColor) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
               )
             }
           }
@@ -178,19 +183,38 @@ fun CourseView(
           )
         ),
       ) {
-        ExtendedFloatingActionButton(
+        FloatingActionButton(
           onClick = {
             courseViewModel.showFilter.value = true
-          },
-          expanded = expandedFab,
-          icon = {
-            Icon(
-              Icons.Filled.FilterList,
-              "Filter Button"
-            )
-          },
-          text = { Text(text = "Filter") },
-        )
+          }
+        ) {
+          AnimatedContent(
+            targetState = expandedFab,
+            label = "Filter"
+          ) { expanded ->
+            if (expanded) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                  Icons.Filled.FilterList,
+                  "Filter Button",
+                  modifier = Modifier.padding(start = 8.dp)
+                )
+                Text(
+                  text = "Filter",
+                  modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .padding(end = 4.dp)
+                )
+              }
+            } else {
+              Icon(
+                Icons.Filled.FilterList,
+                "Filter Button"
+              )
+            }
+          }
+
+        }
       }
     }) { innerPadding ->
     AnimatedContent(

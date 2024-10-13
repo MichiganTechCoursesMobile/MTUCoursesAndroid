@@ -74,7 +74,6 @@ fun CalendarView(
             updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
             updateSemesterYear = courseViewModel::updateSemesterYear,
             getSemesterBaskets = basketViewModel::getSemesterBaskets,
-            context = context,
             semesterText = remember { mutableStateOf("") }
           )
           BasketPicker(

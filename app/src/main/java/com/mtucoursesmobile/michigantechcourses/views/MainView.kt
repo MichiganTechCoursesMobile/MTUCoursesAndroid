@@ -37,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -90,7 +89,6 @@ fun MainView(
       )
     )
   }
-  val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val listState = rememberLazyListState()
   // Navigation controller for bottom nav bar

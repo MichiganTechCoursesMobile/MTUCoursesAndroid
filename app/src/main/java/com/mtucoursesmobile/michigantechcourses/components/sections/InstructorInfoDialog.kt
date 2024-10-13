@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.StarHalf
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Phone
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImagePainter
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
+import java.util.Base64
 import java.util.Locale
 
 @Composable
@@ -120,7 +122,7 @@ fun InstructorInfoDialog(
               verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
               Text(
-                "Contact info",
+                "Info",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                   .padding(horizontal = 6.dp)
@@ -185,6 +187,45 @@ fun InstructorInfoDialog(
                     )
                     Text(
                       instructor.phone!!,
+                      textAlign = TextAlign.Start,
+                      style = MaterialTheme.typography.labelLarge,
+                      modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .wrapContentHeight()
+                    )
+                  }
+                }
+              }
+              if (instructor.rmpId != null) {
+                ElevatedCard(
+                  onClick = {
+                    val id = Regex("[^0-9]").replace(
+                      Base64.getDecoder().decode(instructor.rmpId).decodeToString(),
+                      ""
+                    )
+                    context.rmp(id)
+                  },
+                  elevation = CardDefaults.cardElevation(
+                    defaultElevation = 0.dp
+                  ),
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .height(32.dp)
+                ) {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                      Icons.AutoMirrored.Outlined.StarHalf,
+                      contentDescription = "Rate My Professor",
+                      modifier = Modifier
+                        .padding(
+                          start = 4.dp,
+                          end = 8.dp
+                        )
+                        .size(24.dp)
+                    )
+                    Text(
+                      "Rate My Professor",
                       textAlign = TextAlign.Start,
                       style = MaterialTheme.typography.labelLarge,
                       modifier = Modifier
@@ -281,19 +322,22 @@ fun InstructorInfoDialog(
           }
         }
       }
+
       TextButton(
         onClick = { showInfoDialog.value = false },
         modifier = Modifier
-          .align(Alignment.End)
           .padding(
-            end = 8.dp,
-            top = 8.dp
+            top = 8.dp,
+            end = 8.dp
           )
+          .align(Alignment.End)
+
       ) {
         Text("Dismiss")
       }
-
     }
+
+
   }
 }
 
@@ -326,6 +370,22 @@ fun Context.dial(phone: String) {
         phone,
         null
       )
+    )
+    startActivity(intent)
+  } catch (t: Throwable) {
+    Toast.makeText(
+      this,
+      "Something went wrong",
+      Toast.LENGTH_LONG
+    ).show()
+  }
+}
+
+fun Context.rmp(id: String) {
+  try {
+    val intent = Intent(
+      Intent.ACTION_VIEW,
+      Uri.parse("https://www.ratemyprofessors.com/ShowRatings.jsp?tid=$id")
     )
     startActivity(intent)
   } catch (t: Throwable) {

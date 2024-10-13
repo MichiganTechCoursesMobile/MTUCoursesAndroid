@@ -1,6 +1,5 @@
 package com.mtucoursesmobile.michigantechcourses.components.courses
 
-import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.DateRange
@@ -29,10 +28,9 @@ fun SemesterPicker(
   updateSemesterPeriod: KFunction1<String, Unit>,
   updateSemesterYear: KFunction1<Number, Unit>,
   getSemesterBaskets: (CurrentSemester) -> Unit,
-  context: Context,
   semesterText: MutableState<String>,
   courseNavController: NavController? = null,
-  expandedFab: Boolean? = true
+  topBarColor: Boolean? = true
 ) {
   val scope = rememberCoroutineScope()
   val semesterTypes = listOf(
@@ -49,7 +47,7 @@ fun SemesterPicker(
     Icon(
       imageVector = Icons.Outlined.DateRange,
       contentDescription = "Change Semester",
-      tint = if (expandedFab!!) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
+      tint = if (topBarColor!!) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
     )
   }
   DropdownMenu(

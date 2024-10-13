@@ -11,14 +11,15 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -64,7 +65,9 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
+import java.text.DecimalFormat
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SectionItem(
   currentBasketItems: SnapshotStateMap<String, MTUSections>,
@@ -307,9 +310,10 @@ fun SectionItem(
             }
           }
           val clipboardManager: ClipboardManager = LocalClipboardManager.current
-          val scrollState = rememberScrollState()
 
-          Row(modifier = Modifier.horizontalScroll(scrollState)) {
+          FlowRow(
+            verticalArrangement = Arrangement.spacedBy((-10).dp)
+          ) {
             SuggestionChip(
               onClick = { /*TODO*/ },
               label = { Text(text = "${section.availableSeats}/${section.totalSeats} Seats") },
@@ -344,6 +348,24 @@ fun SectionItem(
               onClick = { if (expandedState.value) clipboardManager.setText(AnnotatedString(section.crn)) },
               label = { Text(text = "CRN: ${section.crn}") },
               modifier = Modifier.padding(end = 4.dp)
+            )
+            SuggestionChip(
+              label = {
+                Text(
+                  text = "${
+                    if (section.maxCredits == section.minCredits) DecimalFormat(
+                      "0.#"
+                    ).format(section.maxCredits) else {
+                      "${DecimalFormat("0.#").format(section.minCredits)} - ${
+                        DecimalFormat(
+                          "0.#"
+                        ).format(section.maxCredits)
+                      }"
+                    }
+                  } Credit${if (section.maxCredits.toDouble() > 1) "s" else ""}"
+                )
+              },
+              onClick = { },
             )
           }
         }
