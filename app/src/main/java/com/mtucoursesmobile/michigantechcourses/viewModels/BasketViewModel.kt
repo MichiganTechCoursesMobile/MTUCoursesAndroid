@@ -1,7 +1,6 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
 import android.app.Application
-import android.util.Log
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -320,12 +319,6 @@ class BasketViewModel(app: Application) :
       }
       if (calendarEntries[basketList[index].id] != null) {
         calendarEntries[newID] = copiedCalendar
-      }
-      for (e in calendarEntries) {
-        Log.d(
-          "DEBUGCAL",
-          System.identityHashCode(e).toString()
-        )
       }
       updateBaskets(
         semester,
