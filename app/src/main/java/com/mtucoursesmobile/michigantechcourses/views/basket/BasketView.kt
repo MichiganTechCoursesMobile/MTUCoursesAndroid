@@ -58,9 +58,9 @@ fun BasketView(
   navController: NavController,
   courseNavController: NavController
 ) {
+
   val expanded = remember { mutableStateOf(false) }
   val context = LocalContext.current
-  val semesterText = remember { mutableStateOf(courseViewModel.currentSemester.readable) }
   val snackbarHostState = remember { SnackbarHostState() }
   val settingsModel: SettingsViewModel = viewModel(factory = SettingsModelProvider.Factory)
   val sharingEnabled by settingsModel.sharingEnabled.collectAsState()
@@ -68,7 +68,7 @@ fun BasketView(
   Scaffold(
     contentWindowInsets = WindowInsets(0.dp),
     topBar = {
-      TopAppBar(title = { Text(text = "Baskets for ${semesterText.value}") },
+      TopAppBar(title = { Text(text = "Baskets for ${courseViewModel.currentSemester.readable}") },
         colors = TopAppBarDefaults.topAppBarColors(
           titleContentColor = MaterialTheme.colorScheme.primary
         ),
@@ -80,7 +80,6 @@ fun BasketView(
             updateSemesterPeriod = courseViewModel::updateSemesterPeriod,
             updateSemesterYear = courseViewModel::updateSemesterYear,
             getSemesterBaskets = basketViewModel::getSemesterBaskets,
-            semesterText = semesterText,
             courseNavController = courseNavController
           )
           AnimatedVisibility(visible = sharingEnabled && basketViewModel.currentBasketItems.size != 0) {

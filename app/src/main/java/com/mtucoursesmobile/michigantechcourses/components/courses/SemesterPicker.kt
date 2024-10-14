@@ -28,7 +28,6 @@ fun SemesterPicker(
   updateSemesterPeriod: KFunction1<String, Unit>,
   updateSemesterYear: KFunction1<Number, Unit>,
   getSemesterBaskets: (CurrentSemester) -> Unit,
-  semesterText: MutableState<String>,
   courseNavController: NavController? = null,
   topBarColor: Boolean? = true
 ) {
@@ -71,7 +70,6 @@ fun SemesterPicker(
                   year = currentSemester.year
                 )
               )
-              semesterText.value = "$i ${currentSemester.year}"
             }
           }
         },
@@ -106,10 +104,6 @@ fun SemesterPicker(
                   year = i.toString()
                 )
               )
-              semesterText.value = "${
-                currentSemester.semester.lowercase()
-                  .replaceFirstChar(Char::titlecase)
-              } $i"
             }
           }
         },

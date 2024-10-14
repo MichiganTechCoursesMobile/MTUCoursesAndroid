@@ -53,10 +53,6 @@ class BasketViewModel(app: Application) :
         targetSemester
       )
     }
-    Log.d(
-      "Test",
-      "Testing View Model Run"
-    )
     viewModelScope.launch {
       getSemesterBaskets(
         initialSemester(),
@@ -274,6 +270,30 @@ class BasketViewModel(app: Application) :
           calendarEntries
         )
       )
+    }
+  }
+
+  //Import basket from mymtu.link
+  fun importBasket(
+    semester: CurrentSemester,
+    basketName: String,
+    crns: List<String>,
+    sectionList: Map<String, MutableList<MTUSections>>
+  ) {
+    viewModelScope.launch {
+      addBasket(
+        semester,
+        basketName
+      )
+      val newBasketIndex = basketList.size - 1
+      setCurrentBasket(newBasketIndex)
+      val sections = sectionList.values.flatten().filter { section -> crns.contains(section.crn) }
+      for (section in sections) {
+        addToBasket(
+          section,
+          semester
+        )
+      }
     }
   }
 

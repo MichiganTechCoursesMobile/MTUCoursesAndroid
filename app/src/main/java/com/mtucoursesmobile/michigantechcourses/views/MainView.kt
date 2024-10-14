@@ -191,25 +191,29 @@ fun MainView(
           ) {
             composable(
               "Courses",
+              deepLinks = listOf(navDeepLink {
+                uriPattern = "https://mymtu.link/viewBasket/{basketContent}"
+              }),
               enterTransition = {
                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
               },
               exitTransition = {
                 slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-              }) {
+              }
+            ) {
               // Nested NavHost for Courses
               CourseNav(
                 courseViewModel,
                 basketViewModel,
                 listState,
                 courseNavController,
-                viewSettings
+                viewSettings,
+                it.arguments?.getString("basketContent")
               )
             }
-            composable("Baskets",
-              deepLinks = listOf(navDeepLink {
-                uriPattern = "https://mymtu.link/viewBasket/{basketContent}"
-              }),
+            composable(
+              "Baskets",
+
               enterTransition = {
                 if (this.initialState.destination.route.toString() == "Calendar") {
                   slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
@@ -223,11 +227,7 @@ fun MainView(
                 } else {
                   slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
                 }
-              },
-              arguments = listOf(navArgument("basketContent") {
-                type = NavType.StringType
-                nullable = true
-              })
+              }
             ) {
               BasketView(
                 courseViewModel,
@@ -263,7 +263,8 @@ fun CourseNav(
   basketViewModel: BasketViewModel,
   listState: LazyListState,
   courseNavController: NavHostController,
-  viewSettings: DrawerState
+  viewSettings: DrawerState,
+  basketImportContent: String? = null
 ) {
   NavHost(
     navController = courseNavController,
@@ -282,7 +283,8 @@ fun CourseNav(
         basketViewModel,
         courseNavController,
         listState,
-        viewSettings
+        viewSettings,
+        basketImportContent
       )
     }
     composable("courseDetail/{courseId}",

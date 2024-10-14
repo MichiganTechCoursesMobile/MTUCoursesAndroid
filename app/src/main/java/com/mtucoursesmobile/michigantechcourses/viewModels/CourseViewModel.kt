@@ -58,6 +58,8 @@ class CourseViewModel(app: Application) :
   val buildingStatus = mutableIntStateOf(0)
   val dropStatus = mutableIntStateOf(0)
 
+  val attemptedBasketImport = mutableStateOf(false)
+
 
   // Get the initial course list
   init {
@@ -112,14 +114,14 @@ class CourseViewModel(app: Application) :
   }
 
   // Set the semester to a given semester, then get its courses and sections
-  private fun setSemester(
+  fun setSemester(
     newSemester: CurrentSemester
   ) {
     val context = getApplication<Application>().applicationContext
-    courseList.clear()
-    sectionList.clear()
     courseStatus.intValue = 0
     sectionStatus.intValue = 0
+    courseList.clear()
+    sectionList.clear()
     filteredCourseList.clear()
     currentSemester = newSemester
     viewModelScope.launch(Dispatchers.IO) {
