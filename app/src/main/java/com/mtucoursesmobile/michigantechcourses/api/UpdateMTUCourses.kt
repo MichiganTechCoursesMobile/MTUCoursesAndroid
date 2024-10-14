@@ -26,13 +26,15 @@ import java.util.concurrent.TimeUnit
 interface RetroFitUpdate {
   @GET("courses")
   fun getUpdatedMTUCourses(
-    @Query("semester") semester: String, @Query("year") year: String,
+    @Query("semester") semester: String,
+    @Query("year") year: String,
     @Query("updatedSince") lastUpdated: String
   ): Call<List<MTUCourses>>
 
   @GET("sections")
   fun getUpdatedMTUSections(
-    @Query("semester") semester: String, @Query("year") year: String,
+    @Query("semester") semester: String,
+    @Query("year") year: String,
     @Query("updatedSince") lastUpdated: String
   ): Call<List<MTUSections>>
 
@@ -46,7 +48,8 @@ fun updateMTUCourses(
   courseList: MutableMap<String, MTUCourses>,
   sectionList: MutableMap<String, MutableList<MTUSections>>,
   instructorList: MutableMap<Number, MTUInstructor>,
-  semester: String, year: String,
+  semester: String,
+  year: String,
   lastUpdatedSince: MutableList<LastUpdatedSince>,
   loading: MutableState<Boolean>?,
   ctx: Context,
@@ -79,19 +82,15 @@ fun updateMTUCourses(
     )
     .addNetworkInterceptor(CourseCacheInterceptor())
     .readTimeout(
-      10,
+      15,
       TimeUnit.SECONDS
     )
     .connectTimeout(
-      2,
-      TimeUnit.SECONDS
-    )
-    .writeTimeout(
-      10,
+      5,
       TimeUnit.SECONDS
     )
     .callTimeout(
-      10,
+      25,
       TimeUnit.SECONDS
     )
     .build()
@@ -119,7 +118,8 @@ fun updateMTUCourses(
 
   courseUpdateCall!!.enqueue(object : Callback<List<MTUCourses>?> {
     override fun onResponse(
-      call: Call<List<MTUCourses>?>, response: Response<List<MTUCourses>?>
+      call: Call<List<MTUCourses>?>,
+      response: Response<List<MTUCourses>?>
     ) {
       if (response.isSuccessful) {
         val updatedCourseData: List<MTUCourses> = response.body()!!
@@ -139,7 +139,10 @@ fun updateMTUCourses(
       }
     }
 
-    override fun onFailure(call: Call<List<MTUCourses>?>, t: Throwable) {
+    override fun onFailure(
+      call: Call<List<MTUCourses>?>,
+      t: Throwable
+    ) {
       if (loading != null) {
         Toast.makeText(
           ctx,
@@ -154,7 +157,8 @@ fun updateMTUCourses(
 
   sectionUpdateCall!!.enqueue(object : Callback<List<MTUSections>?> {
     override fun onResponse(
-      call: Call<List<MTUSections>?>, response: Response<List<MTUSections>?>
+      call: Call<List<MTUSections>?>,
+      response: Response<List<MTUSections>?>
     ) {
       if (response.isSuccessful) {
         val updatedSectionData: List<MTUSections> = response.body()!!
@@ -188,7 +192,10 @@ fun updateMTUCourses(
       }
     }
 
-    override fun onFailure(call: Call<List<MTUSections>?>, t: Throwable) {
+    override fun onFailure(
+      call: Call<List<MTUSections>?>,
+      t: Throwable
+    ) {
       if (loading != null) {
         Toast.makeText(
           ctx,
@@ -204,7 +211,8 @@ fun updateMTUCourses(
 
   instructorUpdateCall!!.enqueue(object : Callback<List<MTUInstructor>?> {
     override fun onResponse(
-      call: Call<List<MTUInstructor>?>, response: Response<List<MTUInstructor>?>
+      call: Call<List<MTUInstructor>?>,
+      response: Response<List<MTUInstructor>?>
     ) {
       if (response.isSuccessful) {
         val updatedInstructorData: List<MTUInstructor> = response.body()!!
@@ -222,7 +230,10 @@ fun updateMTUCourses(
       }
     }
 
-    override fun onFailure(call: Call<List<MTUInstructor>?>, t: Throwable) {
+    override fun onFailure(
+      call: Call<List<MTUInstructor>?>,
+      t: Throwable
+    ) {
       if (loading != null) {
         Toast.makeText(
           ctx,

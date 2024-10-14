@@ -24,7 +24,9 @@ interface RetroFitBuildings {
 }
 
 fun getMTUBuildings(
-  buildingList: MutableMap<String, MTUBuilding>, buildingStatus: MutableIntState, context: Context
+  buildingList: MutableMap<String, MTUBuilding>,
+  buildingStatus: MutableIntState,
+  context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
     .cache(
@@ -38,19 +40,15 @@ fun getMTUBuildings(
     )
     .addNetworkInterceptor(BasicCacheInterceptor())
     .readTimeout(
-      10,
+      15,
       TimeUnit.SECONDS
     )
     .connectTimeout(
-      2,
-      TimeUnit.SECONDS
-    )
-    .writeTimeout(
-      10,
+      5,
       TimeUnit.SECONDS
     )
     .callTimeout(
-      10,
+      25,
       TimeUnit.SECONDS
     )
     .build()
@@ -65,7 +63,8 @@ fun getMTUBuildings(
 
   buildingCall!!.enqueue(object : Callback<List<MTUBuilding>?> {
     override fun onResponse(
-      call: Call<List<MTUBuilding>?>, response: Response<List<MTUBuilding>?>
+      call: Call<List<MTUBuilding>?>,
+      response: Response<List<MTUBuilding>?>
     ) {
       if (response.isSuccessful) {
         val buildingData: List<MTUBuilding> = response.body()!!
@@ -80,7 +79,10 @@ fun getMTUBuildings(
       }
     }
 
-    override fun onFailure(call: Call<List<MTUBuilding>?>, t: Throwable) {
+    override fun onFailure(
+      call: Call<List<MTUBuilding>?>,
+      t: Throwable
+    ) {
       buildingStatus.intValue = 2
       return
     }

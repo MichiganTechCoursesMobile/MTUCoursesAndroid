@@ -24,15 +24,20 @@ interface RetroFitSection {
 
   @GET("sections")
   fun getMTUSections(
-    @Query("semester") semester: String, @Query("year") year: String
+    @Query("semester") semester: String,
+    @Query("year") year: String
   ): Call<List<MTUSections>>
 
 }
 
 fun getMTUSections(
   sectionList: MutableMap<String, MutableList<MTUSections>>,
-  semester: String, year: String, lastUpdatedSince: MutableList<LastUpdatedSince>,
-  currentSemester: CurrentSemester, sectionStatus: MutableIntState, context: Context
+  semester: String,
+  year: String,
+  lastUpdatedSince: MutableList<LastUpdatedSince>,
+  currentSemester: CurrentSemester,
+  sectionStatus: MutableIntState,
+  context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
     .cache(
@@ -46,19 +51,15 @@ fun getMTUSections(
     )
     .addNetworkInterceptor(CourseCacheInterceptor())
     .readTimeout(
-      10,
+      15,
       TimeUnit.SECONDS
     )
     .connectTimeout(
-      2,
-      TimeUnit.SECONDS
-    )
-    .writeTimeout(
-      10,
+      5,
       TimeUnit.SECONDS
     )
     .callTimeout(
-      10,
+      25,
       TimeUnit.SECONDS
     )
     .build()
@@ -77,7 +78,8 @@ fun getMTUSections(
 
   sectionCall!!.enqueue(object : Callback<List<MTUSections>?> {
     override fun onResponse(
-      call: Call<List<MTUSections>?>, response: Response<List<MTUSections>?>
+      call: Call<List<MTUSections>?>,
+      response: Response<List<MTUSections>?>
     ) {
       if (response.isSuccessful) {
         val timeGot = Instant.now().toString()
@@ -105,7 +107,10 @@ fun getMTUSections(
       }
     }
 
-    override fun onFailure(call: Call<List<MTUSections>?>, t: Throwable) {
+    override fun onFailure(
+      call: Call<List<MTUSections>?>,
+      t: Throwable
+    ) {
       sectionStatus.intValue = 2
       return
     }

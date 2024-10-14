@@ -27,7 +27,8 @@ interface RetroFitInstructors {
 
 fun getMTUInstructors(
   instructorList: MutableMap<Number, MTUInstructor>,
-  lastUpdatedSince: MutableList<LastUpdatedSince>, instructorStatus: MutableIntState,
+  lastUpdatedSince: MutableList<LastUpdatedSince>,
+  instructorStatus: MutableIntState,
   context: Context
 ) {
   val okHttpClient = OkHttpClient.Builder()
@@ -42,19 +43,15 @@ fun getMTUInstructors(
     )
     .addNetworkInterceptor(BasicCacheInterceptor())
     .readTimeout(
-      10,
+      15,
       TimeUnit.SECONDS
     )
     .connectTimeout(
-      2,
-      TimeUnit.SECONDS
-    )
-    .writeTimeout(
-      10,
+      5,
       TimeUnit.SECONDS
     )
     .callTimeout(
-      10,
+      25,
       TimeUnit.SECONDS
     )
     .build()
@@ -69,7 +66,8 @@ fun getMTUInstructors(
 
   instructorCall!!.enqueue(object : Callback<List<MTUInstructor>?> {
     override fun onResponse(
-      call: Call<List<MTUInstructor>?>, response: Response<List<MTUInstructor>?>
+      call: Call<List<MTUInstructor>?>,
+      response: Response<List<MTUInstructor>?>
     ) {
       if (response.isSuccessful) {
         val instructorData: List<MTUInstructor> = response.body()!!
@@ -93,7 +91,10 @@ fun getMTUInstructors(
       return
     }
 
-    override fun onFailure(call: Call<List<MTUInstructor>?>, t: Throwable) {
+    override fun onFailure(
+      call: Call<List<MTUInstructor>?>,
+      t: Throwable
+    ) {
       instructorStatus.intValue = 2
       return
     }

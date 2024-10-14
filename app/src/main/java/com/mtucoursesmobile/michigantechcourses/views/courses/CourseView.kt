@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.components.courses.ExpandableSearchView
@@ -50,6 +52,8 @@ import com.mtucoursesmobile.michigantechcourses.components.courses.LoadingScreen
 import com.mtucoursesmobile.michigantechcourses.components.courses.SemesterPicker
 import com.mtucoursesmobile.michigantechcourses.viewModels.BasketViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsModelProvider
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsViewModel
 import kotlinx.coroutines.launch
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -70,8 +74,9 @@ fun CourseView(
 ) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
-
-  if (basketImportContent != null && !courseViewModel.attemptedBasketImport.value) {
+  val settingsModel: SettingsViewModel = viewModel(factory = SettingsModelProvider.Factory)
+  val sharingEnabled by settingsModel.sharingEnabled.collectAsState()
+  if (basketImportContent != null && !courseViewModel.attemptedBasketImport.value && sharingEnabled) {
     val invalidBasket = {
       Log.e(
         "BasketView",

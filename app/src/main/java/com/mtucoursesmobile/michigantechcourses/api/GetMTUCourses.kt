@@ -54,19 +54,15 @@ fun getMTUCourses(
     )
     .addNetworkInterceptor(CourseCacheInterceptor())
     .readTimeout(
-      10,
+      15,
       TimeUnit.SECONDS
     )
     .connectTimeout(
-      2,
-      TimeUnit.SECONDS
-    )
-    .writeTimeout(
-      10,
+      5,
       TimeUnit.SECONDS
     )
     .callTimeout(
-      10,
+      25,
       TimeUnit.SECONDS
     )
     .build()
