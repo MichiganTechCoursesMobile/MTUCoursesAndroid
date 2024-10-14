@@ -12,16 +12,20 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ErrorOutline
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoadingScreen(
@@ -39,7 +43,10 @@ fun LoadingScreen(
       verticalAlignment = Alignment.CenterVertically,
       modifier = Modifier.height(32.dp)
     ) {
-      Text("Loading Semesters")
+      Text(
+        "Loading Semesters",
+        style = MaterialTheme.typography.titleMedium
+      )
       when (semesterStatus) {
         0 -> CircularProgressIndicator(
           modifier = Modifier
@@ -68,7 +75,10 @@ fun LoadingScreen(
       verticalAlignment = Alignment.CenterVertically,
       modifier = Modifier.height(32.dp)
     ) {
-      Text("Loading Courses")
+      Text(
+        "Loading Courses",
+        style = MaterialTheme.typography.titleMedium
+      )
       when (courseStatus) {
         0 -> CircularProgressIndicator(
           modifier = Modifier
@@ -97,7 +107,10 @@ fun LoadingScreen(
       verticalAlignment = Alignment.CenterVertically,
       modifier = Modifier.height(32.dp)
     ) {
-      Text("Loading Sections")
+      Text(
+        "Loading Sections",
+        style = MaterialTheme.typography.titleMedium
+      )
       when (sectionStatus) {
         0 -> CircularProgressIndicator(
           modifier = Modifier
@@ -126,7 +139,10 @@ fun LoadingScreen(
       verticalAlignment = Alignment.CenterVertically,
       modifier = Modifier.height(32.dp)
     ) {
-      Text("Loading Instructors")
+      Text(
+        "Loading Instructors",
+        style = MaterialTheme.typography.titleMedium
+      )
       when (instructorStatus) {
         0 -> CircularProgressIndicator(
           modifier = Modifier
@@ -155,7 +171,10 @@ fun LoadingScreen(
       verticalAlignment = Alignment.CenterVertically,
       modifier = Modifier.height(32.dp)
     ) {
-      Text("Loading Buildings")
+      Text(
+        "Loading Buildings",
+        style = MaterialTheme.typography.titleMedium
+      )
       when (buildingStatus) {
         0 -> CircularProgressIndicator(
           modifier = Modifier
@@ -184,7 +203,10 @@ fun LoadingScreen(
       verticalAlignment = Alignment.CenterVertically,
       modifier = Modifier.height(32.dp)
     ) {
-      Text("Loading Drop Rates")
+      Text(
+        "Loading Drop Rates",
+        style = MaterialTheme.typography.titleMedium
+      )
       when (dropStatus) {
         0 -> CircularProgressIndicator(
           modifier = Modifier
@@ -213,15 +235,28 @@ fun LoadingScreen(
       (courseStatus == 2 || sectionStatus == 2 || semesterStatus == 2 || instructorStatus == 2 || buildingStatus == 2 || dropStatus == 2) &&
       !(courseStatus == 0 || sectionStatus == 0 || semesterStatus == 0 || instructorStatus == 0 || buildingStatus == 0 || dropStatus == 0)
     ) {
-      TextButton(
-        onClick = { retry() },
-        colors = ButtonDefaults.textButtonColors(
-          contentColor = MaterialTheme.colorScheme.error
-        )
-      ) {
-        Text("Retry")
-      }
-    }
+      var countDown by remember { mutableIntStateOf(3) }
 
+      LaunchedEffect(key1 = countDown) {
+        delay(1000L)
+        countDown -= 1
+      }
+      if (countDown == 0) {
+        retry()
+        countDown = 3
+      }
+      Text(
+        "API Request Failed",
+        color = MaterialTheme.colorScheme.error,
+        modifier = Modifier
+          .padding(top = 4.dp),
+        style = MaterialTheme.typography.titleMedium
+      )
+      Text(
+        "Retrying in: ${countDown}s",
+        color = MaterialTheme.colorScheme.error,
+        style = MaterialTheme.typography.titleMedium
+      )
+    }
   }
 }
