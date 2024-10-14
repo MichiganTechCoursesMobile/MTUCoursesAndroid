@@ -284,7 +284,7 @@ class BasketViewModel(app: Application) :
         semester,
         basketName
       )
-      val newBasketIndex = basketList.size - 1
+      val newBasketIndex = basketList.lastIndex
       setCurrentBasket(newBasketIndex)
       val sections = sectionList.values.flatten().filter { section -> crns.contains(section.crn) }
       for (section in sections) {
@@ -356,7 +356,9 @@ class BasketViewModel(app: Application) :
 
   // Converts sectionTimeRules into a CalendarEntry for easier access in CalendarView
   private fun convertCalendarEntry(
-    day: String, sectionTime: SectionTimeRRulesConfig, section: MTUSections
+    day: String,
+    sectionTime: SectionTimeRRulesConfig,
+    section: MTUSections
   ): CalendarEntry {
     return CalendarEntry(
       day,
