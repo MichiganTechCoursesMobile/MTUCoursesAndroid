@@ -12,8 +12,8 @@ android {
     applicationId = "com.mtucoursesmobile.michigantechcourses"
     minSdk = 29
     targetSdk = 35
-    versionCode = 13
-    versionName = "alpha-1.7b"
+    versionCode = 14
+    versionName = "v1.0-rc1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables {
@@ -53,7 +53,7 @@ android {
 }
 
 dependencies {
-  
+
   val room_version = "2.6.1"
   val nav_version = "2.7.7"
 
