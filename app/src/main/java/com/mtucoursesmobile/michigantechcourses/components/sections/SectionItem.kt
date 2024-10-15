@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.AddCircleOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,6 +41,7 @@ import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -64,7 +67,10 @@ import com.mtucoursesmobile.michigantechcourses.classes.CurrentSemester
 import com.mtucoursesmobile.michigantechcourses.classes.MTUBuilding
 import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
-import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
+import com.mtucoursesmobile.michigantechcourses.utils.sectionDateFormatter
+import com.mtucoursesmobile.michigantechcourses.utils.sectionTimeFormatter
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsModelProvider
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsViewModel
 import java.text.DecimalFormat
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -122,7 +128,7 @@ fun SectionItem(
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
               )
             },
-            label = { Text(text = dateTimeFormatter(section)) },
+            label = { Text(text = sectionTimeFormatter(section)) },
             colors = AssistChipDefaults.elevatedAssistChipColors(
               containerColor = MaterialTheme.colorScheme.primaryContainer,
               labelColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -366,6 +372,28 @@ fun SectionItem(
                 )
               },
               onClick = { },
+              modifier = Modifier.padding(end = 4.dp)
+            )
+            val settingsModel: SettingsViewModel =
+              viewModel(factory = SettingsModelProvider.Factory)
+            val dateFormat by settingsModel.dateFormat.collectAsState()
+            SuggestionChip(
+              label = {
+                Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                ) {
+                  Icon(
+                    imageVector = Icons.Rounded.CalendarMonth,
+                    contentDescription = "Section time",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(end = 4.dp)
+                  )
+                  Text(
+                    text = sectionDateFormatter(section, dateFormat)
+                  )
+                }
+              },
+              onClick = {}
             )
           }
         }

@@ -67,7 +67,7 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.components.sections.InstructorInfoDialog
 import com.mtucoursesmobile.michigantechcourses.components.sections.PlaceHolderAvatar
-import com.mtucoursesmobile.michigantechcourses.utils.dateTimeFormatter
+import com.mtucoursesmobile.michigantechcourses.utils.sectionTimeFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
@@ -337,7 +337,7 @@ fun BasketItem(
               containerColor = MaterialTheme.colorScheme.primaryContainer
             ) {
               Text(
-                text = dateTimeFormatter(section),
+                text = sectionTimeFormatter(section),
                 style = MaterialTheme.typography.labelMedium
               )
             }

@@ -54,7 +54,7 @@ fun SettingsModal(showSettings: DrawerState) {
         scrollBehavior = scrollBehavior,
         windowInsets = WindowInsets.systemBars
           .only(WindowInsetsSides.End + WindowInsetsSides.Top),
-        
+
         navigationIcon = {
           IconButton(onClick = { closeDrawer() }) {
             Icon(
@@ -83,6 +83,7 @@ fun SettingsModal(showSettings: DrawerState) {
     ) {
       ThemePicker()
       DayOfWeekPicker()
+      DateFormatPicker()
       ExperimentalSharing()
       HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
       AboutDropdown()

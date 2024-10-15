@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.ArrowDropDown
-import androidx.compose.material.icons.rounded.EditCalendar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -38,16 +38,16 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.mtucoursesmobile.michigantechcourses.localStorage.FirstDayOfWeek
+import com.mtucoursesmobile.michigantechcourses.localStorage.DateFormat
 import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsModelProvider
 import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun DayOfWeekPicker() {
+fun DateFormatPicker() {
   val scope = rememberCoroutineScope()
   val settingsModel: SettingsViewModel = viewModel(factory = SettingsModelProvider.Factory)
-  val firstDayOfWeek by settingsModel.firstDayOfWeek.collectAsState()
+  val dateFormat by settingsModel.dateFormat.collectAsState()
   var expanded by remember { mutableStateOf(false) }
 
   Card(
@@ -61,8 +61,7 @@ fun DayOfWeekPicker() {
       )
       .padding(
         horizontal = 12.dp
-      )
-      .padding(bottom = 12.dp),
+      ),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     shape = RoundedCornerShape(12.dp),
   ) {
@@ -79,13 +78,13 @@ fun DayOfWeekPicker() {
 
     ) {
       Icon(
-        imageVector = Icons.Rounded.EditCalendar,
-        contentDescription = "First Day of the Week",
+        imageVector = Icons.Rounded.AccessTime,
+        contentDescription = "Date Format",
         modifier = Modifier.padding(end = 8.dp),
         tint = MaterialTheme.colorScheme.primary
       )
       Text(
-        text = "First Day of the Week",
+        text = "Date Format",
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Medium,
         modifier = Modifier.weight(1f)
@@ -114,10 +113,10 @@ fun DayOfWeekPicker() {
               .fillMaxWidth()
               .height(42.dp)
               .selectable(
-                selected = (firstDayOfWeek == FirstDayOfWeek.SATURDAY),
+                selected = (dateFormat == DateFormat.MDY),
                 onClick = {
                   scope.launch {
-                    settingsModel.updateFirstDayOfWeek(FirstDayOfWeek.SATURDAY)
+                    settingsModel.updateDateFormat(DateFormat.MDY)
                   }
                 },
                 role = Role.RadioButton
@@ -126,11 +125,11 @@ fun DayOfWeekPicker() {
             verticalAlignment = Alignment.CenterVertically
           ) {
             Text(
-              "Saturday",
+              "MM/DD/YYYY",
               Modifier.weight(1f)
             )
             RadioButton(
-              selected = firstDayOfWeek == FirstDayOfWeek.SATURDAY,
+              selected = dateFormat == DateFormat.MDY,
               onClick = null
             )
           }
@@ -147,10 +146,10 @@ fun DayOfWeekPicker() {
               .fillMaxWidth()
               .height(42.dp)
               .selectable(
-                selected = (firstDayOfWeek == FirstDayOfWeek.SUNDAY),
+                selected = (dateFormat == DateFormat.DMY),
                 onClick = {
                   scope.launch {
-                    settingsModel.updateFirstDayOfWeek(FirstDayOfWeek.SUNDAY)
+                    settingsModel.updateDateFormat(DateFormat.DMY)
                   }
                 },
                 role = Role.RadioButton
@@ -159,11 +158,11 @@ fun DayOfWeekPicker() {
             verticalAlignment = Alignment.CenterVertically
           ) {
             Text(
-              "Sunday",
+              "DD/MM/YYYY",
               Modifier.weight(1f)
             )
             RadioButton(
-              selected = firstDayOfWeek == FirstDayOfWeek.SUNDAY,
+              selected = dateFormat == DateFormat.DMY,
               onClick = null
             )
           }
@@ -182,10 +181,10 @@ fun DayOfWeekPicker() {
               .fillMaxWidth()
               .height(42.dp)
               .selectable(
-                selected = (firstDayOfWeek == FirstDayOfWeek.MONDAY),
+                selected = (dateFormat == DateFormat.YMD),
                 onClick = {
                   scope.launch {
-                    settingsModel.updateFirstDayOfWeek(FirstDayOfWeek.MONDAY)
+                    settingsModel.updateDateFormat(DateFormat.YMD)
                   }
                 },
                 role = Role.RadioButton
@@ -194,11 +193,11 @@ fun DayOfWeekPicker() {
             verticalAlignment = Alignment.CenterVertically
           ) {
             Text(
-              "Monday",
+              "YYYY/MM/DD",
               Modifier.weight(1f)
             )
             RadioButton(
-              selected = firstDayOfWeek == FirstDayOfWeek.MONDAY,
+              selected = dateFormat == DateFormat.YMD,
               onClick = null
             )
           }

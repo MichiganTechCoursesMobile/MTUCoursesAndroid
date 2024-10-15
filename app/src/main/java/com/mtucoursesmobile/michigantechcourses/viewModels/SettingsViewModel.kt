@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.mtucoursesmobile.michigantechcourses.localStorage.DateFormat
 import com.mtucoursesmobile.michigantechcourses.localStorage.FirstDayOfWeek
 import com.mtucoursesmobile.michigantechcourses.localStorage.ThemeType
 import com.mtucoursesmobile.michigantechcourses.localStorage.UserPreferences
@@ -35,6 +36,12 @@ class SettingsViewModel(private val userPreferences: UserPreferences) : ViewMode
       initialValue = FirstDayOfWeek.SUNDAY
     )
 
+  val dateFormat: StateFlow<DateFormat> = userPreferences.dateFormatFlow.map { it }.stateIn(
+    scope = viewModelScope,
+    started = SharingStarted.WhileSubscribed(5_000),
+    initialValue = DateFormat.MDY
+  )
+
   val sharingEnabled: StateFlow<Boolean> = userPreferences.sharingEnabledFlow.map { it }.stateIn(
     scope = viewModelScope,
     started = SharingStarted.WhileSubscribed(5_000),
@@ -59,6 +66,13 @@ class SettingsViewModel(private val userPreferences: UserPreferences) : ViewMode
   fun updateFirstDayOfWeek(firstDayOfWeek: FirstDayOfWeek) {
     userPreferences.setFirstDayOfWeek(
       firstDayOfWeek,
+      viewModelScope
+    )
+  }
+
+  fun updateDateFormat(dateFormat: DateFormat) {
+    userPreferences.setDateFormat(
+      dateFormat,
       viewModelScope
     )
   }
