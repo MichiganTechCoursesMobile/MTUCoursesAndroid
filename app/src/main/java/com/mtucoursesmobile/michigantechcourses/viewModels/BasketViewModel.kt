@@ -1,6 +1,7 @@
 package com.mtucoursesmobile.michigantechcourses.viewModels
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -35,6 +36,8 @@ class BasketViewModel(app: Application) :
   var currentBasketIndex by mutableIntStateOf(0)
   var currentBasketItems = mutableStateMapOf<String, MTUSections>()
 
+  var basketStatus = mutableIntStateOf(0)
+
   // Initialize View Model by getting the current semester baskets
   init {
     fun initialSemester(): CurrentSemester {
@@ -63,6 +66,7 @@ class BasketViewModel(app: Application) :
   fun getSemesterBaskets(
     semester: CurrentSemester
   ) {
+    basketStatus.intValue = 0
     val dao = db.basketDao()
     CoroutineScope(Dispatchers.IO).launch {
       var baskets = dao.getSemesterBaskets(
@@ -108,6 +112,7 @@ class BasketViewModel(app: Application) :
       basketList.clear()
       basketList.addAll(baskets.baskets)
       setCurrentBasket(0)
+      basketStatus.intValue = 1
     }
   }
 
@@ -280,6 +285,7 @@ class BasketViewModel(app: Application) :
     sectionList: Map<String, MutableList<MTUSections>>
   ) {
     viewModelScope.launch {
+      Log.d("BasketImporting", basketList.toString())
       addBasket(
         semester,
         basketName

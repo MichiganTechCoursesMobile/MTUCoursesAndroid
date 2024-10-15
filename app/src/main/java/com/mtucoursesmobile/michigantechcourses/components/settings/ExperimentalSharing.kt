@@ -74,7 +74,7 @@ fun ExperimentalSharing() {
         modifier = Modifier.padding(end = 8.dp)
       )
       Text(
-        "Experimental Sharing",
+        "Experimental Basket Sharing",
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Medium,
         modifier = Modifier.weight(1f)

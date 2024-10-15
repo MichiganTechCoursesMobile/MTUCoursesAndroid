@@ -82,7 +82,9 @@ fun CourseView(
       sectionList = courseViewModel.sectionList,
       currentSemester = courseViewModel.currentSemester,
       setSemester = courseViewModel::setSemester,
-      importBasket = basketViewModel::importBasket
+      importBasket = basketViewModel::importBasket,
+      getSemesterBaskets = basketViewModel::getSemesterBaskets,
+      basketStatus = basketViewModel.basketStatus
     )
   }
 

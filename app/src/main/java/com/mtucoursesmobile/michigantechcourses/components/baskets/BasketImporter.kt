@@ -35,10 +35,12 @@ fun BasketImporter(
   dropStatus: MutableIntState,
   sectionList: MutableMap<String, MutableList<MTUSections>>,
   currentSemester: CurrentSemester,
+  getSemesterBaskets: (CurrentSemester) -> Unit,
   setSemester: (CurrentSemester) -> Unit,
   importBasket: (CurrentSemester, String, List<String>, MutableMap<String, MutableList<MTUSections>>) -> Unit,
+  basketStatus: MutableIntState
 
-  ) {
+) {
   val invalidBasket = {
     Log.e(
       "BasketView",
@@ -154,6 +156,7 @@ fun BasketImporter(
       }
       LaunchedEffect(Unit) {
         setSemester(newSemester)
+        getSemesterBaskets(newSemester)
       }
       AlertDialog(
         title = {
@@ -164,7 +167,8 @@ fun BasketImporter(
                 semesterStatus.intValue != 1 ||
                 instructorStatus.intValue != 1 ||
                 buildingStatus.intValue != 1 ||
-                dropStatus.intValue != 1
+                dropStatus.intValue != 1 ||
+                basketStatus.intValue != 1
               ) "Loading" else "Confirm Import of "
             } $basketName${
               if (courseStatus.intValue != 1 ||
@@ -172,7 +176,8 @@ fun BasketImporter(
                 semesterStatus.intValue != 1 ||
                 instructorStatus.intValue != 1 ||
                 buildingStatus.intValue != 1 ||
-                dropStatus.intValue != 1
+                dropStatus.intValue != 1 ||
+                basketStatus.intValue != 1
               ) "..." else ""
             }"
           )
@@ -184,7 +189,8 @@ fun BasketImporter(
               semesterStatus.intValue != 1 ||
               instructorStatus.intValue != 1 ||
               buildingStatus.intValue != 1 ||
-              dropStatus.intValue != 1
+              dropStatus.intValue != 1 ||
+              basketStatus.intValue != 1
             ) "Please wait while the basket information is being loaded..." else "$basketName has ${crns.size} sections in it. Would you like to import it?"
           )
         },
@@ -215,7 +221,8 @@ fun BasketImporter(
                 semesterStatus.intValue != 1 ||
                 instructorStatus.intValue != 1 ||
                 buildingStatus.intValue != 1 ||
-                dropStatus.intValue != 1)
+                dropStatus.intValue != 1 ||
+                basketStatus.intValue != 1)
           ) {
             Text(text = "Confirm")
           }
