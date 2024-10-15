@@ -81,10 +81,6 @@ fun BasketImporter(
     basketData["CRNS"] == null ||
     basketData["BASKET_NAME"] == null
   ) {
-    Log.d(
-      "DEBUG",
-      "Invalid due to missing values"
-    )
     invalidBasket()
     return
   }
@@ -92,10 +88,6 @@ fun BasketImporter(
     basketData["SEMESTER"]?.startsWith("SUMMER") == false &&
     basketData["SEMESTER"]?.startsWith("FALL") == false
   ) {
-    Log.d(
-      "DEBUG",
-      "Invalid due to wrong semester ${basketData["SEMESTER"]}"
-    )
     invalidBasket()
     return
   }

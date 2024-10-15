@@ -61,7 +61,8 @@ fun DateFormatPicker() {
       )
       .padding(
         horizontal = 12.dp
-      ),
+      )
+      .padding(bottom = 12.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     shape = RoundedCornerShape(12.dp),
   ) {

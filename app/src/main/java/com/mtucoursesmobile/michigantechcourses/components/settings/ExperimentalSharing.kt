@@ -47,7 +47,7 @@ fun ExperimentalSharing() {
           easing = LinearOutSlowInEasing
         )
       )
-      .padding(12.dp),
+      .padding(horizontal = 12.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     shape = RoundedCornerShape(12.dp),
   ) {
