@@ -425,6 +425,7 @@ fun BasketItem(
                 )
               },
               onClick = { },
+              modifier = Modifier.padding(end = 4.dp)
             )
             val settingsModel: SettingsViewModel =
               viewModel(factory = SettingsModelProvider.Factory)
