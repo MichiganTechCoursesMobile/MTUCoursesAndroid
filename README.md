@@ -8,11 +8,11 @@
 ### Native Android Application for <a href="https://michigantechcourses.com" target="_blank" rel="noopener noreferrer">michigantechcourses.com</a>
 Search for courses, share your baskets, and plan your future semesters
 
-![GitHub License](https://img.shields.io/github/license/MichiganTechCoursesMobile/MTUCoursesAndroid)
+[![GitHub License](https://img.shields.io/github/license/MichiganTechCoursesMobile/MTUCoursesAndroid)](https://github.com/MichiganTechCoursesMobile/MTUCoursesAndroid/blob/main/LICENSE)
 
 ## Downloads
 
-![GitHub Release](https://img.shields.io/github/v/release/MichiganTechCoursesMobile/MTUCoursesAndroid)
+[![GitHub Release](https://img.shields.io/github/v/release/MichiganTechCoursesMobile/MTUCoursesAndroid)](https://github.com/MichiganTechCoursesMobile/MTUCoursesAndroid/releases/latest)
 
 <a href="https://play.google.com/store/apps/details?id=com.mtucoursesmobile.michigantechcourses" target="_blank" rel="noopener noreferrer"> ![GetItOnGooglePlay_Badge_Web_color_English](https://github.com/user-attachments/assets/a3451f92-a88f-48e8-afad-23fe7b7422c7) </a>
 
