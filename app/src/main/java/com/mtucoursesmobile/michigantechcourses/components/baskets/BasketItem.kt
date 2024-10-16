@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.RemoveRedEye
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -39,6 +40,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import coil.compose.AsyncImagePainter
@@ -67,7 +70,10 @@ import com.mtucoursesmobile.michigantechcourses.classes.MTUInstructor
 import com.mtucoursesmobile.michigantechcourses.classes.MTUSections
 import com.mtucoursesmobile.michigantechcourses.components.sections.InstructorInfoDialog
 import com.mtucoursesmobile.michigantechcourses.components.sections.PlaceHolderAvatar
+import com.mtucoursesmobile.michigantechcourses.utils.sectionDateFormatter
 import com.mtucoursesmobile.michigantechcourses.utils.sectionTimeFormatter
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsModelProvider
+import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
@@ -419,6 +425,30 @@ fun BasketItem(
                 )
               },
               onClick = { },
+            )
+            val settingsModel: SettingsViewModel =
+              viewModel(factory = SettingsModelProvider.Factory)
+            val dateFormat by settingsModel.dateFormat.collectAsState()
+            SuggestionChip(
+              label = {
+                Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                ) {
+                  Icon(
+                    imageVector = Icons.Rounded.CalendarMonth,
+                    contentDescription = "Section time",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(end = 4.dp)
+                  )
+                  Text(
+                    text = sectionDateFormatter(
+                      section,
+                      dateFormat
+                    )
+                  )
+                }
+              },
+              onClick = {}
             )
           }
         },
