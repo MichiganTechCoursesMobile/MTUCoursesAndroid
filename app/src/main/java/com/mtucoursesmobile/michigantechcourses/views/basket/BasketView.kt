@@ -186,28 +186,32 @@ fun BasketView(
       LazyColumn(state = listState) {
         itemsIndexed(
           items = basketViewModel.currentBasketItems.toList(),
-          key = { _, section -> section.second.id }) { _, section ->
-          val course = courseViewModel.courseList[section.second.courseId]
+          key = { _, section -> section.second.id }) { _, savedSection ->
+          val course = courseViewModel.courseList[savedSection.second.courseId]
+          val section =
+            courseViewModel.sectionList[savedSection.second.courseId]?.first { section -> section.id == savedSection.first }
           val sectionInstructor =
             courseViewModel.instructorList.filter { instructor ->
-              section.second.instructors.contains(
+              savedSection.second.instructors.contains(
                 SectionInstructors(instructor.key)
               )
             }
           Box(
             modifier = Modifier.animateItem()
           ) {
-            BasketItem(
-              section = section.second,
-              course = course,
-              removeFromBasket = basketViewModel::removeFromBasket,
-              currentSemester = courseViewModel.currentSemester,
-              navController = navController,
-              courseNavController = courseNavController,
-              instructors = sectionInstructor,
-              buildings = courseViewModel.buildingList,
-              snackbarHostState = snackbarHostState
-            )
+            if (section != null) {
+              BasketItem(
+                section = section,
+                course = course,
+                removeFromBasket = basketViewModel::removeFromBasket,
+                currentSemester = courseViewModel.currentSemester,
+                navController = navController,
+                courseNavController = courseNavController,
+                instructors = sectionInstructor,
+                buildings = courseViewModel.buildingList,
+                snackbarHostState = snackbarHostState
+              )
+            }
           }
 
         }
