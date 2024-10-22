@@ -295,11 +295,21 @@ fun CourseDetailView(
         description = description
       )
 
+      foundCourse.prereqs?.let {
+        Text(
+          "Prerequisites: $it",
+          modifier = Modifier.padding(
+            top = 4.dp,
+            start = 4.dp
+          ),
+          style = MaterialTheme.typography.labelMedium
+        )
+      }
 
       HorizontalDivider(
         Modifier
           .padding(vertical = 8.dp)
-          .padding(top = 4.dp)
+          .padding(top = 2.dp)
       )
       Text(
         text = "Course Sections:",
