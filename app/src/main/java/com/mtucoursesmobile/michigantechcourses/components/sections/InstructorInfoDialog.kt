@@ -108,7 +108,7 @@ fun InstructorInfoDialog(
           }
         }
         HorizontalDivider()
-        if (instructor.phone != null || instructor.email != null) {
+        if (instructor.phone != null || instructor.email != null || instructor.rmpId != null) {
           ElevatedCard(
             modifier = Modifier
               .fillMaxWidth()
