@@ -156,16 +156,9 @@ fun BasketItem(
       if (view) {
         scope.launch {
           // Ensure that the Course page is at its default state to prevent issues
-          courseNavController.navigate("courseList")
-
+          courseNavController.popBackStack("courseList", false)
           //Navigate to the Main Course List
-          navController.navigate("Courses") {
-            popUpTo(navController.graph.findStartDestination().id) {
-              saveState = true
-            }
-            // Restore state when reselecting a previously selected item
-            restoreState = true
-          }
+          navController.popBackStack("Courses", false)
 
           // Quickly navigate to the selected course detail
           navToCourse(
