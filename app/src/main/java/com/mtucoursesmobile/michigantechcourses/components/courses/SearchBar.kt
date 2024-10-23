@@ -89,7 +89,7 @@ fun ExpandedSearchView(
     verticalAlignment = Alignment.CenterVertically
   ) {
     IconButton(onClick = {
-      onExpandedChanged(false)
+      focusManager.clearFocus()
       onSearchDisplayClosed()
     }) {
       Icon(
@@ -104,27 +104,28 @@ fun ExpandedSearchView(
       .focusRequester(textFieldFocusRequester)
       .padding(
         end = 16.dp, bottom = 6.dp
-      ).height(64.dp), textStyle = TextStyle(fontSize = 15.sp),
-      label = {
-      Text(
-        text = "Course Search", color = tint
       )
-    }, colors = TextFieldDefaults.colors(
-      unfocusedContainerColor = Color.Transparent, focusedContainerColor = Color.Transparent
-    ), keyboardOptions = KeyboardOptions(
-      imeAction = ImeAction.Done
-    ), keyboardActions = KeyboardActions(onDone = {
-      focusManager.clearFocus()
-    }), trailingIcon = {
-      IconButton(onClick = {
-        textFieldValue = TextFieldValue("")
-        onSearchDisplayChanged("")
-      }) {
-        Icon(
-          imageVector = Icons.Filled.Clear, contentDescription = "Clear", tint = tint
+      .height(64.dp), textStyle = TextStyle(fontSize = 15.sp),
+      label = {
+        Text(
+          text = "Course Search", color = tint
         )
-      }
-    })
+      }, colors = TextFieldDefaults.colors(
+        unfocusedContainerColor = Color.Transparent, focusedContainerColor = Color.Transparent
+      ), keyboardOptions = KeyboardOptions(
+        imeAction = ImeAction.Done
+      ), keyboardActions = KeyboardActions(onDone = {
+        focusManager.clearFocus()
+      }), trailingIcon = {
+        IconButton(onClick = {
+          textFieldValue = TextFieldValue("")
+          onSearchDisplayChanged("")
+        }) {
+          Icon(
+            imageVector = Icons.Filled.Clear, contentDescription = "Clear", tint = tint
+          )
+        }
+      })
 
   }
 }

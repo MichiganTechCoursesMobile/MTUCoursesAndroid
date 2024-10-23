@@ -48,13 +48,9 @@ import com.mtucoursesmobile.michigantechcourses.viewModels.CourseViewModel
 import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsModelProvider
 import com.mtucoursesmobile.michigantechcourses.viewModels.SettingsViewModel
 import kotlinx.coroutines.launch
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 
-@OptIn(
-  ExperimentalMaterial3Api::class,
-  ExperimentalEncodingApi::class,
-)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CourseView(
   courseViewModel: CourseViewModel,
@@ -183,8 +179,8 @@ fun CourseView(
             searchDisplay = courseViewModel.courseSearchValue.value,
             onSearchDisplayChanged = { courseViewModel.courseSearchValue.value = it },
             onSearchDisplayClosed = {
-              onSearchExpandedChanged(false)
               courseViewModel.courseSearchValue.value = ""
+              onSearchExpandedChanged(false)
               scope.launch { listState.animateScrollToItem(0) }
             },
             expanded = searching,

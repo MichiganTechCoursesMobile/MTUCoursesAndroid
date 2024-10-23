@@ -36,10 +36,10 @@ import kotlinx.coroutines.launch
 fun LazyCourseList(
   listState: LazyListState,
   courseViewModel: CourseViewModel,
-  navController: NavController, innerPadding: PaddingValues
+  navController: NavController,
+  innerPadding: PaddingValues
 ) {
   val context = LocalContext.current
-  val courses = remember { courseViewModel.filteredCourseList }
   val isRefreshing = remember { mutableStateOf(false) }
   val refreshState = rememberPullToRefreshState()
   val scope = rememberCoroutineScope()
@@ -77,7 +77,7 @@ fun LazyCourseList(
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       itemsIndexed(
-        items = courses.filter { course ->
+        items = courseViewModel.filteredCourseList.filter { course ->
           course.value.deletedAt == null && (course.value.subject + course.value.crse + course.value.title).contains(
             courseViewModel.courseSearchValue.value,
             ignoreCase = true
